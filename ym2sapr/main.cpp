@@ -388,14 +388,13 @@ int main(int argc, char **argv) {
 
         int noisevol = 0;
         if (tpn & 0x08)
-            noisevol += ptr[8]&0x0f;
+            noisevol = ptr[8]&0x0f;
         if (tpn & 0x10)
-            noisevol += ptr[9]&0x0f;
+            if (noisevol < ptr[9]&0x0f)
+                noisevol = ptr[9]&0x0f;
         if (tpn & 0x20)
-            noisevol += ptr[10]&0x0f;
-        int divvol = (!!(tpn&8)) + (!!(tpn&16)) + (!!(tpn&32));
-        if (divvol)
-            noisevol /= divvol;
+            if (noisevol < ptr[10]&0x0f)
+                noisevol = ptr[10]&0x0f;
         ym2pokey(ptr[6], 0, noisevol , false, true, &pokeyR[4]);
 
         if (fwrite(pokeyL, 9, 1, left) < 1) {
