@@ -9,7 +9,7 @@ compress:
 	lzss -6 right.sapr right.lz16
 
 player:
-	mads -o:player.xex asm/playlzs16.asm
+	mads -o:player.xex asm/playlzs16-stereo.asm
 
 clean:
 	rm -f ym2sapr *~ */*~
