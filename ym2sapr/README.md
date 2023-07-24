@@ -8,5 +8,6 @@ make
 make compress
 echo -n "7 gates of Jambala L11 - Jochen Hippel" > asm/songname.txt
 make player
+atari800 player.xex
 ```
 
