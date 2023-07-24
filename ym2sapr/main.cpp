@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include "lzh.h"
 
 /* ------------------------------------------------------------------------ */
@@ -38,6 +39,22 @@
 
 #define	ATARI_ST_CLOCK		2000000L
 #define ATARI_XL_CLOCK      1773447L
+
+uint8_t volumetab[16];
+
+/* ------------------------------------------------------------------------ */
+
+static void init_volumetab(int maxvol) {
+    volumetab[0] = 0;
+    for (int x=1; x<=15; x++) {
+        double y = 4;
+        double v = pow(x,y)/pow(15,y)*maxvol;
+        v = round(v);
+        if (v==0.0) v=1.0;
+//        printf("%.2f, ", v);
+        volumetab[x]=v;
+    }
+}
 
 /* ------------------------------------------------------------------------ */
 
@@ -200,10 +217,11 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
         pokey[0] = POK1 & 0xff;
         pokey[2] = (POK1 >> 8) & 0xff;
         pokey[3] = 0xa0;
+        int v = volumetab[volume & 0x0f];
         if (tone)
-            pokey[3] += (volume & 0x0f)/1.5;
+            pokey[3] += v;
         if (noise)
-            pokey[3] = 0x80 + ((volume & 0x0f)/1.5);
+            pokey[3] = 0x80 + v;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -373,6 +391,8 @@ int main(int argc, char **argv) {
         return 1;
 
     fprintf(stderr, "writing output to 'left.sapr' and 'right.sapr'\n");
+
+    init_volumetab(12);     // 15 sounds overdriven
 
     uint8_t pokeyL[9], pokeyR[9];
     for (int c=0; c<nframes; c++) {

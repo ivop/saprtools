@@ -2,7 +2,7 @@
 CXX ?= g++
 
 ym2sapr: main.cpp lzh.cpp lzh.h
-	$(CXX) -O2 -o ym2sapr main.cpp lzh.cpp
+	$(CXX) -O2 -o ym2sapr main.cpp lzh.cpp -lm
 
 compress:
 	lzss -6 left.sapr left.lz16

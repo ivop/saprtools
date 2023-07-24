@@ -1,3 +1,6 @@
+; ym2sapr lzss player
+; Play left and right LZSS stream on stereo Pokey
+; by Ivo van Poorten, based on dmsc's player.
 ;
 ; LZSS Compressed SAP player for 16 match bits
 ; --------------------------------------------
@@ -31,7 +34,7 @@ SKCTL = $d20f
 
     mva #0 82
     prints 0, " "
-    prints 0, "YM2SAPR v1.0"
+    prints 0, "YM2SAPR v1.1"
     prints 0, "Copyright (C) 2023 by Ivo van Poorten"
     prints 0, "LZSS routines (C) 2020 by DMSC"
     prints 0, " "
