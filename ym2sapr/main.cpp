@@ -301,7 +301,7 @@ int main(int argc, char **argv) {
  * 5    AUDC3   $00
  * 6    AUDF4   MSB
  * 7    AUDC4   tone: $av or noise: $8v, v = volume
- * 8    AUDCTL  $40+$20+$10+$08i=$78 (clock 1&3 at 1.77MHz, join 1+2 and 3+4)
+ * 8    AUDCTL  $40+$20+$10+$08=$78 (clock 1&3 at 1.77MHz, join 1+2 and 3+4)
  *
  * f_master = 1773447 Hz
  * f = f_master / 2 / (7+x)
@@ -355,7 +355,26 @@ int main(int argc, char **argv) {
     if (!write_sapr_header(right))
         return 1;
 
+    fprintf(stderr, "writing output to 'left.sapr' and 'right.sapr'\n");
 
+    uint8_t pokeyL[9], pokeyR[9];
+    for (int c=0; c<nframes; c++) {
+        memset(pokeyL, 0, 9);
+        memset(pokeyR, 0, 9);
+        pokeyL[8] = pokeyR[8] = 0x78;
+
+        if (fwrite(pokeyL, 9, 1, left) < 1) {
+            fprintf(stderr, "error writing to 'left.sapr'\n");
+            return 1;
+        }
+        if (fwrite(pokeyR, 9, 1, right) < 1) {
+            fprintf(stderr, "error writing to 'right.sapr'\n");
+            return 1;
+        }
+    }
+
+    fclose(left);
+    fclose(right);
 }
 
 /* ------------------------------------------------------------------------ */
