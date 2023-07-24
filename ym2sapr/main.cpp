@@ -217,10 +217,9 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
     if (POK1 < 0) POK1 = 0;
     pokey[0] = POK1 & 0xff;
     pokey[2] = (POK1 >> 8) & 0xff;
-    pokey[3] = 0xa0;
     int v = volumetab[volume & 0x0f];
     if (tone)
-        pokey[3] += v;
+        pokey[3] = 0xa0 + v;
     if (noise)
         pokey[3] = 0x80 + v;
 }
