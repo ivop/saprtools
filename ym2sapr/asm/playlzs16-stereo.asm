@@ -264,6 +264,14 @@ skip_chn:
 .endp
 
 end_loop
+    ldx #8
+    lda #0
+silence
+    sta left_POKEY,x
+    sta right_POKEY,x
+    dex
+    bpl silence
+
     jmp *
 
     run start
