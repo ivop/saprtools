@@ -1,12 +1,12 @@
 
 CXX ?= g++
 
-main: main.cpp lzh.cpp lzh.h
-	$(CXX) -g -o main main.cpp lzh.cpp
+ym2sapr: main.cpp lzh.cpp lzh.h
+	$(CXX) -g -o ym2sapr main.cpp lzh.cpp
 
 clean:
-	rm -f main *~
+	rm -f ym2sapr *~
 
-veryclean: clean
+cleaner: clean
 	rm -f *.sapr
 
