@@ -3,3 +3,4 @@ ym2sapr/ym2sapr
 ym2sapr/*.sapr
 ym2sapr/*.lz16
 ym2sapr/*.xex
+ym2sapr/asm/songname.txt
