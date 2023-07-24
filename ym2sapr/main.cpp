@@ -253,8 +253,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    uint8_t *ptr = dumpbuf;
-
 #if 0       // debug print frames
     for (int c=0; c<nframes; c++) {
         for (int x = 0; x<framesize; x++) {
@@ -309,12 +307,14 @@ int main(int argc, char **argv) {
  * f = f_master / 2 / (7+x)
  */
 
+    uint8_t *ptr = dumpbuf;
+
     bool envelope_mode_used = false;
     bool tone_plus_noise = false;
     for (int c=0; c<nframes; c++) {
-        if ((ptr[c*framesize+8] & 0x10) ||
-            (ptr[c*framesize+8] & 0x10) ||
-            (ptr[c*framesize+8] & 0x10) ) {
+        if ((ptr[c*framesize+ 8] & 0x10) ||
+            (ptr[c*framesize+ 9] & 0x10) ||
+            (ptr[c*framesize+10] & 0x10) ) {
             envelope_mode_used = true;
         }
         int tpn = ptr[c*framesize+7];
