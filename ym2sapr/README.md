@@ -1,9 +1,12 @@
 # YM2SAPR
 
-Instructions:
+### Instructions
+
+* Install https://github.com/dmsc/lzss-sap
+* Clone saprtools repo
 
 ```
-# install https://github.com/dmsc/lzss-sap
+cd saprtools/ym2sapr
 make
 ./ym2sapr "test/testym5 - seven gates of jambala - level 11.ym"
 make compress
