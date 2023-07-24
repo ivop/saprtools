@@ -135,12 +135,12 @@ right_POKEY = $D210
 left_buffers
     .ds 256 * 9
 
+right_buffers
+    .ds 256 * 9
+
 left_song_data
         ins     'left.lz16'
 left_song_end
-
-right_buffers
-    .ds 256 * 9
 
 right_song_data
         ins     'right.lz16'
