@@ -191,6 +191,23 @@ static bool write_sapr_header(FILE *file) {
 
 /* ------------------------------------------------------------------------ */
 
+static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
+                                bool tone, bool noise, uint8_t *pokey) {
+        int TP = lsb + (msb<<8);
+        double f = (double) ATARI_ST_CLOCK / (16*TP);
+        int POK1 = (ATARI_XL_CLOCK / 2.0 / f) - 7;
+        if (POK1 < 0) POK1 = 0;
+        pokey[0] = POK1 & 0xff;
+        pokey[2] = (POK1 >> 8) & 0xff;
+        pokey[3] = 0xa0;
+        if (tone)
+            pokey[3] += (volume & 0x0f)/1.5;
+        if (noise)
+            pokey[3] = 0x80 + ((volume & 0x0f)/1.5);
+}
+
+/* ------------------------------------------------------------------------ */
+
 int main(int argc, char **argv) {
     if (argc != 2) {
         fprintf(stderr, "usage: ym2sapr file.ym\n");
@@ -363,6 +380,24 @@ int main(int argc, char **argv) {
         memset(pokeyR, 0, 9);
         pokeyL[8] = pokeyR[8] = 0x78;
 
+        int tpn = (ptr[7] ^ 0xff) & 0x3f;
+
+        ym2pokey(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0]);
+        ym2pokey(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[4]);
+        ym2pokey(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyR[0]);
+
+        int noisevol = 0;
+        if (tpn & 0x08)
+            noisevol += ptr[8]&0x0f;
+        if (tpn & 0x10)
+            noisevol += ptr[9]&0x0f;
+        if (tpn & 0x20)
+            noisevol += ptr[10]&0x0f;
+        int divvol = (!!(tpn&8)) + (!!(tpn&16)) + (!!(tpn&32));
+        if (divvol)
+            noisevol /= divvol;
+        ym2pokey(ptr[6], 0, noisevol , false, true, &pokeyR[4]);
+
         if (fwrite(pokeyL, 9, 1, left) < 1) {
             fprintf(stderr, "error writing to 'left.sapr'\n");
             return 1;
@@ -371,6 +406,8 @@ int main(int argc, char **argv) {
             fprintf(stderr, "error writing to 'right.sapr'\n");
             return 1;
         }
+
+        ptr += framesize;
     }
 
     fclose(left);
