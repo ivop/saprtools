@@ -3,6 +3,7 @@
 Instructions:
 
 ```
+# install https://github.com/dmsc/lzss-sap
 make
 ./ym2sapr "test/testym5 - seven gates of jambala - level 11.ym"
 make compress
