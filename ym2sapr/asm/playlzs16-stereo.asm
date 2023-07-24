@@ -20,6 +20,72 @@
 ; The plater needs 256 bytes of buffer for each pokey register stored, for a
 ; full SAP file this is 2304 bytes.
 ;
+
+    icl 'cio.s'
+
+SSKCTL = $0232
+RANDOM = $d20a
+SKCTL = $d20f
+
+    org $2000
+
+    mva #0 82
+    prints 0, " "
+    prints 0, "YM2SAPR v1.0"
+    prints 0, "Copyright (C) 2023 by Ivo van Poorten"
+    prints 0, "LZSS routines (C) 2020 by DMSC"
+    prints 0, " "
+    print 0, songname
+
+.proc detect_2nd_pokey
+    lda 20
+delay
+    cmp 20
+    beq delay
+
+    mva #0 SSKCTL
+    mva #0 SKCTL
+    mva #0 SKCTL+$10        ; make sure a potential 2nd pokey is cleared
+
+    lda 20
+delay2
+    cmp 20
+    beq delay2
+
+    ; Restart SKCTL. This starts all the poly counters
+
+    mva #3 SSKCTL
+    mva #3 SKCTL
+
+    lda 20
+delay3
+    cmp 20
+    beq delay3
+
+    ; Except when there's a seconds pokey!! Its counters are not restarted.
+    ; Its RANDOM should not change.
+
+    lda RANDOM+$10
+    cmp RANDOM+$10
+    beq detected_stereo         ; so equal means there's a 2nd pokey
+
+detected_mono
+    prints 0, "No STEREO Pokey detected!"
+    jmp *
+
+detected_stereo
+    mva #3 SKCTL+$10            ; start second pokey here
+    rts
+.endp
+
+songname
+    ins 'songname.txt'
+    .by eol
+
+    ini $2000
+
+; --------------------------------------------
+
     org $80
 
 left_chn_copy    .ds     9
@@ -61,7 +127,6 @@ right_song_ptr = right_get_byte + 1
 
 left_POKEY = $D200
 right_POKEY = $D210
-SKCTL = $d20f
 
     org $2000
 left_buffers
@@ -131,7 +196,6 @@ cbuf
 ; Wait for next frame
 ;
 .proc wait_frame
-
     lda 20
 delay
     cmp 20
