@@ -29,6 +29,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include <unistd.h>
 #include "lzh.h"
 
 /* ------------------------------------------------------------------------ */
@@ -69,6 +70,9 @@ uint32_t envPos, envStep;
 
 int samples_per_second = 44100;
 int samples_per_frame = 44100/50;
+
+bool use_envelopes = true;
+bool fixed_envelopes = false;
 
 /* ------------------------------------------------------------------------ */
 
@@ -291,8 +295,11 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
 
     int v = volumetab[volume & 0x0f];
 
-    if (volume & 0x10) {        // mode bit set
-        v = volumetab[envData[envShape][envPhase][envPos>>(32-5)]];
+    if (volume & 0x10 && use_envelopes) {        // mode bit set
+        if (fixed_envelopes)
+            v = volumetab[15];
+        else
+            v = volumetab[envData[envShape][envPhase][envPos>>(32-5)]];
     }
 
     if (tone)
@@ -303,20 +310,48 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
 
 /* ------------------------------------------------------------------------ */
 
+static void usage(void) {
+    fprintf(stderr, "usage: ym2sapr [-h] input.ym\n\n");
+    fprintf(stderr, "   -h  display help\n");
+    fprintf(stderr, "   -d  disable envelopes\n");
+    fprintf(stderr, "   -e  envelopes as fixed volume\n");
+}
+
+/* ------------------------------------------------------------------------ */
+
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        fprintf(stderr, "usage: ym2sapr file.ym\n");
+    int option;
+
+    while ((option = getopt(argc, argv, "deh")) != -1) {
+        switch (option) {
+        case 'd':
+            use_envelopes = false;
+            break;
+        case 'e':
+            fixed_envelopes = true;
+            break;
+        case 'h':
+        default:
+            usage();
+            return 1;
+            break;
+        }
+    }
+
+    if (optind+1 != argc) {
+        fprintf(stderr, "wrong arguments\n");
+        usage();
         return 1;
     }
 
-    FILE *input = fopen(argv[1], "rb");
+    FILE *input = fopen(argv[optind], "rb");
     if (!input) {
-        fprintf(stderr, "cannot open %s\n", argv[1]);
+        fprintf(stderr, "cannot open %s\n", argv[optind]);
         return 1;
     }
     
     if (fseeko(input, 0, SEEK_END) < 0) {
-        fprintf(stderr, "%s is not seekable\n", argv[1]);
+        fprintf(stderr, "%s is not seekable\n", argv[optind]);
         return 1;
     }
     off_t filesize = ftello(input);
@@ -329,7 +364,7 @@ int main(int argc, char **argv) {
     }
 
     if (fread(inbuf, 1, filesize, input) != filesize) {
-        fprintf(stderr, "cannot read %s\n", argv[1]);
+        fprintf(stderr, "cannot read %s\n", argv[optind]);
         return 1;
     }
     fclose(input);
@@ -338,7 +373,7 @@ int main(int argc, char **argv) {
     uint8_t *outbuf = unpack(inbuf, filesize, &outsize);
 
     if (!outbuf) {
-        fprintf(stderr, "unable to decompress %s\n", argv[1]);
+        fprintf(stderr, "unable to decompress %s\n", argv[optind]);
         return 1;
     }
 
@@ -436,7 +471,16 @@ int main(int argc, char **argv) {
     }
 
     if (envelope_mode_used) {
-        fprintf(stderr, "warning: envelope is used. high frequency envelopes might sound odd\n");
+        fprintf(stderr, "envelope mode bit(s) are used\n");
+        if (use_envelopes) {
+            fprintf(stderr, "warning: high frequency envelopes might sound odd\n");
+            fprintf(stderr, "consider disabling them with -d\n");
+            if (fixed_envelopes) {
+                fprintf(stderr, "using fixed volume envelope\n");
+            }
+        } else {
+            fprintf(stderr, "warning: emulating envelopes is disabled\n");
+        }
     }
 
     if (tone_plus_noise) {
