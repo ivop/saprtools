@@ -42,6 +42,48 @@
 
 uint8_t volumetab[16];
 
+// fixed point envelope handling adapted from StSoundLib
+// envPos and envStep are 5.27 fixed point values, automatic wrap-around
+
+static const int  Env00xx[8]={ 1,0,0,0,0,0,0,0 };
+static const int  Env01xx[8]={ 0,1,0,0,0,0,0,0 };
+static const int  Env1000[8]={ 1,0,1,0,1,0,1,0 };
+static const int  Env1001[8]={ 1,0,0,0,0,0,0,0 };
+static const int  Env1010[8]={ 1,0,0,1,1,0,0,1 };
+static const int  Env1011[8]={ 1,0,1,1,1,1,1,1 };
+static const int  Env1100[8]={ 0,1,0,1,0,1,0,1 };
+static const int  Env1101[8]={ 0,1,1,1,1,1,1,1 };
+static const int  Env1110[8]={ 0,1,1,0,0,1,1,0 };
+static const int  Env1111[8]={ 0,1,0,0,0,0,0,0 };
+static const int *EnvWave[16] = { Env00xx,Env00xx,Env00xx,Env00xx,
+                                  Env01xx,Env01xx,Env01xx,Env01xx,
+                                  Env1000,Env1001,Env1010,Env1011,
+                                  Env1100,Env1101,Env1110,Env1111};
+
+// index as: envData[envShape][envPhase][envPos>>(32-5)]
+// value of 0-15, index into volumetab
+
+uint8_t envData[16][2][16*2];
+int envShape, envPhase;
+uint32_t envPos, envStep;
+
+/* ------------------------------------------------------------------------ */
+
+// Return pointer to next pEnv entry
+
+static uint8_t *init_envData(uint8_t *pEnv, int a, uint8_t b)
+{
+    int i, d;
+
+    d = b-a;
+    a *= 15;
+    for (i=0;i<16;i++) {
+        *pEnv++ = (uint8_t)a;
+        a += d;
+    }
+    return pEnv;
+}
+
 /* ------------------------------------------------------------------------ */
 
 static void init_volumetab(int maxvol) {
@@ -394,8 +436,23 @@ int main(int argc, char **argv) {
 
     fprintf(stderr, "writing output to 'left.sapr' and 'right.sapr'\n");
 
+    // init volumes and envelope data
+    //
     init_volumetab(12);     // 15 sounds overdriven
 
+    uint8_t *pEnv = &envData[0][0][0];
+
+    for (int env=0; env<16; env++) {
+        const int *pse = EnvWave[env];
+        for (int phase=0; phase<4; phase++) {
+            pEnv = init_envData(pEnv, pse[phase*2+0], pse[phase*2+1]);
+        }
+    }
+
+    envPos = envPhase = envShape = envStep = 0;
+
+    // loop through all frames and convert to pokey
+    //
     uint8_t pokeyL[9], pokeyR[9];
     for (int c=0; c<nframes; c++) {
         memset(pokeyL, 0, 9);
