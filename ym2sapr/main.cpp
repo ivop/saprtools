@@ -489,7 +489,7 @@ int main(int argc, char **argv) {
             return 1;
         }
 
-        // do envelope frequency envPos += envStep;
+        // do envelope frequency envPos += envStep; if overflow, envPhase=1
  
         ptr += framesize;
     }
