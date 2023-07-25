@@ -34,7 +34,7 @@ SKCTL = $d20f
 
     mva #0 82
     prints 0, " "
-    prints 0, "YM2SAPR v1.2"
+    prints 0, "YM2SAPR v1.3"
     prints 0, "Copyright (C) 2023 by Ivo van Poorten"
     prints 0, "LZSS routines (C) 2020 by DMSC"
     prints 0, " "

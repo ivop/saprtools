@@ -323,7 +323,7 @@ static void usage(void) {
     fprintf(stderr, "   -h  display help\n");
     fprintf(stderr, "   -d  disable envelopes\n");
     fprintf(stderr, "   -e  envelopes as fixed volume\n");
-    fprintf(stderr, "   -f  use envelope frequency as note\n");
+    fprintf(stderr, "   -f  use envelope frequency/4 as note\n");
 }
 
 /* ------------------------------------------------------------------------ */
