@@ -67,6 +67,29 @@ uint8_t envData[16][2][16*2];
 int envShape, envPhase;
 uint32_t envPos, envStep;
 
+int samples_per_second = 44100;
+int samples_per_frame = 44100/50;
+
+/* ------------------------------------------------------------------------ */
+
+static uint32_t envStepCompute(uint8_t rHigh, uint8_t rLow) {
+    int per = (rHigh<<8)+rLow;
+    if (per<3)
+        return 0;
+
+#if 1                                   // integer math only
+    int64_t step = ATARI_ST_CLOCK;
+    step <<= (16+16-9);
+    step /= (per * samples_per_second);
+#else
+    float step = ATARI_ST_CLOCK;
+    step /= ((float)per*512.0*(float)samples_per_second);
+    step *= 65536.0*65536.0;
+#endif
+
+    return (uint32_t) step;
+}
+
 /* ------------------------------------------------------------------------ */
 
 // Return pointer to next pEnv entry
@@ -255,12 +278,23 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
                                 bool tone, bool noise, uint8_t *pokey) {
     msb &= 0x0f;
     int TP = lsb + (msb<<8);
+
     double f = (double) ATARI_ST_CLOCK / (16*TP);
+
     int POK1 = (ATARI_XL_CLOCK / 2.0 / f) - 7;
-    if (POK1 < 0) POK1 = 0;
+
+    if (POK1 < 0)
+        POK1 = 0;
+
     pokey[0] = POK1 & 0xff;
     pokey[2] = (POK1 >> 8) & 0xff;
+
     int v = volumetab[volume & 0x0f];
+
+    if (volume & 0x10) {        // mode bit set
+        v = volumetab[envData[envShape][envPhase][envPos>>(32-5)]];
+    }
+
     if (tone)
         pokey[3] = 0xa0 + v;
     if (noise)
@@ -340,12 +374,6 @@ int main(int argc, char **argv) {
         printf("\n");
         ptr += framesize;
     }
-    // if ptr[13] == 0xff during the whole song the envelope isn't used
-    // songs without fancy effects do this and use Pokey style volumes
-    // for envelopes!
-    // it also looks like noise and tone are never enabled together even
-    // though that is possible. do some checks. also if there's noise on
-    // more than one channel (but there's only one noise frequency)
 #endif
 
 /* YM2149 registers
@@ -408,7 +436,7 @@ int main(int argc, char **argv) {
     }
 
     if (envelope_mode_used) {
-        fprintf(stderr, "warning: envelope is used but not emulated!\n");
+        fprintf(stderr, "warning: envelope is used. high frequency envelopes might sound odd\n");
     }
 
     if (tone_plus_noise) {
@@ -459,8 +487,23 @@ int main(int argc, char **argv) {
         memset(pokeyR, 0, 9);
         pokeyL[8] = pokeyR[8] = 0x78;
 
+        // handle envelope registers
         // if ptr[13] != 0xff handle YM2! and >=YM3! setting of
         // register 11,12,13 (envelope frqequency envStep and envPos/Shape)
+
+        if (ptr[13] != 0xff && madmaxym2) {     // MadMax specific
+            envStep = envStepCompute(0, ptr[11]);
+            envPos = envPhase = 0;
+            envShape = 10;
+        } else {
+            envStep = envStepCompute(ptr[12],ptr[11]);
+            if (ptr[13] != 0xff) {
+                envPos = envPhase = 0;
+                envShape = ptr[13]&0x0f;
+            }
+        }
+
+        // convert frequencies and volumes to Pokey
 
         int tpn = (ptr[7] ^ 0xff) & 0x3f;
 
@@ -468,17 +511,20 @@ int main(int argc, char **argv) {
         ym2pokey(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[4]);
         ym2pokey(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyR[0]);
 
-        // todo: set mode bit if noise channel has mode bit set
+        // do not maskout envelope mode bit, so it carries over to ym2pokey
+
         int noisevol = 0;
         if (tpn & 0x08)
-            noisevol = ptr[8]&0x0f;
+            noisevol = ptr[8];
         if (tpn & 0x10)
-            if (noisevol < ptr[9]&0x0f)
-                noisevol = ptr[9]&0x0f;
+            if (noisevol < ptr[9])
+                noisevol = ptr[9];
         if (tpn & 0x20)
-            if (noisevol < ptr[10]&0x0f)
-                noisevol = ptr[10]&0x0f;
+            if (noisevol < ptr[10])
+                noisevol = ptr[10];
         ym2pokey(ptr[6], 0, noisevol , false, true, &pokeyR[4]);
+
+        // write pokey frame to disk
 
         if (fwrite(pokeyL, 9, 1, left) < 1) {
             fprintf(stderr, "error writing to 'left.sapr'\n");
@@ -491,6 +537,14 @@ int main(int argc, char **argv) {
 
         // do envelope frequency envPos += envStep; if overflow, envPhase=1
  
+        for (int x=0; x<samples_per_frame; x++) {
+            envPos += envStep;
+            if (envPos < envStep)
+                envPhase = 1;
+        }
+
+        // next frame
+
         ptr += framesize;
     }
 
