@@ -73,6 +73,7 @@ int samples_per_frame = 44100/50;
 
 bool use_envelopes = true;
 bool fixed_envelopes = false;
+bool use_envelope_frequency = false;
 
 /* ------------------------------------------------------------------------ */
 
@@ -279,9 +280,16 @@ static bool write_sapr_header(FILE *file) {
 /* ------------------------------------------------------------------------ */
 
 static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
-                                bool tone, bool noise, uint8_t *pokey) {
-    msb &= 0x0f;
-    int TP = lsb + (msb<<8);
+                        bool tone, bool noise, uint8_t *pokey, uint8_t *ptr) {
+    int TP;
+
+    if (use_envelopes && use_envelope_frequency && volume &0x10) {
+        TP = (ptr[11]<<8) + ptr[12];
+        TP /= 4;
+    } else {
+        msb &= 0x0f;
+        TP = lsb + (msb<<8);
+    }
 
     double f = (double) ATARI_ST_CLOCK / (16*TP);
 
@@ -297,7 +305,7 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
 
     if (volume & 0x10 && use_envelopes) {        // mode bit set
         if (fixed_envelopes)
-            v = volumetab[15];
+            v = volumetab[13];
         else
             v = volumetab[envData[envShape][envPhase][envPos>>(32-5)]];
     }
@@ -315,6 +323,7 @@ static void usage(void) {
     fprintf(stderr, "   -h  display help\n");
     fprintf(stderr, "   -d  disable envelopes\n");
     fprintf(stderr, "   -e  envelopes as fixed volume\n");
+    fprintf(stderr, "   -f  use envelope frequency as note\n");
 }
 
 /* ------------------------------------------------------------------------ */
@@ -322,13 +331,16 @@ static void usage(void) {
 int main(int argc, char **argv) {
     int option;
 
-    while ((option = getopt(argc, argv, "deh")) != -1) {
+    while ((option = getopt(argc, argv, "defh")) != -1) {
         switch (option) {
         case 'd':
             use_envelopes = false;
             break;
         case 'e':
             fixed_envelopes = true;
+            break;
+        case 'f':
+            use_envelope_frequency = true;
             break;
         case 'h':
         default:
@@ -478,6 +490,9 @@ int main(int argc, char **argv) {
             if (fixed_envelopes) {
                 fprintf(stderr, "using fixed volume envelope\n");
             }
+            if (use_envelope_frequency) {
+                fprintf(stderr, "using envelope frequency as note\n");
+            }
         } else {
             fprintf(stderr, "warning: emulating envelopes is disabled\n");
         }
@@ -551,9 +566,9 @@ int main(int argc, char **argv) {
 
         int tpn = (ptr[7] ^ 0xff) & 0x3f;
 
-        ym2pokey(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0]);
-        ym2pokey(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[4]);
-        ym2pokey(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyR[0]);
+        ym2pokey(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0], ptr);
+        ym2pokey(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[4], ptr);
+        ym2pokey(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyR[0], ptr);
 
         // do not maskout envelope mode bit, so it carries over to ym2pokey
 
@@ -566,7 +581,7 @@ int main(int argc, char **argv) {
         if (tpn & 0x20)
             if (noisevol < ptr[10])
                 noisevol = ptr[10];
-        ym2pokey(ptr[6], 0, noisevol , false, true, &pokeyR[4]);
+        ym2pokey(ptr[6], 0, noisevol , false, true, &pokeyR[4], ptr);
 
         // write pokey frame to disk
 
