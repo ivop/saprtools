@@ -74,6 +74,8 @@ int samples_per_frame = 44100/50;
 bool use_envelopes = true;
 bool fixed_envelopes = false;
 bool use_envelope_frequency = false;
+unsigned int fediv = 1;       // factor to divide envelope frequency by
+unsigned int fixedvol = 13;
 
 /* ------------------------------------------------------------------------ */
 
@@ -285,7 +287,7 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
 
     if (use_envelopes && use_envelope_frequency && volume &0x10) {
         TP = (ptr[11]<<8) + ptr[12];
-        TP /= 4;
+        TP /= fediv;
     } else {
         msb &= 0x0f;
         TP = lsb + (msb<<8);
@@ -305,7 +307,7 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
 
     if (volume & 0x10 && use_envelopes) {        // mode bit set
         if (fixed_envelopes)
-            v = volumetab[13];
+            v = volumetab[fixedvol];
         else
             v = volumetab[envData[envShape][envPhase][envPos>>(32-5)]];
     }
@@ -319,11 +321,11 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
 /* ------------------------------------------------------------------------ */
 
 static void usage(void) {
-    fprintf(stderr, "usage: ym2sapr [-h] input.ym\n\n");
-    fprintf(stderr, "   -h  display help\n");
-    fprintf(stderr, "   -d  disable envelopes\n");
-    fprintf(stderr, "   -e  envelopes as fixed volume\n");
-    fprintf(stderr, "   -f  use envelope frequency/4 as note\n");
+    fprintf(stderr, "usage: ym2sapr [-dh][-e value][-f value] input.ym\n\n");
+    fprintf(stderr, "   -h          display help\n");
+    fprintf(stderr, "   -d          disable envelopes\n");
+    fprintf(stderr, "   -e value    envelopes as fixed volume\n");
+    fprintf(stderr, "   -f value    use envelope frequency/value as note\n");
 }
 
 /* ------------------------------------------------------------------------ */
@@ -331,16 +333,18 @@ static void usage(void) {
 int main(int argc, char **argv) {
     int option;
 
-    while ((option = getopt(argc, argv, "defh")) != -1) {
+    while ((option = getopt(argc, argv, "dhe:f:")) != -1) {
         switch (option) {
         case 'd':
             use_envelopes = false;
             break;
         case 'e':
             fixed_envelopes = true;
+            fixedvol = atoi(optarg) & 0x0f;
             break;
         case 'f':
             use_envelope_frequency = true;
+            fediv = atoi(optarg);
             break;
         case 'h':
         default:
@@ -488,10 +492,10 @@ int main(int argc, char **argv) {
             fprintf(stderr, "warning: high frequency envelopes might sound odd\n");
             fprintf(stderr, "consider disabling them with -d\n");
             if (fixed_envelopes) {
-                fprintf(stderr, "using fixed volume envelope\n");
+                fprintf(stderr, "using fixed volume envelope, volume: %i\n",fixedvol);
             }
             if (use_envelope_frequency) {
-                fprintf(stderr, "using envelope frequency as note\n");
+                fprintf(stderr, "using envelope frequency as note, divided by %i\n", fediv);
             }
         } else {
             fprintf(stderr, "warning: emulating envelopes is disabled\n");
