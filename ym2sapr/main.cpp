@@ -61,7 +61,7 @@ static void init_volumetab(int maxvol) {
 /* Return pointer to start of register dump or NULL on error */
 
 static uint8_t *ymdecode(uint8_t *buffer, off_t bufsize, off_t *nframes,
-        int *framesize, bool *interleaved) {
+        int *framesize, bool *interleaved, bool *madmaxym2) {
 
     char ID[5];
     memcpy(ID, buffer, 4);
@@ -74,6 +74,7 @@ static uint8_t *ymdecode(uint8_t *buffer, off_t bufsize, off_t *nframes,
         *nframes = (bufsize-4)/14;
         *framesize = 14;
         *interleaved = true;
+        *madmaxym2 = true;
         return buffer+4;
     }
 
@@ -268,8 +269,9 @@ int main(int argc, char **argv) {
     off_t nframes = 0;
     int framesize = 0;
     bool interleaved = false;
+    bool madmaxym2 = false;         // special envelope handling
     uint8_t *dumpbuf = ymdecode(outbuf, outsize, &nframes, &framesize,
-                                                            &interleaved);
+                                            &interleaved, &madmaxym2);
 
     if (!dumpbuf || !nframes || !framesize) {
         fprintf(stderr, "unable to parse ym data\n");
@@ -400,12 +402,16 @@ int main(int argc, char **argv) {
         memset(pokeyR, 0, 9);
         pokeyL[8] = pokeyR[8] = 0x78;
 
+        // if ptr[13] != 0xff handle YM2! and >=YM3! setting of
+        // register 11,12,13 (envelope frqequency envStep and envPos/Shape)
+
         int tpn = (ptr[7] ^ 0xff) & 0x3f;
 
         ym2pokey(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0]);
         ym2pokey(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[4]);
         ym2pokey(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyR[0]);
 
+        // todo: set mode bit if noise channel has mode bit set
         int noisevol = 0;
         if (tpn & 0x08)
             noisevol = ptr[8]&0x0f;
@@ -426,6 +432,8 @@ int main(int argc, char **argv) {
             return 1;
         }
 
+        // do envelope frequency envPos += envStep;
+ 
         ptr += framesize;
     }
 
