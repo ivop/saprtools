@@ -76,6 +76,7 @@ bool fixed_envelopes = false;
 bool use_envelope_frequency = false;
 unsigned int fediv = 1;       // factor to divide envelope frequency by
 unsigned int fixedvol = 13;
+uint32_t master_clock = 0;
 
 /* ------------------------------------------------------------------------ */
 
@@ -85,11 +86,11 @@ static uint32_t envStepCompute(uint8_t rHigh, uint8_t rLow) {
         return 0;
 
 #if 1                                   // integer math only
-    int64_t step = ATARI_ST_CLOCK;
+    int64_t step = master_clock;
     step <<= (16+16-9);
     step /= (per * samples_per_second);
 #else
-    float step = ATARI_ST_CLOCK;
+    float step = master_clock;
     step /= ((float)per*512.0*(float)samples_per_second);
     step *= 65536.0*65536.0;
 #endif
@@ -147,6 +148,8 @@ static uint8_t *ymdecode(uint8_t *buffer, off_t bufsize, off_t *nframes,
         *framesize = 14;
         *interleaved = true;
         *madmaxym2 = true;
+        if (!master_clock)
+            master_clock = ATARI_ST_CLOCK;
         return buffer+4;
     }
 
@@ -154,6 +157,8 @@ static uint8_t *ymdecode(uint8_t *buffer, off_t bufsize, off_t *nframes,
         *nframes = (bufsize-4)/14;
         *framesize = 14;
         *interleaved = true;
+        if (!master_clock)
+            master_clock = ATARI_ST_CLOCK;
         return buffer+4;
     }
 
@@ -162,6 +167,8 @@ static uint8_t *ymdecode(uint8_t *buffer, off_t bufsize, off_t *nframes,
         *framesize = 14;
         *interleaved = true;
         /* note: EOF-4 contains loop info */
+        if (!master_clock)
+            master_clock = ATARI_ST_CLOCK;
         return buffer+4;
     }
 
@@ -188,6 +195,8 @@ static uint8_t *ymdecode(uint8_t *buffer, off_t bufsize, off_t *nframes,
             goto errout;
         }
         /* nbDrum */                    buffer += 2;
+        if (!master_clock)
+            master_clock = GETBE32(buffer);
         /* clock */                     buffer += 4;
         /* playrate */                  buffer += 2;
         /* loop frame */                buffer += 4;
@@ -293,7 +302,7 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
         TP = lsb + (msb<<8);
     }
 
-    double f = (double) ATARI_ST_CLOCK / (16*TP);
+    double f = (double) master_clock / (16*TP);
 
     int POK1 = (ATARI_XL_CLOCK / 2.0 / f) - 7;
 
@@ -326,6 +335,7 @@ static void usage(void) {
     fprintf(stderr, "   -d          disable envelopes\n");
     fprintf(stderr, "   -e value    envelopes as fixed volume\n");
     fprintf(stderr, "   -f value    use envelope frequency/value as note\n");
+    fprintf(stderr, "   -m value    override master clock [default:2000000 or read from file]\n");
 }
 
 /* ------------------------------------------------------------------------ */
@@ -333,7 +343,7 @@ static void usage(void) {
 int main(int argc, char **argv) {
     int option;
 
-    while ((option = getopt(argc, argv, "dhe:f:")) != -1) {
+    while ((option = getopt(argc, argv, "dhe:f:m:")) != -1) {
         switch (option) {
         case 'd':
             use_envelopes = false;
@@ -345,6 +355,9 @@ int main(int argc, char **argv) {
         case 'f':
             use_envelope_frequency = true;
             fediv = atoi(optarg);
+            break;
+        case 'm':
+            master_clock = atoi(optarg);
             break;
         case 'h':
         default:
@@ -505,6 +518,8 @@ int main(int argc, char **argv) {
     if (tone_plus_noise) {
         fprintf(stderr, "has tone and noise enabled both at times\n");
     }
+
+    fprintf(stderr, "master clock: %i Hz\n", master_clock);
 
 /* Map channel A and B to Pokey left, Channel C right pokey.
  * If tone_plus_noise, use a separate noise channel on the right Pokey.
