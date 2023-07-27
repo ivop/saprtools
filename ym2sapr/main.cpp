@@ -636,6 +636,7 @@ int main(int argc, char **argv) {
 
     fclose(left);
     fclose(right);
+    fprintf(stderr, "finished!\n");
 }
 
 /* ------------------------------------------------------------------------ */
