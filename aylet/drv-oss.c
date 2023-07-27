@@ -20,6 +20,7 @@
 extern int ymframecount;
 extern int fadetime;
 extern int stopafter;
+extern int do_cpc;
 int nframes = 0;
 
 /* using (4) 256 byte frags for 8kHz, scale up for higher */
@@ -57,10 +58,14 @@ if (ym_to_stdout) {     // minimal intrusion, write samples to /dev/null
     write(1, dword, 4);         // attributes, not "interleaved"
     write(1, dword, 2);         // zero digidrums
  
-    dword[0] = (1773400 >> 24) & 0xff;
-    dword[1] = (1773400 >> 16) & 0xff;
-    dword[2] = (1773400 >>  8) & 0xff;
-    dword[3] =  1773400        & 0xff;
+    int clock = 1773400;
+    if (do_cpc)
+        clock = 1000000;
+
+    dword[0] = (clock >> 24) & 0xff;
+    dword[1] = (clock >> 16) & 0xff;
+    dword[2] = (clock >>  8) & 0xff;
+    dword[3] =  clock        & 0xff;
     write(1, dword, 4);         // master clock
  
     memset(dword,0,4);

@@ -729,6 +729,8 @@ puts("\n"
 "\n"
 "	-t	play specified track, then quit.\n"
 "\n"
+"	-c	force CPC\n"
+"\n"
 "	-y	write YM6! conversion to stdout.\n");
 }
 
@@ -740,7 +742,7 @@ int done=0;
 opterr=0;
 
 do
-  switch(getopt(argc,argv,"A:BeF:hlmnNsSt:y"))
+  switch(getopt(argc,argv,"A:BeF:hlmnNsSt:cy"))
     {
     case 'A':	/* stopafter */
       stopafter=atoi(optarg);
@@ -787,6 +789,9 @@ do
                          progname);
          exit(1);
       }
+      break;
+    case 'c':
+      do_cpc=1;
       break;
     case 'y':
       use_ui=0;
