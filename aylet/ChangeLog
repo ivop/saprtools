@@ -1,3 +1,7 @@
+2023-07-27  Ivo van Poorten
+	* Added YM output stdout (-y option) for playing with ymplayer
+	and ym2sapr converter.
+
 2005-12-18  Russell Marks  <russell.marks@ntlworld.com>
 
 	* Version 0.5.

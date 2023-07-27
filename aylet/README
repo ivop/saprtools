@@ -1,6 +1,7 @@
 aylet 0.5 - a player for Spectrum `.ay' music files.
 Copyright (C) 2001-2005 Russell Marks.
 Z80 emulation copyright (C) 1994 Ian Collier.
+YM output by Ivo van Poorten (C) 2023
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -34,10 +35,11 @@ Sinclair ZX Spectrum 128's sound hardware - either the beeper, or
 (eponymously) the AY-3-8912 sound chip. Files using the Amstrad CPC
 ports are also supported.
 
-`aylet' has a curses-based interface, and `xaylet' has an X-based one.
+`aylet' has a curses-based interface, and a batch mode to output
+a WAV file or a YM file to stdout.
 
-One source of `.ay' files playable with aylet/xaylet is "Project AY"
-on the World of Spectrum website:
+One source of `.ay' files playable with aylet is "Project AY" on the
+World of Spectrum website:
 
   http://www.worldofspectrum.org/
 
@@ -49,9 +51,11 @@ You'll need an ANSI C compiler. `gcc' is fine - so should most other
 compilers be, these days.
 
 If you're running Linux, the Makefile should be ok; if not, you might
-want to check it. After doing that (or not :-)), you should do `make'
-(or `make aylet' if you don't have GTK+ installed), then (as root)
-`make install'.
+want to check it. After doing that (or not :-)), you should do `make'.
+Copy the aylet binary to your desired bin directory and aylet.1 to your
+prefered manual page location, or run the binary directly as ./aylet.
+Use aoss for OSS emulation if you are running alsa. PulseAudio (padsp)
+is untested.
 
 Once it's installed, don't forget to read the man page for further
 documentation.
