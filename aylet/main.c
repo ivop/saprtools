@@ -716,7 +716,7 @@ puts("\n"
 "	-m	use mono rather than the default stereo.\n"
 "\n"
 "	-n	use a simple batch-playing tty style, rather than the\n"
-"		usual interface. (Only works in the curses version.)\n"
+"		usual interface.\n"
 "\n"
 "	-N	use narrower AY stereo separation.\n"
 "\n"
@@ -729,7 +729,7 @@ puts("\n"
 "\n"
 "	-t	play specified track, then quit.\n"
 "\n"
-"   -y  write YM6 conversion to stdout.\n");
+"	-y	write YM6! conversion to stdout.\n");
 }
 
 
