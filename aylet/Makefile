@@ -7,7 +7,7 @@ CC ?= gcc
 # Compiler options (and sound driver) to use. This one is for Linux,
 # and other OSS-using systems.
 #
-CFLAGS=-O -Wall -DDRIVER_OSS
+CFLAGS=-O -Wall -DDRIVER_OSS -Wno-pointer-sign
 
 # for OpenBSD, uncomment this:
 #CFLAGS=-O -Wall -DDRIVER_OPENBSD
