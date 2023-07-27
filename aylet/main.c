@@ -850,12 +850,12 @@ for(f=0;f<ay_num_files;f++)
     }
   
   ptr=strrchr(ay_filenames[f],'/');
-  printf("\n  File:\t%s\n  Misc:\t%s\nAuthor:\t%s\nTracks:\t%3d\n",
+  fprintf(stderr,"\n  File:\t%s\n  Misc:\t%s\nAuthor:\t%s\nTracks:\t%3d\n",
          ptr?ptr+1:ay_filenames[f],aydata.miscstr,aydata.authorstr,
          aydata.num_tracks);
   for(g=0;g<aydata.num_tracks;g++)
-    printf("\t%3d - %s\n",g+1,aydata.tracks[g].namestr);
-  
+    fprintf(stderr,"\t%3d - %s\n",g+1,aydata.tracks[g].namestr);
+
   if(aydata.tracks) free(aydata.tracks);
   if(aydata.filedata) free(aydata.filedata);
   }

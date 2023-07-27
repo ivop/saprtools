@@ -33,6 +33,8 @@
 #include "sound.h"
 #include "driver.h"
 
+int ymframecount = 0;
+
 /* configuration */
 int soundfd=-1;			/* file descriptor for the sound device */
 int sixteenbit=1;		/* use sixteen-bit audio? */
@@ -612,6 +614,12 @@ for(f=sound_fillpos;f<sound_framesiz;f++)
   SOUND_WRITE_BUF_BEEPER(ptr,sound_oldval);
 
 sound_ay_overlay();
+
+if (ym_to_stdout) {
+    ymframecount++;
+    write(1, sound_ay_registers, 14);
+    write(1, "\000\000", 2);            // YM6 framesize is 16
+}
 
 /* check for a silent frame.
  * bit nasty, but it's the only way to be sure. :-)

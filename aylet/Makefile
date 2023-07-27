@@ -7,7 +7,7 @@ CC ?= gcc
 # Compiler options (and sound driver) to use. This one is for Linux,
 # and other OSS-using systems.
 #
-CFLAGS=-O -Wall -DDRIVER_OSS -Wno-pointer-sign
+CFLAGS=-O -Wall -DDRIVER_OSS -Wno-pointer-sign -Wno-unused-result
 
 # Set how to link the curses lib - this is for Linux.
 # (Most non-Linux systems will probably want `-lcurses' instead.)
