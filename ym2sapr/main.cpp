@@ -592,7 +592,7 @@ int main(int argc, char **argv) {
 
         ym2pokey(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0], ptr);
         ym2pokey(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[4], ptr);
-        ym2pokey(ptr[4], ptr[5], ptr[10]&0x1f, tpn & 4, false, &pokeyR[0], ptr);
+        ym2pokey(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyR[0], ptr);
 
         // do not maskout envelope mode bit, so it carries over to ym2pokey
 
@@ -605,7 +605,7 @@ int main(int argc, char **argv) {
         if (tpn & 0x20)
             if (noisevol < ptr[10])
                 noisevol = ptr[10];
-        ym2pokey(ptr[6], 0, noisevol , false, true, &pokeyR[4], ptr);
+        ym2pokey(ptr[6]&0x1f, 0, noisevol , false, true, &pokeyR[4], ptr);
 
         // write pokey frame to disk
 
