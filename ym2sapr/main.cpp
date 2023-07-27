@@ -77,6 +77,7 @@ bool use_envelope_frequency = false;
 unsigned int fediv = 1;       // factor to divide envelope frequency by
 unsigned int fixedvol = 13;
 uint32_t master_clock = 0;
+unsigned int maxpokvol = 12;
 
 /* ------------------------------------------------------------------------ */
 
@@ -333,9 +334,10 @@ static void usage(void) {
     fprintf(stderr, "usage: ym2sapr [-dh][-e value][-f value] input.ym\n\n");
     fprintf(stderr, "   -h          display help\n");
     fprintf(stderr, "   -d          disable envelopes\n");
-    fprintf(stderr, "   -e value    envelopes as fixed volume\n");
+    fprintf(stderr, "   -e value    envelopes as fixed YM volume\n");
     fprintf(stderr, "   -f value    use envelope frequency/value as note\n");
     fprintf(stderr, "   -m value    override master clock [default:2000000 or read from file]\n");
+    fprintf(stderr, "   -p value    override pokey maximum per channel volume [default: 12\n");
 }
 
 /* ------------------------------------------------------------------------ */
@@ -343,7 +345,7 @@ static void usage(void) {
 int main(int argc, char **argv) {
     int option;
 
-    while ((option = getopt(argc, argv, "dhe:f:m:")) != -1) {
+    while ((option = getopt(argc, argv, "dhe:f:m:p:")) != -1) {
         switch (option) {
         case 'd':
             use_envelopes = false;
@@ -358,6 +360,9 @@ int main(int argc, char **argv) {
             break;
         case 'm':
             master_clock = atoi(optarg);
+            break;
+        case 'p':
+            maxpokvol = atoi(optarg);
             break;
         case 'h':
         default:
@@ -544,7 +549,7 @@ int main(int argc, char **argv) {
 
     // init volumes and envelope data
     //
-    init_volumetab(12);     // 15 sounds overdriven
+    init_volumetab(maxpokvol); // 13-15 sounds overdriven, 11 and 12 sometimes
 
     uint8_t *pEnv = &envData[0][0][0];
 
