@@ -20,6 +20,7 @@
 extern int ymframecount;
 extern int fadetime;
 extern int stopafter;
+int nframes = 0;
 
 /* using (4) 256 byte frags for 8kHz, scale up for higher */
 #define BASE_SOUND_FRAG_PWR	8
@@ -44,7 +45,7 @@ if (ym_to_stdout) {     // minimal intrusion, write samples to /dev/null
         return 0;
     write(1, "YM6!LeOnArD!", 12);
 
-    int nframes = stopafter*50+200+fadetime*50;
+    nframes = stopafter*50+200+fadetime*50;
     unsigned char dword[4];
     dword[0] = (nframes >> 24) & 0xff;
     dword[1] = (nframes >> 16) & 0xff;
@@ -132,6 +133,13 @@ return(1);	/* success */
 
 void driver_end(void)
 {
+unsigned char zeroframe[16];
+memset(zeroframe,0,16);
+while (ymframecount<nframes) {
+    write(1,zeroframe,16);
+    ymframecount++;
+}
+
 if (ym_to_stdout) {
     fprintf(stderr, "framecount: %i\n", ymframecount);
 }
