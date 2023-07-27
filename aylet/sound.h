@@ -15,6 +15,7 @@ extern int sound_stereo_ay_narrow;
 extern int soundfd;
 extern int sixteenbit;
 extern int play_to_stdout;
+extern int ym_to_stdout;
 
 extern int sound_init(void);
 extern void sound_end(void);

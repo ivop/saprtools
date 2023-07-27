@@ -35,7 +35,7 @@ extern unsigned char mem[];
 extern unsigned long tstates,tsmax;
 extern int highspeed,playing,paused,want_quit;
 extern int stopafter,fadetime;
-extern int use_ui,play_to_stdout;
+extern int use_ui,play_to_stdout,ym_to_stdout;
 extern char **ay_filenames;
 extern int ay_file,ay_num_files;
 extern int ay_track;

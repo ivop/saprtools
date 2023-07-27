@@ -62,6 +62,7 @@ int want_quit=0;
 
 int use_ui=1;
 int play_to_stdout=0;
+int ym_to_stdout=0;
 int list_only=0;
 
 char **ay_filenames=NULL;	/* for ptrs to filenames */
@@ -726,7 +727,9 @@ puts("\n"
 "\n"
 "	-S	use fake pseudo-stereo for the beeper.\n"
 "\n"
-"	-t	play specified track, then quit.\n");
+"	-t	play specified track, then quit.\n"
+"\n"
+"   -y  write YM6 conversion to stdout.\n");
 }
 
 
@@ -737,7 +740,7 @@ int done=0;
 opterr=0;
 
 do
-  switch(getopt(argc,argv,"A:BeF:hlmnNsSt:"))
+  switch(getopt(argc,argv,"A:BeF:hlmnNsSt:y"))
     {
     case 'A':	/* stopafter */
       stopafter=atoi(optarg);
@@ -784,6 +787,10 @@ do
                          progname);
          exit(1);
       }
+      break;
+    case 'y':
+      use_ui=0;
+      ym_to_stdout=1;
       break;
     case '?':
       switch(optopt)

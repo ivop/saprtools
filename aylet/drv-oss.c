@@ -33,6 +33,13 @@ if(play_to_stdout)
   return(1);
   }
 
+if (ym_to_stdout) {     // minimal intrusion, write samples to /dev/null
+    soundfd=open("/dev/null", O_WRONLY);
+    if (soundfd < 0)
+        return 0;
+    return 1;
+}
+
 if((soundfd=open("/dev/dsp",O_WRONLY))<0)
   return(0);
 

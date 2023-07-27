@@ -9,9 +9,6 @@ CC ?= gcc
 #
 CFLAGS=-O -Wall -DDRIVER_OSS -Wno-pointer-sign
 
-# for OpenBSD, uncomment this:
-#CFLAGS=-O -Wall -DDRIVER_OPENBSD
-
 # Set how to link the curses lib - this is for Linux.
 # (Most non-Linux systems will probably want `-lcurses' instead.)
 #
@@ -28,7 +25,7 @@ MANDIR=$(PREFIX)/man/man1
 #-----------------------------------------------------------------
 
 # this looks wrong, but *ops.c are actually #include'd by z80.c
-OBJS=main.o sound.o ui.o z80.o drv-oss.o drv-obsd.o
+OBJS=main.o sound.o ui.o z80.o drv-oss.o
 
 all: aylet
 
@@ -40,7 +37,6 @@ clean:
 
 # dependencies
 cbops.o: cbops.c
-drv-obsd.o: drv-obsd.c
 drv-oss.o: drv-oss.c
 edops.o: edops.c
 main.o: main.c main.h sound.h ui.h z80.h
