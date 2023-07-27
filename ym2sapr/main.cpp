@@ -123,11 +123,13 @@ static void init_volumetab(int maxvol) {
     for (int x=1; x<=15; x++) {
         double y = 4;
         double v = pow(x,y)/pow(15,y)*maxvol;
+//        printf("%.2f, ", v);
         v = round(v);
         if (v==0.0) v=1.0;
-//        printf("%.2f, ", v);
         volumetab[x]=v;
     }
+    // these are: 0.00, 0.00, 0.02, 0.06, do not choke 0.15 and 0.31
+    volumetab[1] = volumetab[2] = volumetab[3] = volumetab[4] = 0;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -549,6 +551,7 @@ int main(int argc, char **argv) {
 
     // init volumes and envelope data
     //
+    fprintf(stderr, "maximum pokey volume set to %i\n", maxpokvol);
     init_volumetab(maxpokvol); // 13-15 sounds overdriven, 11 and 12 sometimes
 
     uint8_t *pEnv = &envData[0][0][0];
