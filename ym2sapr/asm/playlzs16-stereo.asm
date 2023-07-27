@@ -32,7 +32,10 @@ SKCTL = $d20f
 
     org $2000
 
-    mva #0 82
+    mva #1 752      ; cursor off
+    mva #0 $02c6    ; black background
+    mva #15 $02c5   ; white foreground
+    mva #0 82       ; left margin
     prints 0, " "
     prints 0, "YM2SAPR v1.5"
     prints 0, "Copyright (C) 2023 by Ivo van Poorten"
