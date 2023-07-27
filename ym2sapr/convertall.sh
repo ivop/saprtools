@@ -150,5 +150,41 @@ make compress
 make player
 mv player.xex xex/whittaker-weird-dreams.xex
 
+./ym2sapr spectrum/BackToTheFuture2.ym
+echo -n \
+    "Source: ZX Spectrum                    " \
+    "Title : Back To The Future 2           " \
+    "Author: David Whittaker" > asm/songname.txt
+make compress
+make player
+mv player.xex xex/whittaker-bttf2.xex
+
+./ym2sapr spectrum/BeverlyHillsCop.ym
+echo -n \
+    "Source: ZX Spectrum                    " \
+    "Title : Beverly Hills Cop              " \
+    "Author: David Whittaker" > asm/songname.txt
+make compress
+make player
+mv player.xex xex/whittaker-axelf.xex
+
+./ym2sapr cpc/"Burnin'Rubber..ym"
+echo -n \
+    "Source: Amstrad CPC                    " \
+    "Title : Burnin'Rubber                  " \
+    "Author: Jonathan Dunn & Matthew Cannon" > asm/songname.txt
+make compress
+make player
+mv player.xex xex/burnin.xex
+
+./ym2sapr cpc/'twistn shout 1.ym'
+echo -n \
+    "Source: Amstrad CPC                    " \
+    "Title : Twist'n'shout part, Voyage 93  " \
+    "Author: Kangaroo" > asm/songname.txt
+make compress
+make player
+mv player.xex xex/twist.xex
+
 # clear for further tests
 echo -n " " > asm/songname.txt
