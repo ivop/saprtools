@@ -14,6 +14,6 @@ correctly. Old versions of STYmulator have a bug and are unable to play
 Be sure to only convert a single track at the time! And beeper is not supoorted.
 
 ```
-./aylet -y -t 1 BeverlyHillsCop.ay > test.ym
+./aylet -y -t 1 test/BeverlyHillsCop.ay > test.ym
 ```
 
