@@ -4,6 +4,8 @@ set -e
 
 make
 
+#if false; then
+
 ./ym2sapr atarist/'seven gates of jambala 2 - intro.ym'
 echo -n \
     "Source: Atari ST                       " \
@@ -178,7 +180,8 @@ make compress
 make player
 mv player.xex xex/burnin.xex
 
-./ym2sapr cpc/'twistn shout 1.ym'
+# drums and noise on the same side
+./ym2sapr -r acb cpc/'twistn shout 1.ym'
 echo -n \
     "Source: Amstrad CPC                    " \
     "Title : Twist'n'shout part, Voyage 93  " \
@@ -186,6 +189,8 @@ echo -n \
 make compress
 make player
 mv player.xex xex/twist.xex
+
+#fi
 
 # clear for further tests
 echo -n " " > asm/songname.txt
