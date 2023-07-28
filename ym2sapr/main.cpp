@@ -597,7 +597,8 @@ int main(int argc, char **argv) {
 
     fprintf(stderr, "master clock: %i Hz\n", master_clock);
 
-    fprintf(stderr, "channel mapping: %s\n", remapstring);
+    if (remap)
+        fprintf(stderr, "channel mapping: %s\n", remapstring);
 
 /* Map channel A and B to Pokey left, Channel C right pokey.
  * If tone_plus_noise, use a separate noise channel on the right Pokey.
