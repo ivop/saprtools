@@ -190,6 +190,15 @@ make compress
 make player
 mv player.xex xex/twist.xex
 
+./ym2sapr spectrum/MissileGroundZero.ym
+echo -n \
+    "Source: ZX Spectrum                    " \
+    "Title : Missile: Ground Zero           " \
+    "Author: Tim Follin" > asm/songname.txt
+make compress
+make player
+mv player.xex xex/missile-ground0.xex
+
 #fi
 
 # clear for further tests
