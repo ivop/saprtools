@@ -168,7 +168,8 @@ make compress
 make player
 mv player.xex xex/whittaker-axelf.xex
 
-./ym2sapr cpc/"Burnin'Rubber..ym"
+# drums and noise on the same side
+./ym2sapr -r acb cpc/"Burnin'Rubber..ym"
 echo -n \
     "Source: Amstrad CPC                    " \
     "Title : Burnin'Rubber                  " \

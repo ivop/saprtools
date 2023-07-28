@@ -74,10 +74,17 @@ int samples_per_frame = 44100/50;
 bool use_envelopes = true;
 bool fixed_envelopes = false;
 bool use_envelope_frequency = false;
+bool remap = false;
+char *remapstring;
+int remapindex;
 unsigned int fediv = 1;       // factor to divide envelope frequency by
 unsigned int fixedvol = 13;
 uint32_t master_clock = 0;
 unsigned int maxpokvol = 12;
+
+const char *valid_remaps[6] = {
+    "ABC", "ACB", "BAC", "BCA", "CAB", "CBA"
+};
 
 /* ------------------------------------------------------------------------ */
 
@@ -340,14 +347,62 @@ static void usage(void) {
     fprintf(stderr, "   -f value    use envelope frequency/value as note\n");
     fprintf(stderr, "   -m value    override master clock [default:2000000 or read from file]\n");
     fprintf(stderr, "   -p value    override pokey maximum per channel volume [default: 12\n");
+    fprintf(stderr, "   -r map      remap channels [default: abc]\n");   
+}
+
+/* ------------------------------------------------------------------------ */
+
+static void remap_channels(uint8_t *pokl, uint8_t *pokr) {
+    uint8_t newl[8], newr[8];
+
+    uint8_t *oldA = pokl, *oldB = pokl+4, *oldC = pokr, *oldN = pokr+4;
+    uint8_t *newA = newl, *newB = newl+4, *newC = newr, *newN = newr+4;
+
+    memcpy(newN, oldN, 4);      // noise always right
+
+    switch (remapindex) {
+    case 0:         // abc
+        memcpy(newA, oldA, 4);
+        memcpy(newB, oldB, 4);
+        memcpy(newC, oldC, 4);
+        break;
+    case 1:         // acb
+        memcpy(newA, oldA, 4);
+        memcpy(newB, oldC, 4);
+        memcpy(newC, oldB, 4);
+        break;
+    case 2:         // bac
+        memcpy(newA, oldB, 4);
+        memcpy(newB, oldA, 4);
+        memcpy(newC, oldC, 4);
+        break;
+    case 3:         // bca
+        memcpy(newA, oldB, 4);
+        memcpy(newB, oldC, 4);
+        memcpy(newC, oldA, 4);
+        break;
+    case 4:         // cab
+        memcpy(newA, oldC, 4);
+        memcpy(newB, oldA, 4);
+        memcpy(newC, oldB, 4);
+        break;
+    case 5:         // cba
+        memcpy(newA, oldC, 4);
+        memcpy(newB, oldB, 4);
+        memcpy(newC, oldA, 4);
+        break;
+    }
+
+    memcpy(pokl, newl, 8);
+    memcpy(pokr, newr, 8);
 }
 
 /* ------------------------------------------------------------------------ */
 
 int main(int argc, char **argv) {
-    int option;
+    int option, i;
 
-    while ((option = getopt(argc, argv, "dhe:f:m:p:")) != -1) {
+    while ((option = getopt(argc, argv, "dhe:f:m:p:r:")) != -1) {
         switch (option) {
         case 'd':
             use_envelopes = false;
@@ -365,6 +420,20 @@ int main(int argc, char **argv) {
             break;
         case 'p':
             maxpokvol = atoi(optarg);
+            break;
+        case 'r':
+            remap = true;
+            remapstring = strdup(optarg);
+            for (char *c=remapstring; *c; c++)
+                *c = toupper(*c);
+            for (i=0; i<6; i++)
+                if (!strcmp(remapstring, valid_remaps[i]))
+                    break;
+            if (i==6) {
+                fprintf(stderr, "invalid remapping of channels\n");
+                return 1;
+            }
+            remapindex = i;
             break;
         case 'h':
         default:
@@ -528,6 +597,8 @@ int main(int argc, char **argv) {
 
     fprintf(stderr, "master clock: %i Hz\n", master_clock);
 
+    fprintf(stderr, "channel mapping: %s\n", remapstring);
+
 /* Map channel A and B to Pokey left, Channel C right pokey.
  * If tone_plus_noise, use a separate noise channel on the right Pokey.
  */
@@ -609,6 +680,11 @@ int main(int argc, char **argv) {
             if (noisevol < ptr[10])
                 noisevol = ptr[10];
         ym2pokey(ptr[6]&0x1f, 0, noisevol , false, true, &pokeyR[4], ptr);
+
+        // remap?
+
+        if (remap)
+            remap_channels(pokeyL, pokeyR);
 
         // write pokey frame to disk
 
