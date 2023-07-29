@@ -13,6 +13,6 @@ ZX Spectrum 128K                228 cycles per scanline
     NTSC
 
 MSX
-    PAL
-    NTSC
+    PAL     50.214032           3579545 / 313(!) / 227.75
+    NTSC    59.988520           3579545 / 262 / 227.75
 
