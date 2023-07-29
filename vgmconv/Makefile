@@ -8,4 +8,5 @@ clean:
 	rm -f vgmconv *~ */*~
 
 cleaner: clean
+	rm -f *.ym
 
