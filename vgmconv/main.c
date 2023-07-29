@@ -42,14 +42,26 @@ struct vgm_header {
     uint32_t loop_offset;
 
     uint32_t loop_nsamples;             /* $20 */
+
+    /* v1.01 additions */
     uint32_t rate;
+
+    /* v1.10 additions */
     uint16_t sn76489_feedback;
     uint8_t  sn76489_shift_width;
+
+    /* v1.51 additions */
     uint8_t  sn76489_flags;
+
+    /* v1.10 additions */
     uint32_t ym2612_clock;
 
     uint32_t ym2151_clock;              /* $30 */
+
+    /* v1.50 additions */
     uint32_t vgm_data_offset;
+
+    /* v1.51 additions */
     uint32_t sega_pcm_clock;
     uint32_t spcm_interface;
 
@@ -74,11 +86,16 @@ struct vgm_header {
     uint8_t  ay8910_flags;
     uint8_t  ay8910_ym2203_flags;
     uint8_t  ay8910_ym2608_flags;
+
+    /* v1.60 additions */
     uint8_t  volume_modifier;
     uint8_t  reserved;
     uint8_t  loop_base;
+
+    /* v1.51 additions */
     uint8_t  loop_modifier;
 
+    /* v1.61 additions */
     uint32_t gameboy_dmg_clock;         /* $80 */
     uint32_t nes_apu_clock;
     uint32_t multipcm_clock;
@@ -99,9 +116,14 @@ struct vgm_header {
 
     uint32_t pokey_clock;               /* $b0 */
     uint32_t qsound_clock;
+
+    /* v1.71 additions */
     uint32_t scsp_clock;
+
+    /* v1.70 additions */
     uint32_t extra_header_offset;
 
+    /* v1.71 additions */
     uint32_t wonderswan_clock;          /* $c0 */
     uint32_t vsu_clock;
     uint32_t saa1099_clock;
@@ -131,10 +153,6 @@ static inline uint32_t readLE32(uint8_t *ptr) {
 
 /* ------------------------------------------------------------------------ */
 
-static void usage(void) {
-    fprintf(stderr, "usage: vgmconv file.vgm\n");
-}
-
 static void read_header(gzFile file) {
     gzread(file, &vgm_header, sizeof(struct vgm_header));
     for (uint8_t pos = 4; pos < sizeof(struct vgm_header); pos += 4) {
@@ -157,11 +175,48 @@ static void read_header(gzFile file) {
 
 /* ------------------------------------------------------------------------ */
 
+/* write YM6! file to output, or stdout if output equals NULL
+ * return -1 on error, 0 on success
+ */
+
+static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
+    FILE *outfile = stdout;
+
+    if (output) {
+        outfile = fopen(output, "wb");
+        if (!outfile) {
+            fprintf(stderr, "unable to open %s for writing\n", output);
+            return -1;
+        }
+    }
+
+    fprintf(stderr, "writing YM6! file to %s\n", outfile==stdout ?
+                                                    "(stdout)" : output);
+    return 0;
+}
+
+/* ------------------------------------------------------------------------ */
+
+static void usage(void) {
+    fprintf(stderr,
+"usage: vgmconv [-o output] file.vgm\n"
+"\n"
+"   -o  output      write output to file [default: stdout]\n"
+);
+
+}
+
+/* ------------------------------------------------------------------------ */
+
 int main(int argc, char **argv) {
+    char *output = NULL;
     int option;
 
-    while ((option = getopt(argc, argv, "h")) != -1) {
+    while ((option = getopt(argc, argv, "ho:")) != -1) {
         switch (option) {
+        case 'o':
+            output = strdup(optarg);
+            break;
         case 'h':
         default:
             usage();
@@ -184,9 +239,30 @@ int main(int argc, char **argv) {
 
     read_header(file);
 
-    if (strncmp(vgm_header.ident, "Vgm ", 4)) {
+    struct vgm_header *v = &vgm_header;
+
+    if (strncmp(v->ident, "Vgm ", 4)) {
         fprintf(stderr, "Vgm header not found\n");
         return 1;
     }
 
+    fprintf(stderr, "vgm version: %1x.%2x\n", v->version>>8, v->version &0xff);
+
+    uint32_t data_offset = 0x40;
+    if (v->version >= 0x150)
+        data_offset = 0x34 + v->vgm_data_offset;
+
+    fprintf(stderr, "data offset: 0x%02x\n", data_offset);
+
+    gzseek(file, data_offset, SEEK_SET);
+
+    if (v->ay8910_clock) {
+        fprintf(stderr, "detected AY8910\n");
+        write_ym6(file, v, output);
+    } else {
+        fprintf(stderr, "no supported chip detected\n");
+        return 1;
+    }
+
+    return 0;
 }
