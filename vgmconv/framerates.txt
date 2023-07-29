@@ -1,18 +1,18 @@
 Exact framerates of assorted hardware.
 
-Atari 8-bit
-    PAL:    49.8607
-    NTSC:   59.9227
+Atari 8-bit                     114 cycles per scanline
+    PAL:    49.860745           1773447 / 312 / 114
+    NTSC:   59.922726           1789772 / 262 / 114
+
+ZX Spectrum 48K                 224 cycles per scanline
+    PAL     50.080128           3500000 / 312 / 224
+    NTSC
+
+ZX Spectrum 128K                228 cycles per scanline
+    PAL     50.021154           3546900 / 311(!) / 224
+    NTSC
 
 MSX
-    PAL
-    NTSC
-
-ZX Spectrum 48K
-    PAL
-    NTSC
-
-ZX Spectrum 128K
     PAL
     NTSC
 
