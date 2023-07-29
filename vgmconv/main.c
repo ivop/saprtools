@@ -142,6 +142,8 @@ struct vgm_header {
     uint32_t reserved4;
 } vgm_header;
 
+double framerate;
+
 /* ------------------------------------------------------------------------ */
 
 static inline uint16_t readLE16(uint8_t *ptr) {
@@ -194,11 +196,19 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
     fprintf(stderr, "writing YM6! file to %s\n", output);
 
     uint32_t scnt = 0;
-    uint32_t fcnt = 0;
-    uint32_t framelen = 44100 / v->rate;
+    double fcnt = 0;
+    double framelen = 44100 / framerate;
 
     int run = 1;
     int synced = 0;
+
+    uint8_t registers[16];
+    uint8_t written[16];
+    double prev_fcnt[16];
+
+    memset(registers, 0, 16);
+    memset(written, 0, 16);
+    memset(prev_fcnt, 0, sizeof(double)*16);
 
     while (run) {
         int wait = 0;
@@ -244,9 +254,19 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
             wait = (c & 0xf) + 1;
             break;
         case 0xa0: {
-            uint8_t reg = gzgetc(file);
+            uint8_t reg = gzgetc(file) & 0x0f;
             uint8_t dat = gzgetc(file);
             fprintf(stderr, "AY: write %02x to register %02x\n", dat, reg);
+            if (registers[reg] != dat) {
+                registers[reg] = dat;
+                if (prev_fcnt[reg] == 0.0) {
+                    prev_fcnt[reg] = fcnt;
+                    written[reg]++;             // always count first
+                }
+                if (fcnt - prev_fcnt[reg] > 100.0)
+                    written[reg]++;             // only count if "audible"
+                prev_fcnt[reg] = fcnt;
+            }
             break;
             }
         default:
@@ -257,20 +277,29 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
         if (wait) fprintf(stderr, "wait %d samples\n", wait);
 
         scnt += wait;
+
 //        fprintf(stderr, "elapsed %d\n", scnt);
 
         if (!synced && wait > 400) {
             fcnt = framelen;
-            synced = 1;
         } else {
             fcnt += wait;
         }
 
-        fprintf(stderr, "\tfcnt = %d\n", fcnt);
+        fprintf(stderr, "\tfcnt = %.2f\n", fcnt);
 
         while (fcnt >= framelen) {
             fprintf(stderr, "\t\t\t*** FRAME ***\n");
             fcnt -= framelen;
+            for (int i = 0; i<16; i++) {
+                if (synced && written[i]>1)
+                    fprintf(stderr, "[%d] reg 0x%02x written to %d times\n", scnt, i, written[i]);
+            }
+            memset(written, 0, 16);
+            memset(prev_fcnt, 0, sizeof(double)*16);
+            synced = 1;
+//            if (fcnt < framelen)
+//                fcnt = 0;
         }
     }
 
@@ -285,8 +314,7 @@ static void usage(void) {
 "\n"
 "   -o  output      write output to file [default: stdout]\n"
 "\n"
-"   -r rate         rate scaling (50 or 60 Hz, mandatory if file doesn't\n"
-"                   include it)\n"
+"   -r rate         specify framerate (i.e. 50, 59.94, ...)\n"
 );
 
 }
@@ -296,7 +324,8 @@ static void usage(void) {
 int main(int argc, char **argv) {
     char *output = NULL;
     int option;
-    int rate = 0;
+
+    framerate = 0;
 
     while ((option = getopt(argc, argv, "ho:r:")) != -1) {
         switch (option) {
@@ -304,9 +333,7 @@ int main(int argc, char **argv) {
             output = strdup(optarg);
             break;
         case 'r':
-            rate = atoi(optarg);
-            if (rate != 50 && rate != 60)
-                fprintf(stderr, "WARNING: weird rate of %d detected\n", rate);
+            framerate = strtod(optarg, NULL);
             break;
         case 'h':
         default:
@@ -352,15 +379,19 @@ int main(int argc, char **argv) {
 
     gzseek(file, data_offset, SEEK_SET);
 
-    if ((v->version >= 0x101 && !v->rate) || (v->version < 0x101)) {
-        if (rate == 0) {
-            fprintf(stderr, "rate scaling unknown. please specify (-r)\n");
+    if (framerate == 0.0) {
+        if ((v->version >= 0x101 && !v->rate) || (v->version < 0x101)) {
+            fprintf(stderr, "file does not specify framerate. use -r option\n");
             return 1;
-        }
-        v->rate = rate;
+        } 
+        framerate = v->rate;
     }
 
-    fprintf(stderr, "rate scaling: %dHz\n", v->rate);
+    if (framerate == 60.0) {
+        fprintf(stderr, "warning: framerate of 60, you probably want 59.94\n");
+    }
+
+    fprintf(stderr, "framerate: %.2f Hz\n", framerate);
 
     fprintf(stderr, "total number of samples: %d\n", v->total_nsamples);
     fprintf(stderr, "samples per frame: %.2f\n", 44100.0/v->rate);
