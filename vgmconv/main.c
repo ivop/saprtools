@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <zlib.h>
@@ -180,7 +181,7 @@ static void read_header(gzFile file) {
  */
 
 static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
-    FILE *outfile = stdout;
+    FILE *outfile;
 
     if (output) {
         outfile = fopen(output, "wb");
@@ -190,8 +191,89 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
         }
     }
 
-    fprintf(stderr, "writing YM6! file to %s\n", outfile==stdout ?
-                                                    "(stdout)" : output);
+    fprintf(stderr, "writing YM6! file to %s\n", output);
+
+    uint32_t scnt = 0;
+    uint32_t fcnt = 0;
+    uint32_t framelen = 44100 / v->rate;
+
+    int run = 1;
+    int synced = 0;
+
+    while (run) {
+        int wait = 0;
+
+        int c = gzgetc(file);
+
+        switch (c) {
+        case -1:
+            fprintf(stderr, "premature end of file\n");
+            return 1;
+        case 0x31:
+            break;      /* AY8910 stereo mask ignored */
+        case 0x61:
+            wait = gzgetc(file);
+            wait += gzgetc(file) << 8;
+            break;
+        case 0x62:
+            wait = 735;
+            break;
+        case 0x63:
+            wait = 882;
+            break;
+        case 0x66:
+            fprintf(stderr, "end of sound data\n");
+            run = 0;
+            break;
+        case 0x70:
+        case 0x71:
+        case 0x72:
+        case 0x73:
+        case 0x74:
+        case 0x75:
+        case 0x76:
+        case 0x77:
+        case 0x78:
+        case 0x79:
+        case 0x7a:
+        case 0x7b:
+        case 0x7c:
+        case 0x7d:
+        case 0x7e:
+        case 0x7f:
+            wait = (c & 0xf) + 1;
+            break;
+        case 0xa0: {
+            uint8_t reg = gzgetc(file);
+            uint8_t dat = gzgetc(file);
+            fprintf(stderr, "AY: write %02x to register %02x\n", dat, reg);
+            break;
+            }
+        default:
+            fprintf(stderr, "%02x\n", c);
+            return 0;
+        }
+
+        if (wait) fprintf(stderr, "wait %d samples\n", wait);
+
+        scnt += wait;
+//        fprintf(stderr, "elapsed %d\n", scnt);
+
+        if (!synced && wait > 400) {
+            fcnt = framelen;
+            synced = 1;
+        } else {
+            fcnt += wait;
+        }
+
+        fprintf(stderr, "\tfcnt = %d\n", fcnt);
+
+        while (fcnt >= framelen) {
+            fprintf(stderr, "\t\t\t*** FRAME ***\n");
+            fcnt -= framelen;
+        }
+    }
+
     return 0;
 }
 
@@ -202,6 +284,9 @@ static void usage(void) {
 "usage: vgmconv [-o output] file.vgm\n"
 "\n"
 "   -o  output      write output to file [default: stdout]\n"
+"\n"
+"   -r rate         rate scaling (50 or 60 Hz, mandatory if file doesn't\n"
+"                   include it)\n"
 );
 
 }
@@ -211,11 +296,17 @@ static void usage(void) {
 int main(int argc, char **argv) {
     char *output = NULL;
     int option;
+    int rate = 0;
 
-    while ((option = getopt(argc, argv, "ho:")) != -1) {
+    while ((option = getopt(argc, argv, "ho:r:")) != -1) {
         switch (option) {
         case 'o':
             output = strdup(optarg);
+            break;
+        case 'r':
+            rate = atoi(optarg);
+            if (rate != 50 && rate != 60)
+                fprintf(stderr, "WARNING: weird rate of %d detected\n", rate);
             break;
         case 'h':
         default:
@@ -227,6 +318,11 @@ int main(int argc, char **argv) {
     if (optind+1 != argc) {
         fprintf(stderr, "wrong arguments\n");
         usage();
+        return 1;
+    }
+
+    if (!output) {
+        fprintf(stderr, "please specify an output file (-o file)\n");
         return 1;
     }
 
@@ -255,6 +351,20 @@ int main(int argc, char **argv) {
     fprintf(stderr, "data offset: 0x%02x\n", data_offset);
 
     gzseek(file, data_offset, SEEK_SET);
+
+    if ((v->version >= 0x101 && !v->rate) || (v->version < 0x101)) {
+        if (rate == 0) {
+            fprintf(stderr, "rate scaling unknown. please specify (-r)\n");
+            return 1;
+        }
+        v->rate = rate;
+    }
+
+    fprintf(stderr, "rate scaling: %dHz\n", v->rate);
+
+    fprintf(stderr, "total number of samples: %d\n", v->total_nsamples);
+    fprintf(stderr, "samples per frame: %.2f\n", 44100.0/v->rate);
+    fprintf(stderr, "song length: %.2f seconds\n", v->total_nsamples/44100.0);
 
     if (v->ay8910_clock) {
         fprintf(stderr, "detected AY8910\n");
