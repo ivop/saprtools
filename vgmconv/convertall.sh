@@ -2,7 +2,6 @@
 
 make
 
-./vgmconv -o ../ym2sapr/msx/dsiv-opening.ym \
-          -r 60 \
+./vgmconv -r 60 -f -o ../ym2sapr/msx/dsiv-opening.ym \
           msx/'Dragon Slayer IV - 02 Opening Theme 2.vgz'
 
