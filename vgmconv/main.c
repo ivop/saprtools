@@ -458,10 +458,6 @@ int main(int argc, char **argv) {
         framerate = v->rate;
     }
 
-    if (framerate == 60.0) {
-        fprintf(stderr, "warning: framerate of 60, you probably want 59.94\n");
-    }
-
     fprintf(stderr, "framerate: %.2f Hz\n", framerate);
 
     fprintf(stderr, "total number of samples: %d\n", v->total_nsamples);
