@@ -27,7 +27,10 @@
     icl 'cio.s'
 
 SSKCTL = $0232
+CONSOL = $d01f
 RANDOM = $d20a
+VCOUNT = $d40b
+WSYNC  = $d40a
 SKCTL = $d20f
 
     org $2000
@@ -37,9 +40,15 @@ SKCTL = $d20f
     mva #15 $02c5   ; white foreground
     mva #0 82       ; left margin
     prints 0, " "
-    prints 0, "YM2SAPR v1.6"
+    prints 0, "YM2SAPR v1.7"
     prints 0, "Copyright (C) 2023 by Ivo van Poorten"
     prints 0, "LZSS routines (C) 2020 by DMSC"
+    prints 0, " "
+.ifdef HZ60
+    prints 0, "Replay rate: 60Hz"
+.else
+    prints 0, "Replay rate: 50Hz"
+.endif
     prints 0, " "
     print 0, songname
 
@@ -202,10 +211,32 @@ cbuf
 ; Wait for next frame
 ;
 .proc wait_frame
-    lda 20
+    lda #0
+    sta $d01a
+
+wait_counter=*+1
+    ldx #wait_table_len-1
+
 delay
-    cmp 20
-    beq delay
+    lda VCOUNT
+    cmp wait_table,x
+    bne delay
+
+    dec wait_counter
+    bpl no_loop
+
+    lda #wait_table_len-1
+    sta wait_counter
+
+no_loop
+    lda CONSOL
+    cmp #6              ; START key
+    bne dont_show
+
+    lda #7
+    sta $d01a
+
+dont_show
 .endp
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -343,6 +374,19 @@ silence
     bpl silence
 
     jmp *
+
+; read in reverse!
+; HZ60: NTSC is actually 50 scanline shorter, which is 25 steps of VCOUNT
+; here we use a stepsize of 26 because 6*26 = 156 (which is a full PAL frame)
+; it's close enough ;)
+
+wait_table
+.ifdef HZ60
+    dta 0, 26, 52, 78, 104, 130
+.else
+    dta 8, 8, 8, 8, 8, 8
+.endif
+wait_table_len = * - wait_table
 
     run start
 

@@ -207,7 +207,7 @@ echo -n \
     "Title : Dragon Slayer IV: Opening Theme" \
     "Author: Yuzo Koshiro, Mieko Ishikawa" > asm/songname.txt
 make compress
-make player
+make player60
 mv player.xex xex/dsiv-opening.xex
 
 # clear for further tests

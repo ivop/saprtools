@@ -11,6 +11,9 @@ compress:
 player:
 	mads -o:player.xex asm/playlzs16-stereo.asm
 
+player60:
+	mads -d:HZ60 -o:player.xex asm/playlzs16-stereo.asm
+
 clean:
 	rm -f ym2sapr *~ */*~
 
