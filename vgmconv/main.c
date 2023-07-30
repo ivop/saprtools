@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <math.h>
 #include <zlib.h>
 
 struct vgm_header {
@@ -178,6 +179,38 @@ static void read_header(gzFile file) {
 
 /* ------------------------------------------------------------------------ */
 
+static void write_ym_header(FILE *out, uint32_t clock, double rate) {
+    fwrite("YM6!LeOnArD!", 1, 12, out);
+
+    unsigned char dword[4];
+
+    memset(dword,0,4);                  // write later when we know nframes
+    fwrite(dword, 1, 4, out);
+
+    fwrite(dword, 1, 4, out);           // attributes, not "interleaved"
+    fwrite(dword, 1, 2, out);           // zero digidrums
+
+    dword[0] = (clock >> 24) & 0xff;
+    dword[1] = (clock >> 16) & 0xff;
+    dword[2] = (clock >>  8) & 0xff;
+    dword[3] =  clock        & 0xff;
+    fwrite(dword, 1, 4, out);           // master clock
+
+    memset(dword,0,4);
+    dword[1] = round(rate);
+    fwrite(dword, 1, 2, out);           // playrate
+
+    memset(dword,0,4);
+    fwrite(dword, 1, 4, out);           // loop frame
+    fwrite(dword, 1, 2, out);           // skip
+
+    fwrite("name\000", 1, 5, out);
+    fwrite("author\000", 1, 7, out);
+    fwrite("comment\000", 1, 8, out);
+}
+
+/* ------------------------------------------------------------------------ */
+
 /* write YM6! file to output, or stdout if output equals NULL
  * return -1 on error, 0 on success
  */
@@ -195,7 +228,9 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
 
     fprintf(stderr, "writing YM6! file to %s\n", output);
 
-    uint32_t scnt = 0;
+    write_ym_header(outfile, v->ay8910_clock, framerate);
+
+    uint32_t scnt = 0, nframes = 0;
     double fcnt = 0;
     double framelen = 44100 / framerate;
 
@@ -256,7 +291,7 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
         case 0xa0: {
             uint8_t reg = gzgetc(file) & 0x0f;
             uint8_t dat = gzgetc(file);
-            fprintf(stderr, "AY: write %02x to register %02x\n", dat, reg);
+//            fprintf(stderr, "AY: write %02x to register %02x\n", dat, reg);
             if (registers[reg] != dat) {
                 registers[reg] = dat;
                 if (prev_fcnt[reg] == 0.0) {
@@ -270,11 +305,11 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
             break;
             }
         default:
-            fprintf(stderr, "%02x\n", c);
+            fprintf(stderr, "unhandled data command %02x\n", c);
             return 0;
         }
 
-        if (wait) fprintf(stderr, "wait %d samples\n", wait);
+//        if (wait) fprintf(stderr, "wait %d samples\n", wait);
 
         scnt += wait;
 
@@ -286,22 +321,40 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
             fcnt += wait;
         }
 
-        fprintf(stderr, "\tfcnt = %.2f\n", fcnt);
+//        fprintf(stderr, "\tfcnt = %.2f\n", fcnt);
 
         while (fcnt >= framelen) {
-            fprintf(stderr, "\t\t\t*** FRAME ***\n");
+            nframes++;
+            fwrite(registers, 1, 16, outfile);       // write to file
+
+//            fprintf(stderr, "\t\t\t*** FRAME ***\n");
+//
             fcnt -= framelen;
             for (int i = 0; i<16; i++) {
-                if (synced && written[i]>1)
-                    fprintf(stderr, "[%d] reg 0x%02x written to %d times\n", scnt, i, written[i]);
+//                if (synced && written[i]>1)
+//                    fprintf(stderr, "[%d] reg 0x%02x written to %d times\n", scnt, i, written[i]);
             }
             memset(written, 0, 16);
             memset(prev_fcnt, 0, sizeof(double)*16);
             synced = 1;
-//            if (fcnt < framelen)
+//            if (fcnt < framelen)      // hard sync
 //                fcnt = 0;
         }
     }
+
+    nframes++;
+    fwrite(registers, 1, 16, outfile);           // flush last registers
+
+    fseek(outfile, 12, SEEK_SET);
+
+    uint8_t dword[4];
+    dword[0] = (nframes >> 24) & 0xff;
+    dword[1] = (nframes >> 16) & 0xff;
+    dword[2] = (nframes >>  8) & 0xff;
+    dword[3] =  nframes        & 0xff;
+    fwrite(dword, 1, 4, outfile);           // number of frames
+
+    fclose(outfile);
 
     return 0;
 }
@@ -404,6 +457,8 @@ int main(int argc, char **argv) {
         fprintf(stderr, "no supported chip detected\n");
         return 1;
     }
+
+    fprintf(stderr, "finished!\n");
 
     return 0;
 }
