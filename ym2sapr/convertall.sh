@@ -201,5 +201,14 @@ mv player.xex xex/missile-ground0.xex
 
 #fi
 
+./ym2sapr msx/dsiv-opening.ym
+echo -n \
+    "Source: MSX/MSX2                       " \
+    "Title : Dragon Slayer IV: Opening Theme" \
+    "Author: Yuzo Koshiro, Mieko Ishikawa" > asm/songname.txt
+make compress
+make player
+mv player.xex xex/dsiv-opening.xex
+
 # clear for further tests
 echo -n " " > asm/songname.txt
