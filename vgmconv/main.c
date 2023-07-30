@@ -244,11 +244,9 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
 
     uint8_t registers[16];
     uint8_t written[16];
-    double prev_fcnt[16];
 
     memset(registers, 0, 16);
     memset(written, 0, 16);
-    memset(prev_fcnt, 0, sizeof(double)*16);
 
     while (run) {
         int wait = 0;
@@ -298,20 +296,17 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
             uint8_t dat = gzgetc(file);
 //            fprintf(stderr, "AY: write %02x to register %02x\n", dat, reg);
             if (registers[reg] != dat) {
-                if (prev_fcnt[reg] == 0.0) {
-                    prev_fcnt[reg] = fcnt;
-                    written[reg]++;             // always count first
-                }
-                if (fcnt - prev_fcnt[reg] > 100.0) {
+                if (!written[reg]) {
+                    written[reg]++;
+                } else {
                     if (force_new) {
                         debug_fprintf(stderr, "*** new frame forced\n");
                         gzseek(file, -3, SEEK_CUR);
                         fcnt=framelen;              // force new frame
                         break;
                     }
-                    written[reg]++;             // only count if "audible"
+                    written[reg]++;
                 }
-                prev_fcnt[reg] = fcnt;
                 registers[reg] = dat;
             }
             break;
@@ -347,7 +342,6 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
                     debug_fprintf(stderr, "[%d] reg 0x%02x written to %d times\n", scnt, i, written[i]);
             }
             memset(written, 0, 16);
-            memset(prev_fcnt, 0, sizeof(double)*16);
             synced = 1;
 //            if (fcnt < framelen)      // hard sync
 //                fcnt = 0;
