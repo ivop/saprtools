@@ -210,5 +210,41 @@ make compress
 make player60
 mv player.xex xex/dsiv-opening.xex
 
+./ym2sapr msx/dsiv-shop.ym
+echo -n \
+    "Source: MSX/MSX2                       " \
+    "Title : Dragon Slayer IV: Theme of Shop" \
+    "Author: Yuzo Koshiro, Mieko Ishikawa" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/dsiv-shop.xex
+
+./ym2sapr msx/dsiv-lyll.ym
+echo -n \
+    "Source: MSX/MSX2                       " \
+    "Title : Dragon Slayer IV: Lyll Worzen  " \
+    "Author: Yuzo Koshiro, Mieko Ishikawa" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/dsiv-lyll.xex
+
+./ym2sapr msx/dsiv-maia.ym
+echo -n \
+    "Source: MSX/MSX2                       " \
+    "Title : Dragon Slayer IV: Maia Worzen  " \
+    "Author: Yuzo Koshiro, Mieko Ishikawa" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/dsiv-maia.xex
+
+./ym2sapr msx/dsiv-ending.ym
+echo -n \
+    "Source: MSX/MSX2                       " \
+    "Title : Dragon Slayer IV: Ending Theme " \
+    "Author: Yuzo Koshiro, Mieko Ishikawa" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/dsiv-ending.xex
+
 # clear for further tests
 echo -n " " > asm/songname.txt
