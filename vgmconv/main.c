@@ -144,6 +144,10 @@ struct vgm_header {
 } vgm_header;
 
 double framerate;
+int debug;
+
+#define debug_fprintf(stream, format, ...) \
+    if (debug) fprintf(stream, format, __VA_ARGS__);
 
 /* ------------------------------------------------------------------------ */
 
@@ -331,8 +335,8 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
 //
             fcnt -= framelen;
             for (int i = 0; i<16; i++) {
-//                if (synced && written[i]>1)
-//                    fprintf(stderr, "[%d] reg 0x%02x written to %d times\n", scnt, i, written[i]);
+                if (synced && written[i]>1)
+                    debug_fprintf(stderr, "[%d] reg 0x%02x written to %d times\n", scnt, i, written[i]);
             }
             memset(written, 0, 16);
             memset(prev_fcnt, 0, sizeof(double)*16);
@@ -368,6 +372,10 @@ static void usage(void) {
 "   -o  output      write output to file [default: stdout]\n"
 "\n"
 "   -r rate         specify framerate (i.e. 50, 59.94, ...)\n"
+"\n"
+"   -d              show debug output to analyze bad conversions\n"
+"                   try to reduce the number of bad writes by setting\n"
+"                   the proper framerate or slightly below\n"
 );
 
 }
@@ -380,13 +388,16 @@ int main(int argc, char **argv) {
 
     framerate = 0;
 
-    while ((option = getopt(argc, argv, "ho:r:")) != -1) {
+    while ((option = getopt(argc, argv, "dho:r:")) != -1) {
         switch (option) {
         case 'o':
             output = strdup(optarg);
             break;
         case 'r':
             framerate = strtod(optarg, NULL);
+            break;
+        case 'd':
+            debug = 1;
             break;
         case 'h':
         default:
