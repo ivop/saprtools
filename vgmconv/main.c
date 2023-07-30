@@ -458,7 +458,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "framerate: %.2f Hz\n", framerate);
 
     fprintf(stderr, "total number of samples: %d\n", v->total_nsamples);
-    fprintf(stderr, "samples per frame: %.2f\n", 44100.0/v->rate);
+    fprintf(stderr, "samples per frame: %.2f\n", 44100.0/framerate);
     fprintf(stderr, "song length: %.2f seconds\n", v->total_nsamples/44100.0);
 
     if (v->ay8910_clock) {
