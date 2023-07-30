@@ -145,9 +145,10 @@ struct vgm_header {
 
 double framerate;
 int debug;
+int force_new;
 
-#define debug_fprintf(stream, format, ...) \
-    if (debug) fprintf(stream, format, __VA_ARGS__);
+#define debug_fprintf(stream, ...) \
+    if (debug) fprintf(stream, __VA_ARGS__);
 
 /* ------------------------------------------------------------------------ */
 
@@ -297,14 +298,21 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
             uint8_t dat = gzgetc(file);
 //            fprintf(stderr, "AY: write %02x to register %02x\n", dat, reg);
             if (registers[reg] != dat) {
-                registers[reg] = dat;
                 if (prev_fcnt[reg] == 0.0) {
                     prev_fcnt[reg] = fcnt;
                     written[reg]++;             // always count first
                 }
-                if (fcnt - prev_fcnt[reg] > 100.0)
+                if (fcnt - prev_fcnt[reg] > 100.0) {
+                    if (force_new) {
+                        debug_fprintf(stderr, "*** new frame forced\n");
+                        gzseek(file, -3, SEEK_CUR);
+                        fcnt=framelen;              // force new frame
+                        break;
+                    }
                     written[reg]++;             // only count if "audible"
+                }
                 prev_fcnt[reg] = fcnt;
+                registers[reg] = dat;
             }
             break;
             }
@@ -375,7 +383,9 @@ static void usage(void) {
 "\n"
 "   -d              show debug output to analyze bad conversions\n"
 "                   try to reduce the number of bad writes by setting\n"
-"                   the proper framerate or slightly below\n"
+"                   the proper framerate or slightly below, or try -f\n"
+"\n"
+"   -f              force new frame on double write\n"
 );
 
 }
@@ -388,7 +398,7 @@ int main(int argc, char **argv) {
 
     framerate = 0;
 
-    while ((option = getopt(argc, argv, "dho:r:")) != -1) {
+    while ((option = getopt(argc, argv, "dfho:r:")) != -1) {
         switch (option) {
         case 'o':
             output = strdup(optarg);
@@ -398,6 +408,9 @@ int main(int argc, char **argv) {
             break;
         case 'd':
             debug = 1;
+            break;
+        case 'f':
+            force_new = 1;
             break;
         case 'h':
         default:
