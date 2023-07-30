@@ -1,7 +1,7 @@
 
 CC ?= gcc
 
-ym2sapr: main.c
+vgmconv: main.c
 	$(CC) -O2 -o vgmconv main.c -lm -lz
 
 clean:
