@@ -360,7 +360,7 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
         case 0xa0: {
             uint8_t reg = gzgetc(file) & 0x0f;
             uint8_t dat = gzgetc(file);
-//            fprintf(stderr, "AY: write %02x to register %02x\n", dat, reg);
+
             if (registers[reg] != dat) {
                 if (!written[reg]) {
                     written[reg]++;
@@ -382,11 +382,7 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
             return 0;
         }
 
-//        if (wait) fprintf(stderr, "wait %d samples\n", wait);
-
         scnt += wait;
-
-//        fprintf(stderr, "elapsed %d\n", scnt);
 
         if (!synced && wait > 400) {
             fcnt = framelen;
@@ -394,14 +390,10 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
             fcnt += wait;
         }
 
-//        fprintf(stderr, "\tfcnt = %.2f\n", fcnt);
-
         while (fcnt >= framelen) {
             nframes++;
             fwrite(registers, 1, 16, outfile);       // write to file
 
-//            fprintf(stderr, "\t\t\t*** FRAME ***\n");
-//
             fcnt -= framelen;
             for (int i = 0; i<16; i++) {
                 if (synced && written[i]>1)
@@ -409,8 +401,6 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
             }
             memset(written, 0, 16);
             synced = 1;
-//            if (fcnt < framelen)      // hard sync
-//                fcnt = 0;
         }
     }
 
