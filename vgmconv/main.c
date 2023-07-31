@@ -239,6 +239,7 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
     double fcnt = 0;
     double framelen = 44100 / framerate;
 
+    int unknown = 0;
     int run = 1;
     int synced = 0;
 
@@ -257,8 +258,60 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
         case -1:
             fprintf(stderr, "premature end of file\n");
             return 1;
+        case 0x67:
+            gzgetc(file);
+            int tt = gzgetc(file);
+            uint32_t ss;
+            gzfread((uint8_t *)&ss, 1, 4, file);
+            ss = readLE32((uint8_t *)&ss);
+            fprintf(stderr, "skipping data block type 0x%02x, size %08x\n", tt, ss);
+            gzseek(file, ss, SEEK_CUR);
+            break;
         case 0x31:
             break;      /* AY8910 stereo mask ignored */
+        case 0x50:
+            if (!unknown) {
+                fprintf(stderr, "skipping unknown chipset\n");
+                unknown = 1;
+            }
+            break;
+        case 0x51:
+        case 0x52:
+        case 0x53:
+        case 0x54:
+        case 0x55:
+        case 0x56:
+        case 0x57:
+        case 0x58:
+        case 0x59:
+        case 0x5a:
+        case 0x5b:
+        case 0x5c:
+        case 0x5d:
+        case 0x5e:
+        case 0x5f:
+        case 0xb0:
+        case 0xb1:
+        case 0xb2:
+        case 0xb3:
+        case 0xb4:
+        case 0xb5:
+        case 0xb6:
+        case 0xb7:
+        case 0xb8:
+        case 0xb9:
+        case 0xba:
+        case 0xbb:
+        case 0xbc:
+        case 0xbd:
+        case 0xbe:
+        case 0xbf:
+            if (!unknown) {
+                fprintf(stderr, "skipping unknown chipset\n");
+                unknown = 1;
+            }
+            gzseek(file, 2, SEEK_CUR);
+            break;
         case 0x61:
             wait = gzgetc(file);
             wait += gzgetc(file) << 8;
