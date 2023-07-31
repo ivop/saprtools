@@ -312,6 +312,19 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
             }
             gzseek(file, 2, SEEK_CUR);
             break;
+        case 0xd0:
+        case 0xd1:
+        case 0xd2:
+        case 0xd3:
+        case 0xd4:
+        case 0xd5:
+        case 0xd6:
+            if (!unknown) {
+                fprintf(stderr, "skipping unknown chipset\n");
+                unknown = 1;
+            }
+            gzseek(file, 3, SEEK_CUR);
+            break;
         case 0x61:
             wait = gzgetc(file);
             wait += gzgetc(file) << 8;
