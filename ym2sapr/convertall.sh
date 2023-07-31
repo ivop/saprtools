@@ -4,7 +4,7 @@ set -e
 
 make
 
-#if false; then
+if false; then
 
 ./ym2sapr atarist/'seven gates of jambala 2 - intro.ym'
 echo -n \
@@ -199,8 +199,6 @@ make compress
 make player
 mv player.xex xex/missile-ground0.xex
 
-#fi
-
 ./ym2sapr msx/dsiv-opening.ym
 echo -n \
     "Source: MSX/MSX2                       " \
@@ -245,6 +243,44 @@ echo -n \
 make compress
 make player60
 mv player.xex xex/dsiv-ending.xex
+
+fi
+
+./ym2sapr msx/xak-path.ym
+echo -n \
+    "Source: MSX2                           " \
+    "Title : Xak: TAoVS: Path To The Fort   " \
+    "Author: Tadahiro Nitta, Ryuji Sasai" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/xak-path.xex
+
+./ym2sapr msx/xak-dragon.ym
+echo -n \
+    "Source: MSX2                           " \
+    "Title : Xak: TAoVS: Water Dragon       " \
+    "Author: Tadahiro Nitta, Ryuji Sasai" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/xak-dragon.xex
+
+./ym2sapr msx/xak-fort.ym
+echo -n \
+    "Source: MSX2                           " \
+    "Title : Xak: TAoVS: Fort Of Flames     " \
+    "Author: Tadahiro Nitta, Ryuji Sasai" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/xak-fort.xex
+
+./ym2sapr msx/xak-ending2.ym
+echo -n \
+    "Source: MSX2                           " \
+    "Title : Xak: TAoVS: Ending 2           " \
+    "Author: Tadahiro Nitta, Ryuji Sasai" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/xak-ending2.xex
 
 # clear for further tests
 echo -n " " > asm/songname.txt
