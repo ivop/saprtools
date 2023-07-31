@@ -6,4 +6,4 @@ ym2sapr/*.xex
 ym2sapr/asm/songname.txt
 *.o
 aylet/aylet
-vgmconv/vgmconv
+vgm2ym/vgm2ym

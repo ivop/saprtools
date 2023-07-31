@@ -1,4 +1,4 @@
-/* vgmconv - by Ivo van Poorten - Copyright (C) 2023
+/* vgm2ym - by Ivo van Poorten - Copyright (C) 2023
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -425,7 +425,7 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
 
 static void usage(void) {
     fprintf(stderr,
-"usage: vgmconv [-o output] file.vgm\n"
+"usage: vgm2ym [-o output] file.vgm\n"
 "\n"
 "   -o  output      write output to file [default: stdout]\n"
 "\n"
