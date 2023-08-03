@@ -615,17 +615,25 @@ int main(int argc, char **argv) {
         fprintf(stderr, "unable to open 'left.sapr'\n");
         return 1;
     }
-    FILE *right = fopen("right.sapr", "wb");
-    if (!right) {
-        fprintf(stderr, "unable to open 'right.sapr'\n");
-        return 1;
-    }
     if (!write_sapr_header(left))
         return 1;
-    if (!write_sapr_header(right))
-        return 1;
 
-    fprintf(stderr, "writing output to 'left.sapr' and 'right.sapr'\n");
+    FILE *right = NULL;
+    if (!mono) {
+        right = fopen("right.sapr", "wb");
+        if (!right) {
+            fprintf(stderr, "unable to open 'right.sapr'\n");
+            return 1;
+        }
+        if (!write_sapr_header(right))
+            return 1;
+    }
+
+
+    if (mono)
+        fprintf(stderr, "writing output to 'left.sapr'\n");
+    else
+        fprintf(stderr, "writing output to 'left.sapr' and 'right.sapr'\n");
 
     // init volumes and envelope data
     //
@@ -649,7 +657,8 @@ int main(int argc, char **argv) {
     for (int c=0; c<nframes; c++) {
         memset(pokeyL, 0, 9);
         memset(pokeyR, 0, 9);
-        pokeyL[8] = pokeyR[8] = 0x78;
+        if (!mono)
+            pokeyL[8] = pokeyR[8] = 0x78;
 
         // handle envelope registers
         // if ptr[13] != 0xff handle YM2! and >=YM3! setting of
@@ -671,9 +680,13 @@ int main(int argc, char **argv) {
 
         int tpn = (ptr[7] ^ 0xff) & 0x3f;
 
-        ym2pokey(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0], ptr);
-        ym2pokey(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[4], ptr);
-        ym2pokey(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyR[0], ptr);
+        if (mono) {
+            // TODO
+        } else {
+            ym2pokey(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0], ptr);
+            ym2pokey(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[4], ptr);
+            ym2pokey(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyR[0], ptr);
+        }
 
         // do not maskout envelope mode bit, so it carries over to ym2pokey
 
@@ -686,11 +699,15 @@ int main(int argc, char **argv) {
         if (tpn & 0x20)
             if (noisevol < ptr[10])
                 noisevol = ptr[10];
-        ym2pokey(ptr[6]&0x1f, 0, noisevol , false, true, &pokeyR[4], ptr);
+
+        if (mono) {
+        } else {
+            ym2pokey(ptr[6]&0x1f, 0, noisevol , false, true, &pokeyR[4], ptr);
+        }
 
         // remap?
 
-        if (remap)
+        if (remap && !mono)
             remap_channels(pokeyL, pokeyR);
 
         // write pokey frame to disk
@@ -699,9 +716,11 @@ int main(int argc, char **argv) {
             fprintf(stderr, "error writing to 'left.sapr'\n");
             return 1;
         }
-        if (fwrite(pokeyR, 9, 1, right) < 1) {
-            fprintf(stderr, "error writing to 'right.sapr'\n");
-            return 1;
+        if (!mono) {
+            if (fwrite(pokeyR, 9, 1, right) < 1) {
+                fprintf(stderr, "error writing to 'right.sapr'\n");
+                return 1;
+            }
         }
 
         // do envelope frequency envPos += envStep; if overflow, envPhase=1
@@ -718,7 +737,8 @@ int main(int argc, char **argv) {
     }
 
     fclose(left);
-    fclose(right);
+    if (!mono)
+        fclose(right);
     fprintf(stderr, "finished!\n");
 }
 
