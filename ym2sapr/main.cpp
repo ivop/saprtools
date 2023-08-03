@@ -345,7 +345,7 @@ static void usage(void) {
     fprintf(stderr, "   -d          disable envelopes\n");
     fprintf(stderr, "   -e value    envelopes as fixed YM volume\n");
     fprintf(stderr, "   -f value    use envelope frequency/value as note\n");
-    fprintf(stderr, "   -m value    override master clock [default:2000000 or read from file]\n");
+    fprintf(stderr, "   -c value    override master clock [default:2000000 or read from file]\n");
     fprintf(stderr, "   -p value    override pokey maximum per channel volume [default: 12\n");
     fprintf(stderr, "   -r map      remap channels [default: abc]\n");   
 }
@@ -402,7 +402,7 @@ static void remap_channels(uint8_t *pokl, uint8_t *pokr) {
 int main(int argc, char **argv) {
     int option, i;
 
-    while ((option = getopt(argc, argv, "dhe:f:m:p:r:")) != -1) {
+    while ((option = getopt(argc, argv, "dhe:f:c:p:r:")) != -1) {
         switch (option) {
         case 'd':
             use_envelopes = false;
@@ -415,7 +415,7 @@ int main(int argc, char **argv) {
             use_envelope_frequency = true;
             fediv = atoi(optarg);
             break;
-        case 'm':
+        case 'c':
             master_clock = atoi(optarg);
             break;
         case 'p':
