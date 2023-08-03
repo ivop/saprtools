@@ -301,6 +301,58 @@ static bool write_sapr_header(FILE *file) {
 
 /* ------------------------------------------------------------------------ */
 
+static void ym2pokey_8bit(uint8_t lsb, uint8_t msb, uint8_t volume,
+                        bool tone, bool noise, uint8_t *pokey, uint8_t *ptr) {
+    int TP;
+    bool bass = false;
+
+    if (use_envelopes && use_envelope_frequency && volume &0x10) {
+        TP = (ptr[11]<<8) + ptr[12];
+        TP /= fediv;
+    } else {
+        msb &= 0x0f;
+        TP = lsb + (msb<<8);
+    }
+
+    double f = (double) master_clock / (16*TP);
+
+    int POK = round((ATARI_XL_CLOCK / 28.0 / 2.0 / f) - 1);
+
+    if (POK < 0)
+        POK = 0;
+    if (POK > 255) {
+        while (POK > 255)
+            POK /= 2;
+//        bass = true;
+//        POK = round((ATARI_XL_CLOCK / 28.0 / 7.5 / 2.0 / f) - 1);
+//        while ((POK+1)%3 != 0 || (POK+1)%5 !=0) {
+//            POK--;
+//        }
+    }
+
+    pokey[0] = POK;
+
+    int v = volumetab[volume & 0x0f];
+
+    if (volume & 0x10 && use_envelopes) {        // mode bit set
+        if (fixed_envelopes)
+            v = volumetab[fixedvol];
+        else
+            v = volumetab[envData[envShape][envPhase][envPos>>(32-5)]];
+    }
+
+    if (tone) {
+        if (!bass)
+            pokey[1] = 0xa0 + v;
+        else
+            pokey[1] = 0xc0 + v;
+    }
+    if (noise)
+        pokey[1] = 0x80 + v;
+}
+
+/* ------------------------------------------------------------------------ */
+
 static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
                         bool tone, bool noise, uint8_t *pokey, uint8_t *ptr) {
     int TP;
@@ -681,14 +733,14 @@ int main(int argc, char **argv) {
         int tpn = (ptr[7] ^ 0xff) & 0x3f;
 
         if (mono) {
-            // TODO
+            ym2pokey_8bit(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0], ptr);
+            ym2pokey_8bit(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[2], ptr);
+            ym2pokey_8bit(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyL[4], ptr);
         } else {
             ym2pokey(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0], ptr);
             ym2pokey(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[4], ptr);
             ym2pokey(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyR[0], ptr);
         }
-
-        // do not maskout envelope mode bit, so it carries over to ym2pokey
 
         int noisevol = 0;
         if (tpn & 0x08)
@@ -701,6 +753,7 @@ int main(int argc, char **argv) {
                 noisevol = ptr[10];
 
         if (mono) {
+            ym2pokey_8bit(ptr[6]&0x1f, 0, noisevol , false, true, &pokeyL[6], ptr);
         } else {
             ym2pokey(ptr[6]&0x1f, 0, noisevol , false, true, &pokeyR[4], ptr);
         }

@@ -8,11 +8,20 @@ compress:
 	lzss -6 left.sapr left.lz16
 	lzss -6 right.sapr right.lz16
 
+compress-mono:
+	lzss -6 left.sapr left.lz16
+
 player:
 	mads -o:player.xex asm/playlzs16-stereo.asm
 
 player60:
 	mads -d:HZ60 -o:player.xex asm/playlzs16-stereo.asm
+
+player-mono:
+	mads -o:player.xex asm/playlzs16-mono.asm
+
+player60-mono:
+	mads -d:HZ60 -o:player.xex asm/playlzs16-mono.asm
 
 clean:
 	rm -f ym2sapr *~ */*~
