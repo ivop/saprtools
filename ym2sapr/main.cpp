@@ -81,6 +81,7 @@ unsigned int fediv = 1;       // factor to divide envelope frequency by
 unsigned int fixedvol = 13;
 uint32_t master_clock = 0;
 unsigned int maxpokvol = 12;
+unsigned int mono = 0;
 
 const char *valid_remaps[6] = {
     "ABC", "ACB", "BAC", "BCA", "CAB", "CBA"
@@ -348,6 +349,7 @@ static void usage(void) {
     fprintf(stderr, "   -c value    override master clock [default:2000000 or read from file]\n");
     fprintf(stderr, "   -p value    override pokey maximum per channel volume [default: 12\n");
     fprintf(stderr, "   -r map      remap channels [default: abc]\n");   
+    fprintf(stderr, "   -m          eneable mono pokey mode [default: stereo pokey]\n");
 }
 
 /* ------------------------------------------------------------------------ */
@@ -402,7 +404,7 @@ static void remap_channels(uint8_t *pokl, uint8_t *pokr) {
 int main(int argc, char **argv) {
     int option, i;
 
-    while ((option = getopt(argc, argv, "dhe:f:c:p:r:")) != -1) {
+    while ((option = getopt(argc, argv, "dhe:f:c:p:r:m")) != -1) {
         switch (option) {
         case 'd':
             use_envelopes = false;
@@ -434,6 +436,9 @@ int main(int argc, char **argv) {
                 return 1;
             }
             remapindex = i;
+            break;
+        case 'm':
+            mono = 1;
             break;
         case 'h':
         default:
@@ -600,9 +605,10 @@ int main(int argc, char **argv) {
     if (remap)
         fprintf(stderr, "channel mapping: %s\n", remapstring);
 
-/* Map channel A and B to Pokey left, Channel C right pokey.
- * If tone_plus_noise, use a separate noise channel on the right Pokey.
- */
+    if (mono)
+        fprintf(stderr, "mono pokey mode\n");
+    else
+        fprintf(stderr, "stereo pokey mode\n");
 
     FILE *left = fopen("left.sapr", "wb");
     if (!left) {

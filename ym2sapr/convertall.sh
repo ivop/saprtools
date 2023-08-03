@@ -4,7 +4,7 @@ set -e
 
 make
 
-if false; then
+#if false; then
 
 ./ym2sapr atarist/'seven gates of jambala 2 - intro.ym'
 echo -n \
@@ -244,8 +244,6 @@ make compress
 make player60
 mv player.xex xex/dsiv-ending.xex
 
-fi
-
 ./ym2sapr msx/xak-path.ym
 echo -n \
     "Source: MSX2                           " \
@@ -281,6 +279,8 @@ echo -n \
 make compress
 make player60
 mv player.xex xex/xak-ending2.xex
+
+#fi
 
 # clear for further tests
 echo -n " " > asm/songname.txt
