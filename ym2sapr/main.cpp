@@ -82,6 +82,11 @@ unsigned int fixedvol = 13;
 uint32_t master_clock = 0;
 unsigned int maxpokvol = 12;
 unsigned int mono = 0;
+int basstype = 0;
+
+const char *basstypes[4] = {
+    "transpose up", "gritty", "buzzy", "softsynth"
+};
 
 const char *valid_remaps[6] = {
     "ABC", "ACB", "BAC", "BCA", "CAB", "CBA"
@@ -387,10 +392,26 @@ static bool write_sapr_header(FILE *file) {
 
 /* ------------------------------------------------------------------------ */
 
+static uint8_t find_closest_distc(const struct bass table[], double f) {
+    double delta = 1000.0;  // big number
+    int found = 0;
+
+    for (int i=0; i<36; i++) {
+        double newd = abs(table[i].realf - f);
+        if (newd < delta) {
+            delta = newd;
+            found = i;
+        }
+    }
+    return table[found].distc;
+}
+
+/* ------------------------------------------------------------------------ */
+
 static void ym2pokey_8bit(uint8_t lsb, uint8_t msb, uint8_t volume,
                         bool tone, bool noise, uint8_t *pokey, uint8_t *ptr) {
     int TP;
-    bool bass = false;
+    bool distc = false;
 
     if (use_envelopes && use_envelope_frequency && volume &0x10) {
         TP = (ptr[11]<<8) + ptr[12];
@@ -402,13 +423,30 @@ static void ym2pokey_8bit(uint8_t lsb, uint8_t msb, uint8_t volume,
 
     double f = (double) master_clock / (16*TP);
 
-    int POK = round((ATARI_XL_CLOCK / 28.0 / 2.0 / f) - 1);
+    double POKreal = (ATARI_XL_CLOCK / 28.0 / 2.0 / f) - 1;
+
+    int POK = round(POKreal);
 
     if (POK < 0)
         POK = 0;
     if (POK > 255) {
-        volume = 0;
-        bass = 1;
+        switch (basstype) {
+        default:
+        case 0:
+            while (POK > 255) {
+                POKreal /= 2.0;
+                POK = round(POKreal);
+            }
+            break;
+        case 1:
+            POK = find_closest_distc(gritty, f);
+            distc = 1;
+            break;
+        case 2:
+            POK = find_closest_distc(buzzy, f);
+            distc = 1;
+            break;
+        }
     }
 
     pokey[0] = POK;
@@ -423,7 +461,7 @@ static void ym2pokey_8bit(uint8_t lsb, uint8_t msb, uint8_t volume,
     }
 
     if (tone) {
-        if (!bass)
+        if (!distc)
             pokey[1] = 0xa0 + v;
         else
             pokey[1] = 0xc0 + v;
@@ -474,15 +512,21 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
 /* ------------------------------------------------------------------------ */
 
 static void usage(void) {
-    fprintf(stderr, "usage: ym2sapr [-dh][-e value][-f value] input.ym\n\n");
-    fprintf(stderr, "   -h          display help\n");
-    fprintf(stderr, "   -d          disable envelopes\n");
-    fprintf(stderr, "   -e value    envelopes as fixed YM volume\n");
-    fprintf(stderr, "   -f value    use envelope frequency/value as note\n");
-    fprintf(stderr, "   -c value    override master clock [default:2000000 or read from file]\n");
-    fprintf(stderr, "   -p value    override pokey maximum per channel volume [default: 12\n");
-    fprintf(stderr, "   -r map      remap channels [default: abc]\n");   
-    fprintf(stderr, "   -m          eneable mono pokey mode [default: stereo pokey]\n");
+    fprintf(stderr, "usage: ym2sapr [-dh][-e value][-f value] input.ym\n\n"
+"   -h          display help\n"
+"   -d          disable envelopes\n"
+"   -e volume   envelopes as fixed YM volume\n"
+"   -f divider  use envelope frequency / divider as note\n"
+"   -c cloxk    override master clock [default:2000000 or read from file]\n"
+"   -p volume   override pokey maximum per channel volume [default: 12\n"
+"   -r map      remap channels [default: abc]\n"
+"   -m          eneable mono pokey mode [default: stereo pokey]\n"
+"   -b num      mono bass type\n"
+"               0 - transpose up [default]\n"
+"               1 - gritty\n"
+"               2 - buzzy\n"
+//"               4 - softsynth\n"
+);
 }
 
 /* ------------------------------------------------------------------------ */
@@ -537,7 +581,7 @@ static void remap_channels(uint8_t *pokl, uint8_t *pokr) {
 int main(int argc, char **argv) {
     int option, i;
 
-    while ((option = getopt(argc, argv, "dhe:f:c:p:r:m")) != -1) {
+    while ((option = getopt(argc, argv, "dhe:f:c:p:r:mb:")) != -1) {
         switch (option) {
         case 'd':
             use_envelopes = false;
@@ -572,6 +616,13 @@ int main(int argc, char **argv) {
             break;
         case 'm':
             mono = 1;
+            break;
+        case 'b':
+            basstype = atoi(optarg);
+            if (basstype < 0 || basstype > 2) {
+                fprintf(stderr, "invalid bass type\n");
+                return 1;
+            }
             break;
         case 'h':
         default:
@@ -738,10 +789,12 @@ int main(int argc, char **argv) {
     if (remap)
         fprintf(stderr, "channel mapping: %s\n", remapstring);
 
-    if (mono)
+    if (mono) {
         fprintf(stderr, "mono pokey mode\n");
-    else
+        fprintf(stderr, "bass type: %s\n", basstypes[basstype]);
+    } else {
         fprintf(stderr, "stereo pokey mode\n");
+    }
 
     FILE *left = fopen("left.sapr", "wb");
     if (!left) {
