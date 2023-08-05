@@ -869,7 +869,7 @@ int main(int argc, char **argv) {
         if (mono) {
             ym2pokey_8bit(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0], ptr);
             ym2pokey_8bit(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[2], ptr);
-            ym2pokey_8bit(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyL[4], ptr);
+            ym2pokey_8bit(ptr[4], ptr[5], ptr[10], tpn & 4, false, &pokeyL[6], ptr);
         } else {
             ym2pokey(ptr[0], ptr[1], ptr[ 8], tpn & 1, false, &pokeyL[0], ptr);
             ym2pokey(ptr[2], ptr[3], ptr[ 9], tpn & 2, false, &pokeyL[4], ptr);
@@ -887,7 +887,7 @@ int main(int argc, char **argv) {
                 noisevol = ptr[10];
 
         if (mono) {
-            ym2pokey_8bit(ptr[6]&0x1f, 0, noisevol , false, true, &pokeyL[6], ptr);
+            ym2pokey_8bit(ptr[6]&0x1f, 0, noisevol , false, true, &pokeyL[4], ptr);
         } else {
             ym2pokey(ptr[6]&0x1f, 0, noisevol , false, true, &pokeyR[4], ptr);
         }
