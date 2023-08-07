@@ -540,11 +540,7 @@ static void usage(void) {
 "   -p volume   override pokey maximum per channel volume [default: 12\n"
 "   -r map      remap channels [default: abc]\n"
 "   -m          eneable mono pokey mode [default: stereo pokey]\n"
-"   -b num      mono bass type\n"
-"               0 - transpose up [default]\n"
-"               1 - gritty\n"
-"               2 - buzzy\n"
-//"               4 - softsynth\n"
+"   -b num      mono bass type (transpose [default], gritty, or buzzy)\n"
 );
 }
 
