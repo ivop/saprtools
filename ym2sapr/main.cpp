@@ -552,7 +552,7 @@ static void usage(void) {
 "   -e volume   envelopes as fixed YM volume\n"
 "   -f divider  use envelope frequency / divider as note\n"
 "   -c clock    override master clock [default:2000000 or read from file]\n"
-"   -p volume   override pokey maximum per channel volume [default: 12\n"
+"   -p volume   override pokey maximum per channel volume [default: 12]\n"
 "   -r map      remap channels [default: abc]\n"
 "   -m          eneable mono pokey mode [default: stereo pokey]\n"
 "   -b type     mono bass type (transpose [default], gritty, buzzy or softbass)\n"
