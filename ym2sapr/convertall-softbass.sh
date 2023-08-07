@@ -152,7 +152,7 @@ make compress-softbass
 make player-softbass
 mv player.xex xex-softbass/whittaker-weird-dreams.xex
 
-./ym2sapr -m -b softbass spectrum/BackToTheFuture2.ym
+./ym2sapr -p 9 -m -b softbass spectrum/BackToTheFuture2.ym
 echo -n \
     "Source: ZX Spectrum                    " \
     "Title : Back To The Future 2           " \
