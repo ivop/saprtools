@@ -89,7 +89,7 @@ enum {
     BASS_TRANSPOSE = 0,
     BASS_GRITTY,
     BASS_BUZZY,
-    BASS_SOFTSYNTH,
+    BASS_SOFTBASS,
     BASS_COUNT
 };
 
@@ -467,7 +467,7 @@ static void ym2pokey_8bit(uint8_t lsb, uint8_t msb, uint8_t volume,
             POK = find_closest_distc(buzzy, f);
             dist = 0xc0;
             break;
-        case BASS_SOFTSYNTH:
+        case BASS_SOFTBASS:
             POKreal /= 2.0;
             if (round(POKreal) <= 255) {
                 POK = round(POKreal);
@@ -552,7 +552,7 @@ static void usage(void) {
 "   -e volume   envelopes as fixed YM volume\n"
 "   -f divider  use envelope frequency / divider as note\n"
 "   -c clock    override master clock [default:2000000 or read from file]\n"
-"   -p volume   override pokey maximum per channel volume [default: 12]\n"
+"   -p volume   pokey maximum per channel volume [default: 12, softbass: 11]\n"
 "   -r map      remap channels [default: abc]\n"
 "   -m          eneable mono pokey mode [default: stereo pokey]\n"
 "   -b type     mono bass type (transpose [default], gritty, buzzy or softbass)\n"
@@ -659,6 +659,8 @@ int main(int argc, char **argv) {
                 return 1;
             }
             basstype = i;
+            if (basstype == BASS_SOFTBASS)
+                maxpokvol = 11;             // 12 sometimes distorts
             break;
         case 'h':
         default:
