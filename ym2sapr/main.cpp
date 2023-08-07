@@ -83,9 +83,18 @@ uint32_t master_clock = 0;
 unsigned int maxpokvol = 12;
 unsigned int mono = 0;
 int basstype = 0;
+char *bassstring;
 
-const char *basstypes[4] = {
-    "transpose up", "gritty", "buzzy", "softsynth"
+enum {
+    BASS_TRANSPOSE = 0,
+    BASS_GRITTY,
+    BASS_BUZZY,
+    BASS_SOFTSYNTH,
+    BASS_COUNT
+};
+
+const char *basstypes[BASS_COUNT] = {
+    "transpose", "gritty", "buzzy", "softsynth"
 };
 
 enum {
@@ -628,11 +637,17 @@ int main(int argc, char **argv) {
             mono = 1;
             break;
         case 'b':
-            basstype = atoi(optarg);
-            if (basstype < 0 || basstype > 2) {
+            bassstring = strdup(optarg);
+            for (char *c=bassstring; *c; c++)
+                *c = tolower(*c);
+            for (i=0; i<BASS_COUNT; i++)
+                if (!strcmp(bassstring, basstypes[i]))
+                    break;
+            if (i==BASS_COUNT) {
                 fprintf(stderr, "invalid bass type\n");
                 return 1;
             }
+            basstype = i;
             break;
         case 'h':
         default:

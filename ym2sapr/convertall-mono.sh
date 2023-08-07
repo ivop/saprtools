@@ -6,7 +6,7 @@ make
 
 #if false; then
 
-./ym2sapr -m -b 2 atarist/'seven gates of jambala 2 - intro.ym'
+./ym2sapr -m -b buzzy atarist/'seven gates of jambala 2 - intro.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Seven Gates Of Jambala Intro   " \
@@ -15,7 +15,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/7gates-intro.xex
 
-./ym2sapr -m -b 2 atarist/'seven gates of jambala 1 - level 11.ym'
+./ym2sapr -m -b buzzy atarist/'seven gates of jambala 1 - level 11.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Seven Gates Of Jambala Level 11" \
@@ -24,7 +24,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/7gates-level11.xex
 
-./ym2sapr -m -b 2 atarist/'enchanted land - game overa.ym'
+./ym2sapr -m -b buzzy atarist/'enchanted land - game overa.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Enchanted Land - Game Over     " \
@@ -34,7 +34,7 @@ make player-mono
 mv player.xex xex-mono/enchanted-game-over.xex
 
 # fix enveloped bass ;)
-./ym2sapr -m -b 2 -e 13 -f 4 atarist/'enchanted land - introa.ym'
+./ym2sapr -m -b buzzy -e 13 -f 4 atarist/'enchanted land - introa.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Enchanted Land - Intro         " \
@@ -43,7 +43,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/enchanted-intro.xex
 
-./ym2sapr -m -b 2 atarist/'enchanted land - level 1.ym'
+./ym2sapr -m -b buzzy atarist/'enchanted land - level 1.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Enchanted Land - Level 1       " \
@@ -52,7 +52,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/enchanted-l1.xex
 
-./ym2sapr -m -b 2 atarist/'enchanted land - level 2.ym'
+./ym2sapr -m -b buzzy atarist/'enchanted land - level 2.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Enchanted Land - Level 2       " \
@@ -61,7 +61,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/enchanted-l2.xex
 
-./ym2sapr -m -b 2 atarist/'enchanted land - level 3.ym'
+./ym2sapr -m -b buzzy atarist/'enchanted land - level 3.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Enchanted Land - Level 3       " \
@@ -70,7 +70,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/enchanted-l3.xex
 
-./ym2sapr -m -b 2 atarist/'enchanted land - level 4.ym'
+./ym2sapr -m -b buzzy atarist/'enchanted land - level 4.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Enchanted Land - Level 4       " \
@@ -79,7 +79,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/enchanted-l4.xex
 
-./ym2sapr -m -b 2 atarist/'enchanted land - level 5.ym'
+./ym2sapr -m -b buzzy atarist/'enchanted land - level 5.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Enchanted Land - Level 5       " \
@@ -88,7 +88,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/enchanted-l5.xex
 
-./ym2sapr -m -b 2 atarist/'enchanted land - level 6.ym'
+./ym2sapr -m -b buzzy atarist/'enchanted land - level 6.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Enchanted Land - Level 6       " \
@@ -97,7 +97,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/enchanted-l6.xex
 
-./ym2sapr -m -b 2 atarist/'enchanted land - level 7.ym'
+./ym2sapr -m -b buzzy atarist/'enchanted land - level 7.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Enchanted Land - Level 7       " \
@@ -106,7 +106,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/enchanted-l7.xex
 
-./ym2sapr -m -b 2 atarist/"ooh crickey wot a scorcher - there aren't any sheep in outer mongolia.ym"
+./ym2sapr -m -b buzzy atarist/"ooh crickey wot a scorcher - there aren't any sheep in outer mongolia.ym"
 echo -n \
     "Source: Atari ST        (There Aren't) " \
     "Title : Any Sheep In Outer Mongolia    " \
@@ -115,7 +115,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/crickey-sheep.xex
 
-./ym2sapr -m -b 2 atarist/'ooh crickey wot a scorcher - things that go bump.ym'
+./ym2sapr -m -b buzzy atarist/'ooh crickey wot a scorcher - things that go bump.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Things That Go Bump            " \
@@ -124,7 +124,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/crickey-things.xex
 
-./ym2sapr -m -b 2 atarist/'ooh crickey wot a scorcher - your mind is my ashtray.ym'
+./ym2sapr -m -b buzzy atarist/'ooh crickey wot a scorcher - your mind is my ashtray.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Your Mind Is My Ashtray        " \
@@ -134,7 +134,7 @@ make player-mono
 mv player.xex xex-mono/crickey-ashtray.xex
 
 # fix high speed envelope notes ;)
-./ym2sapr -m -b 2 -e 13 -f 32 atarist/'decade demo - gigadist-a.ym'
+./ym2sapr -m -b buzzy -e 13 -f 32 atarist/'decade demo - gigadist-a.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Decade Demo - Gigadist         " \
@@ -143,7 +143,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/decade-gigadist.xex
 
-./ym2sapr -m -b 2 atarist/'weird dreams - 1.ym'
+./ym2sapr -m -b buzzy atarist/'weird dreams - 1.ym'
 echo -n \
     "Source: Atari ST                       " \
     "Title : Weird Dreams 1                 " \
@@ -152,7 +152,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/whittaker-weird-dreams.xex
 
-./ym2sapr -m -b 2 spectrum/BackToTheFuture2.ym
+./ym2sapr -m -b buzzy spectrum/BackToTheFuture2.ym
 echo -n \
     "Source: ZX Spectrum                    " \
     "Title : Back To The Future 2           " \
@@ -161,7 +161,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/whittaker-bttf2.xex
 
-./ym2sapr -m -b 2 spectrum/BeverlyHillsCop.ym
+./ym2sapr -m -b buzzy spectrum/BeverlyHillsCop.ym
 echo -n \
     "Source: ZX Spectrum                    " \
     "Title : Beverly Hills Cop              " \
@@ -171,7 +171,7 @@ make player-mono
 mv player.xex xex-mono/whittaker-axelf.xex
 
 # drums and noise on the same side
-./ym2sapr -m -b 2 -r acb cpc/"Burnin'Rubber..ym"
+./ym2sapr -m -b buzzy -r acb cpc/"Burnin'Rubber..ym"
 echo -n \
     "Source: Amstrad CPC                    " \
     "Title : Burnin'Rubber                  " \
@@ -181,7 +181,7 @@ make player-mono
 mv player.xex xex-mono/burnin.xex
 
 # drums and noise on the same side
-./ym2sapr -m -b 2 -r acb cpc/'twistn shout 1.ym'
+./ym2sapr -m -b buzzy -r acb cpc/'twistn shout 1.ym'
 echo -n \
     "Source: Amstrad CPC                    " \
     "Title : Twist'n'shout part, Voyage 93  " \
@@ -190,7 +190,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/twist.xex
 
-./ym2sapr -m -b 2 spectrum/MissileGroundZero.ym
+./ym2sapr -m -b buzzy spectrum/MissileGroundZero.ym
 echo -n \
     "Source: ZX Spectrum                    " \
     "Title : Missile: Ground Zero           " \
@@ -199,7 +199,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/missile-ground0.xex
 
-./ym2sapr -m -b 2 msx/dsiv-opening.ym
+./ym2sapr -m -b buzzy msx/dsiv-opening.ym
 echo -n \
     "Source: MSX/MSX2                       " \
     "Title : Dragon Slayer IV: Opening Theme" \
@@ -208,7 +208,7 @@ make compress-mono
 make player60-mono
 mv player.xex xex-mono/dsiv-opening.xex
 
-./ym2sapr -m -b 2 msx/dsiv-shop.ym
+./ym2sapr -m -b buzzy msx/dsiv-shop.ym
 echo -n \
     "Source: MSX/MSX2                       " \
     "Title : Dragon Slayer IV: Theme of Shop" \
@@ -217,7 +217,7 @@ make compress-mono
 make player60-mono
 mv player.xex xex-mono/dsiv-shop.xex
 
-./ym2sapr -m -b 2 msx/dsiv-lyll.ym
+./ym2sapr -m -b buzzy msx/dsiv-lyll.ym
 echo -n \
     "Source: MSX/MSX2                       " \
     "Title : Dragon Slayer IV: Lyll Worzen  " \
@@ -226,7 +226,7 @@ make compress-mono
 make player60-mono
 mv player.xex xex-mono/dsiv-lyll.xex
 
-./ym2sapr -m -b 2 msx/dsiv-maia.ym
+./ym2sapr -m -b buzzy msx/dsiv-maia.ym
 echo -n \
     "Source: MSX/MSX2                       " \
     "Title : Dragon Slayer IV: Maia Worzen  " \
@@ -235,7 +235,7 @@ make compress-mono
 make player60-mono
 mv player.xex xex-mono/dsiv-maia.xex
 
-./ym2sapr -m -b 2 msx/dsiv-ending.ym
+./ym2sapr -m -b buzzy msx/dsiv-ending.ym
 echo -n \
     "Source: MSX/MSX2                       " \
     "Title : Dragon Slayer IV: Ending Theme " \
@@ -244,7 +244,7 @@ make compress-mono
 make player60-mono
 mv player.xex xex-mono/dsiv-ending.xex
 
-./ym2sapr -m -b 2 msx/xak-path.ym
+./ym2sapr -m -b buzzy msx/xak-path.ym
 echo -n \
     "Source: MSX2                           " \
     "Title : Xak: TAoVS: Path To The Fort   " \
@@ -253,7 +253,7 @@ make compress-mono
 make player60-mono
 mv player.xex xex-mono/xak-path.xex
 
-./ym2sapr -m -b 2 msx/xak-dragon.ym
+./ym2sapr -m -b buzzy msx/xak-dragon.ym
 echo -n \
     "Source: MSX2                           " \
     "Title : Xak: TAoVS: Water Dragon       " \
@@ -262,7 +262,7 @@ make compress-mono
 make player60-mono
 mv player.xex xex-mono/xak-dragon.xex
 
-./ym2sapr -m -b 2 msx/xak-fort.ym
+./ym2sapr -m -b buzzy msx/xak-fort.ym
 echo -n \
     "Source: MSX2                           " \
     "Title : Xak: TAoVS: Fort Of Flames     " \
@@ -271,7 +271,7 @@ make compress-mono
 make player60-mono
 mv player.xex xex-mono/xak-fort.xex
 
-./ym2sapr -m -b 2 msx/xak-ending2.ym
+./ym2sapr -m -b buzzy msx/xak-ending2.ym
 echo -n \
     "Source: MSX2                           " \
     "Title : Xak: TAoVS: Ending 2           " \
