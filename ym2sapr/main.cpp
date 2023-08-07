@@ -430,7 +430,6 @@ static uint8_t find_closest_distc(const struct bass table[], double f) {
 static void ym2pokey_8bit(uint8_t lsb, uint8_t msb, uint8_t volume,
                         bool tone, bool noise, uint8_t *pokey, uint8_t *ptr) {
     int TP;
-    bool distc = false;
 
     if (use_envelopes && use_envelope_frequency && volume &0x10) {
         TP = (ptr[11]<<8) + ptr[12];
@@ -446,24 +445,43 @@ static void ym2pokey_8bit(uint8_t lsb, uint8_t msb, uint8_t volume,
 
     int POK = round(POKreal);
 
+    int dist = 0xa0;
+
     if (POK < 0)
         POK = 0;
+
     if (POK > 255) {
         switch (basstype) {
         default:
-        case 0:
+        case BASS_TRANSPOSE:
             while (POK > 255) {
                 POKreal /= 2.0;
                 POK = round(POKreal);
             }
             break;
-        case 1:
+        case BASS_GRITTY:
             POK = find_closest_distc(gritty, f);
-            distc = 1;
+            dist = 0xc0;
             break;
-        case 2:
+        case BASS_BUZZY:
             POK = find_closest_distc(buzzy, f);
-            distc = 1;
+            dist = 0xc0;
+            break;
+        case BASS_SOFTSYNTH:
+            POKreal /= 2.0;
+            if (round(POKreal) <= 255) {
+                POK = round(POKreal);
+                dist = 0x30;                // one octave lower
+            } else {
+                POKreal /= 2.0;
+                if (round(POKreal) <= 255) {
+                    POK = round(POKreal);
+                    dist = 0x70;            // two octaves lower
+                } else {
+                    POK = 255;              // very low is clipped
+                    dist = 0x70;            // gigadist uses this?
+                }
+            }
             break;
         }
     }
@@ -479,12 +497,9 @@ static void ym2pokey_8bit(uint8_t lsb, uint8_t msb, uint8_t volume,
             v = volumetab[envData[envShape][envPhase][envPos>>(32-5)]];
     }
 
-    if (tone) {
-        if (!distc)
-            pokey[1] = 0xa0 + v;
-        else
-            pokey[1] = 0xc0 + v;
-    }
+    if (tone)
+        pokey[1] = dist + v;
+
     if (noise)
         pokey[1] = 0x80 + v;
 }
@@ -540,7 +555,7 @@ static void usage(void) {
 "   -p volume   override pokey maximum per channel volume [default: 12\n"
 "   -r map      remap channels [default: abc]\n"
 "   -m          eneable mono pokey mode [default: stereo pokey]\n"
-"   -b num      mono bass type (transpose [default], gritty, or buzzy)\n"
+"   -b num      mono bass type (transpose [default], gritty, buzzy or softsynth)\n"
 );
 }
 
