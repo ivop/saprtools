@@ -619,7 +619,7 @@ int main(int argc, char **argv)
             if( (i & 1) == 1 )
             {
                 int vol  = buf[i] & 0x0F;
-                int dist = buf[i] & 0xF0;
+//                int dist = buf[i] & 0xF0;
                 if( vol == 0 )
                     buf[i] = 0;
 
@@ -627,9 +627,8 @@ int main(int argc, char **argv)
 // SYNTHBASS WE WANT :)
 //                else if( dist & 0x10 )
 //                    buf[i] &= 0x1F;     // volume-only, ignore other bits
-
-                else if( dist & 0x20 )
-                    buf[i] &= 0xBF;     // no noise, ignore noise type bit
+//                else if( dist & 0x20 )
+//                    buf[i] &= 0xBF;     // no noise, ignore noise type bit
             }
             data[i][sz] = buf[i];
         }
