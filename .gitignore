@@ -7,3 +7,5 @@ ym2sapr/asm/songname.txt
 *.o
 aylet/aylet
 vgm2ym/vgm2ym
+lzss-sapr/bin
+lzss-sapr/bin/*
