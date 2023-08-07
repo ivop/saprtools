@@ -622,8 +622,12 @@ int main(int argc, char **argv)
                 int dist = buf[i] & 0xF0;
                 if( vol == 0 )
                     buf[i] = 0;
-                else if( dist & 0x10 )
-                    buf[i] &= 0x1F;     // volume-only, ignore other bits
+
+// DO NOT MODIFY VOLUME-ONLY BECAUSE WE RELY ON IT TO SIGNAL WHICH OCTAVE
+// SYNTHBASS WE WANT :)
+//                else if( dist & 0x10 )
+//                    buf[i] &= 0x1F;     // volume-only, ignore other bits
+
                 else if( dist & 0x20 )
                     buf[i] &= 0xBF;     // no noise, ignore noise type bit
             }

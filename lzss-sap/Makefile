@@ -15,6 +15,6 @@ bin:
 	mkdir -p bin
 
 clean:
-	rm -f $(PROGS:%=bin/%)
-	rmdir bin
+	rm -f *~ */*~
+	rm -rf bin
 
