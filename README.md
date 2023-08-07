@@ -20,5 +20,7 @@ ym2sapr and vgm2ym are Copyright © 2023 by Ivo van Poorten. Licensed under the 
 
 aylet is Copyright © 2001-2005 Russell Marks and Ian Collier. ym modifications are Copyright © 2023 by Ivo van Poorten. Licensed under the terms of the GPL-2. See COPYING for details.
 
+lzss-sap is Copyright (c) 2020 Daniel Serpell. MIT license. See LICENSE for details.
+
 [^1]:https://github.com/hatari  
 [^2]:https://github.com/digital-sound-antiques/kss2vgm  
