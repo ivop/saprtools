@@ -88,7 +88,17 @@ const char *basstypes[4] = {
     "transpose up", "gritty", "buzzy", "softsynth"
 };
 
-const char *valid_remaps[6] = {
+enum {
+    REMAP_ABC = 0,
+    REMAP_ACB,
+    REMAP_BAC,
+    REMAP_BCA,
+    REMAP_CAB,
+    REMAP_CBA,
+    REMAP_COUNT
+};
+
+const char *valid_remaps[REMAP_COUNT] = {
     "ABC", "ACB", "BAC", "BCA", "CAB", "CBA"
 };
 
@@ -540,32 +550,32 @@ static void remap_channels(uint8_t *pokl, uint8_t *pokr) {
     memcpy(newN, oldN, 4);      // noise always right
 
     switch (remapindex) {
-    case 0:         // abc
+    case REMAP_ABC:
         memcpy(newA, oldA, 4);
         memcpy(newB, oldB, 4);
         memcpy(newC, oldC, 4);
         break;
-    case 1:         // acb
+    case REMAP_ACB:
         memcpy(newA, oldA, 4);
         memcpy(newB, oldC, 4);
         memcpy(newC, oldB, 4);
         break;
-    case 2:         // bac
+    case REMAP_BAC:
         memcpy(newA, oldB, 4);
         memcpy(newB, oldA, 4);
         memcpy(newC, oldC, 4);
         break;
-    case 3:         // bca
+    case REMAP_BCA:
         memcpy(newA, oldB, 4);
         memcpy(newB, oldC, 4);
         memcpy(newC, oldA, 4);
         break;
-    case 4:         // cab
+    case REMAP_CAB:
         memcpy(newA, oldC, 4);
         memcpy(newB, oldA, 4);
         memcpy(newC, oldB, 4);
         break;
-    case 5:         // cba
+    case REMAP_CBA:
         memcpy(newA, oldC, 4);
         memcpy(newB, oldB, 4);
         memcpy(newC, oldA, 4);
@@ -605,10 +615,10 @@ int main(int argc, char **argv) {
             remapstring = strdup(optarg);
             for (char *c=remapstring; *c; c++)
                 *c = toupper(*c);
-            for (i=0; i<6; i++)
+            for (i=0; i<REMAP_COUNT; i++)
                 if (!strcmp(remapstring, valid_remaps[i]))
                     break;
-            if (i==6) {
+            if (i==REMAP_COUNT) {
                 fprintf(stderr, "invalid remapping of channels\n");
                 return 1;
             }
