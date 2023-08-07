@@ -80,7 +80,10 @@ int remapindex;
 unsigned int fediv = 1;       // factor to divide envelope frequency by
 unsigned int fixedvol = 13;
 uint32_t master_clock = 0;
-unsigned int maxpokvol = 12;
+
+#define DEFAULT_MAXPOKVOL 12
+unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
+
 unsigned int mono = 0;
 int basstype = 0;
 char *bassstring;
@@ -659,7 +662,7 @@ int main(int argc, char **argv) {
                 return 1;
             }
             basstype = i;
-            if (basstype == BASS_SOFTBASS)
+            if (basstype == BASS_SOFTBASS && maxpokvol == DEFAULT_MAXPOKVOL)
                 maxpokvol = 11;             // 12 sometimes distorts
             break;
         case 'h':
