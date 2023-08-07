@@ -1,15 +1,19 @@
 
 CXX ?= g++
 
+LZSS = ../lzss-sap/bin/lzss
+
 ym2sapr: main.cpp lzh.cpp lzh.h
 	$(CXX) -O2 -o ym2sapr main.cpp lzh.cpp -lm
 
-compress:
-	lzss -6 left.sapr left.lz16
-	lzss -6 right.sapr right.lz16
+compress: $(LZSS)
+	$(LZSS) -6 left.sapr left.lz16
+	$(LZSS) -6 right.sapr right.lz16
 
-compress-mono:
-	lzss -6 left.sapr left.lz16
+compress-mono: $(LZSS)
+	$(LZSS) -6 left.sapr left.lz16
+
+compress-softbass: compress-mono
 
 player:
 	mads -o:player.xex asm/playlzs16-stereo.asm
@@ -22,6 +26,15 @@ player-mono:
 
 player60-mono:
 	mads -d:HZ60 -o:player.xex asm/playlzs16-mono.asm
+
+player-softbass:
+	mads -o:player.xex asm/playlzs16-softbass.asm
+
+player60-softbass:
+	mads -d:HZ60 -o:player.xex asm/playlzs16-softbass.asm
+
+$(LZSS):
+	make -C ../lzss-sap
 
 clean:
 	rm -f ym2sapr *~ */*~
