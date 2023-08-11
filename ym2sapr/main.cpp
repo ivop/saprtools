@@ -632,6 +632,10 @@ int main(int argc, char **argv) {
             break;
         case 'p':
             maxpokvol = atoi(optarg);
+            if (maxpokvol < 0 || maxpokvol > 15) {
+                fprintf(stderr, "invalid maximum pokey volume\n");
+                return 1;
+            }
             break;
         case 'r':
             remap = true;
