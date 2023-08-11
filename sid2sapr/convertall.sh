@@ -66,7 +66,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-ik.xex
 
-./sid2sapr -n $(((2*60+5)*19)) -b $basstype sid/'Dose_of_D.sid'
+./sid2sapr -n $(((2*60+19)*50)) -b $basstype sid/'Dose_of_D.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Dose Of D                      " \
