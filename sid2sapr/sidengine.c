@@ -188,12 +188,8 @@ void sidPoke(int reg, unsigned char val) {
     }
     return;
 }
-void sidReset(void) {
-}
 
 uint8_t getmem(uint16_t addr) {
-
-
     if (addr == 0xdd0d)
         memory[addr] = 0;
     return memory[addr];
