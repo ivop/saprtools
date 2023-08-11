@@ -29,42 +29,32 @@ int is_little_endian(void) {
 
 }
 
-void soundcard_init(void) {
-    int format, format_backup, stereo, speed;
+int soundcard_init(void) {
+    int format, format_backup, speed;
 
     format_backup = format = is_little_endian()? AFMT_S16_LE : AFMT_S16_BE;
-    stereo = 0;
     speed = 44100;
 
     if ((audio_fd = open(DEVICE_NAME, O_WRONLY)) == -1) {
         perror(DEVICE_NAME);
-        return;
+        return 1;
     }
     if (ioctl(audio_fd, SNDCTL_DSP_SETFMT, &format) == -1) {
         perror("SNDCTL_DSP_SETFMT");
         close(audio_fd);
-        return;
+        return 1;
     }
     if (format != format_backup) {
-        perror("FORMAT NOT SUPPORTED!");
+        perror("AFMT_S16 FORMAT NOT SUPPORTED!");
         close(audio_fd);
-        return;
-    }
-    if (ioctl(audio_fd, SNDCTL_DSP_STEREO, &stereo) == -1) {
-        perror("SNDCTL_DSP_STEREO");
-        close(audio_fd);
-        return;
-    }
-    if (stereo != 0) {
-        perror("CHANNEL MODE NOT SUPPORTED!");
-        close(audio_fd);
-        return;
+        return 1;
     }
     if (ioctl(audio_fd, SNDCTL_DSP_SPEED, &speed) == -1) {
         perror("SNDCTL_DSP_SPEED");
         close(audio_fd);
-        return;
+        return 1;
     }
+    return 0;
 }
 
 void show_info(int argc) {
@@ -81,7 +71,8 @@ int main(int argc, char *argv[]) {
 
     c64Init();
     synth_init(44100);
-    soundcard_init();
+    if (soundcard_init() > 0)
+        return 1;
 
     if (c64SidLoad
         (argv[1], &init_addr, &play_addr, &actual_subsong, &max_subsong,
