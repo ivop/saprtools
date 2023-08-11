@@ -90,12 +90,11 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("TITLE    : %s\n", song_name);
-    printf("AUTHOR   : %s\n", song_author);
-    printf("COPYRIGHT: %s\n", song_copyright);
-    printf("SPEED    : %s\n", speed100Hz ? "100Hz" : "50Hz");
+    printf("Title     : %s\n", song_name);
+    printf("Author    : %s\n", song_author);
+    printf("Copyright : %s\n", song_copyright);
+    printf("Speed     : %s\n", speed100Hz ? "100Hz" : "50Hz");
     printf("Playing... Press ctrl-C to quit.\n");
-
 
     cpuJSR(init_addr, actual_subsong);
 
