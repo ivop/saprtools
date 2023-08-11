@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "tinysid.h"
 
 //---------------------------------------SID-VARS--------------------
-static word init_addr, play_addr;
-static byte actual_subsong, max_subsong, play_speed;
+static uint16_t init_addr, play_addr;
+static uint8_t actual_subsong, max_subsong, play_speed;
 char song_name[32], song_author[32], song_copyright[32];
 
 void show_info(int argc)

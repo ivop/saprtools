@@ -3,24 +3,23 @@
 #include <sys/ioctl.h>
 #include <pthread.h>
 #include <stdio.h>
-
-#include "defines.h"
+#include <stdint.h>
 
 //---------------------------------------SOUNDCARD-VARS--------------
 #define DEVICE_NAME "/dev/dsp"
-int BUF_SIZE=882*2;				// Audio Buffer size in byte
+int BUF_SIZE=882*2;				// Audio Buffer size in uint8_t
 int audio_fd;					// Audio Device Handler
 pthread_t soundcard_thread;			// Audio thread
 int play_active=0;				// Audio thread active
-word soundbuffer[882*16];			// The soundbuffer,
+uint16_t soundbuffer[882*16];			// The soundbuffer,
 						// 16*50Hz WORD Buffer
 
 //---------------------------------------SID-VARS--------------------
-word play_addr;
-byte play_speed;
+uint16_t play_addr;
+uint8_t play_speed;
 //---------------------------------------SID-ENGINE-FUCTIONS
-extern int cpuJSR(word npc, byte na);
-extern void synth_render (word *buffer, dword len);
+extern int cpuJSR(uint16_t npc, uint8_t na);
+extern void synth_render (uint16_t *buffer, uint32_t len);
 
 void stop_playing(void)
 {
@@ -125,7 +124,7 @@ static void *play_thread_func(void *arg)
 	}
 	return NULL;
 }
-void start_playing(word nplay_addr, byte nplay_speed)
+void start_playing(uint16_t nplay_addr, uint8_t nplay_speed)
 {
 	play_addr = nplay_addr;
 	play_speed= nplay_speed;

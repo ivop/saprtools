@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-
-#include "defines.h"
-
+#include <stdint.h>
 
 #define USE_FILTER
 
@@ -43,45 +41,45 @@ enum {
 
 struct s6581 {
                 struct sidvoice {
-                         word freq;
-                         word pulse;
-                         byte wave;
-                         byte ad;
-                         byte sr;
+                         uint16_t freq;
+                         uint16_t pulse;
+                         uint8_t wave;
+                         uint8_t ad;
+                         uint8_t sr;
                        } v[3];
-                byte ffreqlo;
-                byte ffreqhi;
-                byte res_ftv;
-                byte ftp_vol;
+                uint8_t ffreqlo;
+                uint8_t ffreqhi;
+                uint8_t res_ftv;
+                uint8_t ftp_vol;
               };
 
 // internal oscillator def
 
 struct sidosc {
-                dword freq;
-                dword pulse;
-                byte wave;
-                byte filter;
-                dword attack;
-                dword decay;
-                dword sustain;
-                dword release;
-                dword       counter;  // Variablen
+                uint32_t freq;
+                uint32_t pulse;
+                uint8_t wave;
+                uint8_t filter;
+                uint32_t attack;
+                uint32_t decay;
+                uint32_t sustain;
+                uint32_t release;
+                uint32_t       counter;  // Variablen
                 signed int envval;
-                byte        envphase;
-                dword       noisepos;
-                dword       noiseval;
-                byte        noiseout;
+                uint8_t        envphase;
+                uint32_t       noisepos;
+                uint32_t       noiseval;
+                uint8_t        noiseout;
               };
 
 // internal filter def
 
 struct sidflt {
                 int freq;
-                byte  l_ena;
-                byte  b_ena;
-                byte  h_ena;
-                byte  v3ena;
+                uint8_t  l_ena;
+                uint8_t  b_ena;
+                uint8_t  h_ena;
+                uint8_t  v3ena;
                 int vol;
                 int rez;
                 int h;
@@ -119,14 +117,14 @@ static struct sidflt filter;
 
 // --------------------------------------------------------- some aux stuff
 
-static inline byte get_bit(dword val, byte b)
+static inline uint8_t get_bit(uint32_t val, uint8_t b)
 {
-  return (byte) ((val >> b) & 1);
+  return (uint8_t) ((val >> b) & 1);
 }
 
 // ------------------------------------------------------------- synthesis
 
-byte memory[65536];  /* The C64 memory */
+uint8_t memory[65536];  /* The C64 memory */
 
 static int sample_active;
 static int sample_position, sample_start, sample_end, sample_repeat_start;
@@ -209,7 +207,7 @@ static inline int GenerateDigi(int sIn)
 
 // initialize SID and frequency dependant values
 
-void synth_init   (dword mixfrq)
+void synth_init   (uint32_t mixfrq)
 {
   int i;
   mixing_frequency = mixfrq;
@@ -230,11 +228,11 @@ void synth_init   (dword mixfrq)
 // render a buffer of n samples with the actual register contents
 float filterl1=0,filterb1=0,freq=0.8,filterrez=0.1;
 #include <math.h>
-void synth_render (word *buffer, dword len)
+void synth_render (uint16_t *buffer, uint32_t len)
 {
-  byte v, refosc, outv;
-  dword bp;
-  byte triout, sawout, plsout, nseout;
+  uint8_t v, refosc, outv;
+  uint32_t bp;
+  uint8_t triout, sawout, plsout, nseout;
   signed short final_sample;
   // step 1: convert the not easily processable sid registers into some
   //         more convenient and fast values (makes the thing much faster
@@ -247,7 +245,7 @@ void synth_render (word *buffer, dword len)
     osc[v].sustain = sid.v[v].sr & 0xf0;
     osc[v].release = releases[sid.v[v].sr & 0xf];
     osc[v].wave    = sid.v[v].wave;
-    osc[v].freq    = ((dword)sid.v[v].freq)*freqmul;
+    osc[v].freq    = ((uint32_t)sid.v[v].freq)*freqmul;
   }
 
 #ifdef USE_FILTER
@@ -292,11 +290,11 @@ void synth_render (word *buffer, dword len)
         if (osc[refosc].counter < osc[refosc].freq)
           osc[v].counter = osc[refosc].counter * osc[v].freq / osc[refosc].freq;
       // generate waveforms with really simple algorithms
-      triout = (byte) (osc[v].counter>>19);
+      triout = (uint8_t) (osc[v].counter>>19);
       if (osc[v].counter>>27)
         triout^=0xff;
-      sawout = (byte) (osc[v].counter >> 20);
-      plsout = (byte) ((osc[v].counter > osc[v].pulse)-1);
+      sawout = (uint8_t) (osc[v].counter >> 20);
+      plsout = (uint8_t) ((osc[v].counter > osc[v].pulse)-1);
 
       // generate noise waveform exactly as the SID does.
       if (osc[v].noisepos!=(osc[v].counter>>23))
@@ -441,15 +439,15 @@ void synth_render (word *buffer, dword len)
 /*
 static const int ROMbasicStart=0xA000;
 static const int ROMbasicEnd=0xBFFF;
-static byte ROMbasic[ROMbasicEnd-ROMbasicStart+1];
+static uint8_t ROMbasic[ROMbasicEnd-ROMbasicStart+1];
 
 static const int ROMkernalStart=0xE000;
 static const int ROMkernalEnd=0xFFFF;
-static byte ROMkernal[ROMkernalEnd-ROMkernalStart+1];
+static uint8_t ROMkernal[ROMkernalEnd-ROMkernalStart+1];
 
 static const int ROMcharStart=0xD000;
 static const int ROMcharEnd=0xDFFF;
-static byte ROMchar[ROMcharEnd-ROMcharStart+1];
+static uint8_t ROMchar[ROMcharEnd-ROMcharStart+1];
 */
 void sidPoke(int reg, unsigned char val)
 {  	
@@ -460,20 +458,20 @@ void sidPoke(int reg, unsigned char val)
       if ((reg >= 14) && (reg <=20)) {voice=2; reg-=14;}
   
       switch (reg) {
-        case 0: { // Frequenz niederwertiges byte Stimme 1
+        case 0: { // Frequenz niederwertiges uint8_t Stimme 1
 				  sid.v[voice].freq = (sid.v[voice].freq&0xff00)+val;
 				  //printf("Voice%d: %d\n", voice, sid.v[voice].freq);
                   break;
                 }
-        case 1: { // Frequenz h�erwertiges byte Stimme 1
+        case 1: { // Frequenz h�erwertiges uint8_t Stimme 1
 			      sid.v[voice].freq = (sid.v[voice].freq&0xff)+(val<<8);
 			      break;
 		}
-		case 2: { // Pulsbreite niederwertiges byte Stimme 1
+		case 2: { // Pulsbreite niederwertiges uint8_t Stimme 1
 				  sid.v[voice].pulse = (sid.v[voice].pulse&0xff00)+val;
 				  break;
 				}
-		case 3: { // Pulsbreite h�erwertiges byte Stimme 1
+		case 3: { // Pulsbreite h�erwertiges uint8_t Stimme 1
 				  sid.v[voice].pulse = (sid.v[voice].pulse&0xff)+(val<<8);
 				  break;
 				}
@@ -493,7 +491,7 @@ void sidReset(void)
 {
 }
 
-byte getmem(word addr)
+uint8_t getmem(uint16_t addr)
 {
   
     
@@ -504,7 +502,7 @@ byte getmem(word addr)
 int internal_period, internal_order, internal_start, internal_end,
 internal_add, internal_repeat_times, internal_repeat_start;
 
-void setmem(word addr, byte value)
+void setmem(uint16_t addr, uint8_t value)
 {
   
     memory[addr]=value;
@@ -631,19 +629,19 @@ static int modes[256]= {
 // ----------------------------------------------- globale Faulheitsvariablen
 
 static int cycles;
-static byte bval;
-static word wval;
+static uint8_t bval;
+static uint16_t wval;
 
 // ----------------------------------------------------------------- Register
 
-static byte a,x,y,s,p;
-static word pc;
+static uint8_t a,x,y,s,p;
+static uint16_t pc;
 
 // ----------------------------------------------------------- DER HARTE KERN
 
-static byte getaddr(int mode)
+static uint8_t getaddr(int mode)
 {
-  word ad,ad2;  
+  uint16_t ad,ad2;  
   switch(mode)
   {
     case imp:
@@ -712,9 +710,9 @@ static byte getaddr(int mode)
 }
 
 
-static void setaddr(int mode, byte val)
+static void setaddr(int mode, uint8_t val)
 {
-  word ad,ad2;
+  uint16_t ad,ad2;
   switch(mode)
   {
     case abs:
@@ -750,9 +748,9 @@ static void setaddr(int mode, byte val)
 }
 
 
-static void putaddr(int mode, byte val)
+static void putaddr(int mode, uint8_t val)
 {
-  word ad,ad2;
+  uint16_t ad,ad2;
   switch(mode)
   {
     case abs:
@@ -827,13 +825,13 @@ static inline void setflags(int flag, int cond)
 }
 
 
-static inline void push(byte val)
+static inline void push(uint8_t val)
 {
   setmem(0x100+s,val);
   if (s) s--;
 }
 
-static inline byte pop()
+static inline uint8_t pop()
 {
   if (s<0xff) s++;
   return getmem(0x100+s);
@@ -861,7 +859,7 @@ void cpuReset()
   pc=getaddr(0xfffc);
 }
 
-void cpuResetTo(word npc)
+void cpuResetTo(uint16_t npc)
 {
   a=0;
   x=0;
@@ -872,7 +870,7 @@ void cpuResetTo(word npc)
 }
 int cpuParse()
 {
-  byte opc;
+  uint8_t opc;
   int cmd, addr, c;
   cycles=0;
 
@@ -888,9 +886,9 @@ int cpuParse()
   switch (cmd)
   {
     case adc:
-      wval=(word)a+getaddr(addr)+((p&FLAG_C)?1:0);
+      wval=(uint16_t)a+getaddr(addr)+((p&FLAG_C)?1:0);
       setflags(FLAG_C, wval&0x100);
-      a=(byte)wval;
+      a=(uint8_t)wval;
       setflags(FLAG_Z, !a);
       setflags(FLAG_N, a&0x80);
       setflags(FLAG_V, (!!(p&FLAG_C)) ^ (!!(p&FLAG_N)));
@@ -904,7 +902,7 @@ int cpuParse()
     case asl:
       wval=getaddr(addr);
       wval<<=1;
-      setaddr(addr,(byte)wval);
+      setaddr(addr,(uint8_t)wval);
       setflags(FLAG_Z,!wval);
       setflags(FLAG_N,wval&0x80);
       setflags(FLAG_C,wval&0x100);
@@ -965,21 +963,21 @@ int cpuParse()
       break;
     case cmp:
       bval=getaddr(addr);
-      wval=(word)a-bval;
+      wval=(uint16_t)a-bval;
       setflags(FLAG_Z,!wval);
       setflags(FLAG_N,wval&0x80);
       setflags(FLAG_C,a>=bval);
       break;
     case cpx:
       bval=getaddr(addr);
-      wval=(word)x-bval;
+      wval=(uint16_t)x-bval;
       setflags(FLAG_Z,!wval);
       setflags(FLAG_N,wval&0x80);
       setflags(FLAG_C,a>=bval);
       break;
     case cpy:
       bval=getaddr(addr);
-      wval=(word)y-bval;
+      wval=(uint16_t)y-bval;
       setflags(FLAG_Z,!wval);
       setflags(FLAG_N,wval&0x80);
       setflags(FLAG_C,a>=bval);
@@ -1069,9 +1067,9 @@ int cpuParse()
       break;
     case lsr:
       //bval=wval=getaddr(addr);
-	  bval=getaddr(addr); wval=(byte)bval;
+	  bval=getaddr(addr); wval=(uint8_t)bval;
       wval>>=1;
-      setaddr(addr,(byte)wval);
+      setaddr(addr,(uint8_t)wval);
       setflags(FLAG_Z,!wval);
       setflags(FLAG_N,wval&0x80);
       setflags(FLAG_C,bval&1);
@@ -1140,9 +1138,9 @@ int cpuParse()
       break;
     case sbc:
       bval=getaddr(addr)^0xff;
-      wval=(word)a+bval+((p&FLAG_C)?1:0);
+      wval=(uint16_t)a+bval+((p&FLAG_C)?1:0);
       setflags(FLAG_C, wval&0x100);
-      a=(byte)wval;
+      a=(uint8_t)wval;
       setflags(FLAG_Z, !a);
       setflags(FLAG_N, a>127);
       setflags(FLAG_V, (!!(p&FLAG_C)) ^ (!!(p&FLAG_N)));
@@ -1207,7 +1205,7 @@ int cpuParse()
   return cycles;
 }
 
-int cpuJSR(word npc, byte na)
+int cpuJSR(uint16_t npc, uint8_t na)
 {
   int ccl;
   
@@ -1279,11 +1277,11 @@ unsigned short LoadSIDFromMemory(void *pSidData, unsigned short *load_addr,
     return *load_addr;
 }
 
-word c64SidLoad(char *filename, word *init_addr, word *play_addr, byte *sub_song_start, byte *max_sub_songs, byte *speed, char *name, char *author, char *copyright)
+uint16_t c64SidLoad(char *filename, uint16_t *init_addr, uint16_t *play_addr, uint8_t *sub_song_start, uint8_t *max_sub_songs, uint8_t *speed, char *name, char *author, char *copyright)
 {
     /*
-        word adr, offset=0, i;
-	word data_file_offset;
+        uint16_t adr, offset=0, i;
+	uint16_t data_file_offset;
 	FILE *f;
 	
 	if ( (f=fopen(filename, "rb")) == NULL) return(0);
