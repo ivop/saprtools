@@ -9,7 +9,7 @@ sid2sapr: main.c sidengine.c
 compress-mono: $(LZSS)
 	$(LZSS) -6 output.sapr output.lz16
 
-compress-softbass: compress
+compress-softbass: compress-mono
 
 player-mono:
 	mads -o:player.xex asm/playlzs16-mono.asm
