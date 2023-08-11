@@ -65,9 +65,6 @@ static const char *basstypes[BASS_COUNT] = {
     "transpose", "gritty", "buzzy", "softbass"
 };
 
-static char *outfile = "output.sapr";
-static int nframes = 3000;
-
 static uint8_t voltab[16];
 
 /* ------------------------------------------------------------------------ */
@@ -277,6 +274,19 @@ static void sid2pokey(int voice, uint8_t *pokey) {
 
 /* ------------------------------------------------------------------------ */
 
+static void adjust_channels(uint8_t *pokey, int c1, int c2) {
+    if ((pokey[c1+1] & 0xa0) == 0xa0 && (pokey[c2+1] & 0xa0) == 0xa0)
+        if (pokey[c1] && pokey[c2] && pokey[c1] == pokey[c2])
+            pokey[c1]++;
+}
+static void adjust_for_cancellation(uint8_t *pokey) {
+    adjust_channels(pokey, 0, 2);
+    adjust_channels(pokey, 0, 6);
+    adjust_channels(pokey, 2, 6);
+}
+
+/* ------------------------------------------------------------------------ */
+
 static void usage(void) {
     fprintf(stderr, "usage: sid2sapr [-b type] [-o file] sid-file\n\n"
 "   -h          display help\n"
@@ -290,6 +300,9 @@ static void usage(void) {
 /* ------------------------------------------------------------------------ */
 
 int main(int argc, char *argv[]) {
+    char *outfile = "output.sapr";
+    int nframes = 3000;
+
     int option, i;
 
     while ((option = getopt(argc, argv, "hb:o:p:n:")) != -1) {
@@ -385,6 +398,7 @@ int main(int argc, char *argv[]) {
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
+                adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
         } else {
                 cpuJSR(play_addr, 0);
@@ -392,6 +406,7 @@ int main(int argc, char *argv[]) {
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
+                adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
                 counter++;
 
@@ -400,6 +415,7 @@ int main(int argc, char *argv[]) {
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
+                adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
         }
         counter++;
