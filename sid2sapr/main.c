@@ -405,7 +405,8 @@ int main(int argc, char *argv[]) {
         counter++;
     }
 
-    return 1;
+    fprintf(stderr, "finished!\n");
+    return 0;
 }
 
 /* ------------------------------------------------------------------------ */
