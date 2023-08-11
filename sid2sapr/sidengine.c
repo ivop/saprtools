@@ -113,8 +113,10 @@ void synth_render(uint32_t len) {
             // desired
             if (!(osc[v].wave & 0x01))
                 osc[v].envphase = 3;
-            else if (osc[v].envphase == 3)
+            else if (osc[v].envphase == 3) {
                 osc[v].envphase = 0;
+//                osc[v].envval = 0;
+            }
             // so now process the volume according to the phase and adsr values         
             switch (osc[v].envphase) {
             case 0:{           // Phase 0 : Attack

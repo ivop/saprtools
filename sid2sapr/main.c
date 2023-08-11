@@ -254,11 +254,13 @@ static void sid2pokey(int voice, uint8_t *pokey) {
 
     pokey[0] = POK;
 
-    int volume = osc[voice].envval >> 20;       // always clipped to 0xf
+    int volume = (osc[voice].envval >> 20) & 0xf;
     int v = voltab[volume];
 
     pokey[1] = dist + v;
 
+    if (wave & 0x08) v = 0;             // test bit
+ 
     if (noise) {
         POK = round(POKreal / 16.0); // divide by 16 (like I did w/ sid2gumby)
         if (POK > 255) POK = 255;
@@ -398,27 +400,30 @@ int main(int argc, char *argv[]) {
 
         if (!speed100Hz) {
                 cpuJSR(play_addr, 0);
-                synth_render(NSAMPLES);
-                sid2pokey(0, &pokey[0]);
-                sid2pokey(1, &pokey[2]);
-                sid2pokey(2, &pokey[6]);
-                if (!no_adjust) adjust_for_cancellation(pokey);
-                if (!save_pokey(pokey, outf)) return 1;
-        } else {
-                cpuJSR(play_addr, 0);
                 synth_render(NSAMPLES/2);
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
+                synth_render(NSAMPLES/2);
+                if (!no_adjust) adjust_for_cancellation(pokey);
+                if (!save_pokey(pokey, outf)) return 1;
+        } else {
+                cpuJSR(play_addr, 0);
+                synth_render(NSAMPLES/4);
+                sid2pokey(0, &pokey[0]);
+                sid2pokey(1, &pokey[2]);
+                sid2pokey(2, &pokey[6]);
+                synth_render(NSAMPLES/4);
                 if (!no_adjust) adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
                 counter++;
 
                 cpuJSR(play_addr, 0);
-                synth_render(NSAMPLES/2);
+                synth_render(NSAMPLES/4);
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
+                synth_render(NSAMPLES/4);
                 if (!no_adjust) adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
         }
