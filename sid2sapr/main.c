@@ -186,7 +186,89 @@ static void init_voltab(int maxvol) {
 
 /* ------------------------------------------------------------------------ */
 
-static void sid2pokey(uint8_t *pokey) {
+static uint8_t find_closest_distc(const struct bass table[], double f) {
+    double delta = 1000.0;  // big number
+    int found = 0;
+
+    for (int i=0; i<36; i++) {
+        double newd = abs(table[i].realf - f);
+        if (newd < delta) {
+            delta = newd;
+            found = i;
+        }
+    }
+    return table[found].distc;
+}
+
+/* ------------------------------------------------------------------------ */
+
+static void sid2pokey(int voice, uint8_t *pokey) {
+    bool noise = false;
+
+    if (sid.v[voice].wave & 0x80) noise = true;
+
+    double constant = pow(256.0, 3.0) / C64_CLOCK;
+
+    double f = sid.v[voice].freq / constant;
+
+    double POKreal = (ATARI_CLOCK / 28.0 / 2.0 / f) - 1;
+
+    int POK = round(POKreal);
+
+    int dist = 0xa0;
+
+    if (POK < 0)
+        POK = 0;
+
+    if (POK > 255 && !noise) {
+        switch (basstype) {
+        default:
+        case BASS_TRANSPOSE:
+            while (POK > 255) {
+                POKreal /= 2.0;
+                POK = round(POKreal);
+            }
+            break;
+        case BASS_GRITTY:
+            POK = find_closest_distc(gritty, f);
+            dist = 0xc0;
+            break;
+        case BASS_BUZZY:
+            POK = find_closest_distc(buzzy, f);
+            dist = 0xc0;
+            break;
+        case BASS_SOFTBASS:
+            POKreal /= 2.0;
+            if (round(POKreal) <= 255) {
+                POK = round(POKreal);
+                dist = 0x30;                // one octave lower
+            } else {
+                POKreal /= 2.0;
+                if (round(POKreal) <= 255) {
+                    POK = round(POKreal);
+                    dist = 0x70;            // two octaves lower
+                } else {
+                    POK = 255;              // very low is clipped
+                    dist = 0x70;            // gigadist uses this?
+                }
+            }
+            break;
+        }
+    }
+
+    pokey[0] = POK;
+
+    int volume = osc[voice].envval >> 20;       // always clipped to 0xf
+    int v = voltab[volume];
+
+    pokey[1] = dist + v;
+
+    if (noise) {
+        POK = round(POKreal / 16.0); // divide by 16 (like I did w/ sid2gumby)
+        if (POK > 255) POK = 255;
+        pokey[0] = POK;
+        pokey[1] = 0x80 + v;
+    }
 }
 
 /* ------------------------------------------------------------------------ */
@@ -196,7 +278,7 @@ static void usage(void) {
 "   -h          display help\n"
 "   -b type     bass type (transpose [default], gritty, buzzy or softbass)\n"
 "   -o file     output sap-r data to file [default: output.sapr]\n"
-"   -p volume   pokey maximum per channel volume [default: 12, softbass: 11]\n"
+"   -p volume   pokey maximum per channel volume [default: 12, softbass: 10]\n"
 "   -n num      number of frames to process [default: 3000] (60s at 50Hz)\n"
 );
 }
@@ -221,7 +303,7 @@ int main(int argc, char *argv[]) {
             }
             basstype = i;
             if (basstype == BASS_SOFTBASS && maxpokvol == DEFAULT_MAXPOKVOL)
-                maxpokvol = 11;             // 12 sometimes distorts
+                maxpokvol = 10;             // 11 and 12 sometimes distorts
             break;
         case 'o':
             outfile = strdup(optarg);
@@ -232,6 +314,7 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "invalid number of frames (%d)\n", nframes);
                 return 1;
             }
+            break;
         case 'p':
             maxpokvol = atoi(optarg);
             if (maxpokvol < 0 || maxpokvol > 15) {
@@ -295,18 +378,24 @@ int main(int argc, char *argv[]) {
         if (!speed100Hz) {
                 cpuJSR(play_addr, 0);
                 synth_render(soundbuffer, NSAMPLES);
-                sid2pokey(pokey);
+                sid2pokey(0, &pokey[0]);
+                sid2pokey(1, &pokey[2]);
+                sid2pokey(2, &pokey[6]);
                 if (!save_pokey(pokey, outf)) return 1;
         } else {
                 cpuJSR(play_addr, 0);
                 synth_render(soundbuffer, NSAMPLES/2);
-                sid2pokey(pokey);
+                sid2pokey(0, &pokey[0]);
+                sid2pokey(1, &pokey[2]);
+                sid2pokey(2, &pokey[6]);
                 if (!save_pokey(pokey, outf)) return 1;
                 counter++;
 
                 cpuJSR(play_addr, 0);
                 synth_render(soundbuffer + (NSAMPLES/2*2), NSAMPLES/2);
-                sid2pokey(pokey);
+                sid2pokey(0, &pokey[0]);
+                sid2pokey(1, &pokey[2]);
+                sid2pokey(2, &pokey[6]);
                 if (!save_pokey(pokey, outf)) return 1;
         }
         counter++;
