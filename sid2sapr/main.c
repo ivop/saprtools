@@ -1,3 +1,29 @@
+/* sid2sapr - by Ivo van Poorten - Copyright (C) 2023
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -38,12 +64,105 @@ const char *basstypes[BASS_COUNT] = {
     "transpose", "gritty", "buzzy", "softbass"
 };
 
+char *outfile = "output.sapr";
+int nframes = 3000;
+
+/* ------------------------------------------------------------------------ */
+
+struct bass {
+    double tet12f;          // 12-TET frequency, A=440Hz
+    uint8_t distc;          // closest dist C divider
+    double realf;           // real frequency of distc divider
+};
+
+static const struct bass gritty[36] = {
+    /* C-0 */ { 16.35159783, 0xff, 16.49411272 },
+    /* C#0 */ { 17.32391444, 0xf3, 17.30529859 },
+    /* D-0 */ { 18.35404799, 0xe4, 18.43883344 },
+    /* D#0 */ { 19.44543648, 0xd8, 19.45849243 },
+    /* E-0 */ { 20.60172231, 0xcd, 20.49753814 },
+    /* F-0 */ { 21.82676446, 0xc0, 21.87820133 },
+    /* F#0 */ { 23.12465142, 0xb5, 23.20051020 },
+    /* G-0 */ { 24.49971475, 0xab, 24.54937708 },
+    /* G#0 */ { 25.95654360, 0xa2, 25.90486415 },
+    /* A-0 */ { 27.50000000, 0x99, 27.41878479 },
+    /* A#0 */ { 29.13523509, 0x91, 28.92118395 },
+    /* B-0 */ { 30.86770633, 0x88, 30.82111575 },
+    /* C-1 */ { 32.70319566, 0x7f, 32.98822545 },
+    /* C#1 */ { 34.64782887, 0x79, 34.61059719 },
+    /* D-1 */ { 36.70809599, 0x73, 36.40080049 },
+    /* D#1 */ { 38.89087297, 0x6c, 38.73846658 },
+    /* E-1 */ { 41.20344461, 0x66, 40.99507628 },
+    /* F-1 */ { 43.65352893, 0x60, 43.53085420 },
+    /* F#1 */ { 46.24930284, 0x5a, 46.40102041 },
+    /* G-1 */ { 48.99942950, 0x55, 49.09875415 },
+    /* G#1 */ { 51.91308720, 0x51, 51.49381533 },
+    /* A-1 */ { 55.00000000, 0x4c, 54.83756957 },
+    /* A#1 */ { 58.27047019, 0x48, 57.84236791 },
+    /* B-1 */ { 61.73541266, 0x43, 62.09548319 },
+    /* C-2 */ { 65.40639133, 0x3f, 65.97645089 },
+    /* C#2 */ { 69.29565774, 0x3c, 69.22119438 },
+    /* D-2 */ { 73.41619198, 0x39, 72.80160099 },
+    /* D#2 */ { 77.78174593, 0x34, 79.66967655 },
+    /* E-2 */ { 82.40688923, 0x33, 81.20178571 },
+    /* F-2 */ { 87.30705786, 0x30, 86.17332362 },
+    /* F#2 */ { 92.49860568, 0x2d, 91.79332298 },
+    /* G-2 */ { 97.99885900, 0x2a, 98.19750831 },
+    /* G#2 */ { 103.82617439, 0x28, 102.98763066 },
+    /* A-2 */ { 110.00000000, 0x25, 111.11823308 },
+    /* A#2 */ { 116.54094038, 0x24, 114.12142857 },
+    /* B-2 */ { 123.47082531, 0x21, 124.19096639 },
+};
+
+static const struct bass buzzy[36] = {
+    /* C-0 */ { 16.35159783, 0xff, 16.49411272 }, /* very low is still gritty */
+    /* C#0 */ { 17.32391444, 0xf3, 17.30529859 },
+    /* D-0 */ { 18.35404799, 0xe4, 18.43883344 },
+    /* D#0 */ { 19.44543648, 0xd8, 19.45849243 },
+    /* E-0 */ { 20.60172231, 0xcd, 20.49753814 },
+    /* F-0 */ { 21.82676446, 0xc0, 21.87820133 },
+    /* F#0 */ { 23.12465142, 0xb5, 23.20051020 },
+    /* G-0 */ { 24.49971475, 0xab, 24.54937708 },
+    /* G#0 */ { 25.95654360, 0xa2, 25.90486415 },
+    /* A-0 */ { 27.50000000, 0x99, 27.41878479 },
+    /* A#0 */ { 29.13523509, 0x91, 28.92118395 },
+    /* B-0 */ { 30.86770633, 0x88, 30.82111575 },
+    /* C-1 */ { 32.70319566, 0x7f, 32.98822545 },
+    /* C#1 */ { 34.64782887, 0x79, 34.61059719 },
+    /* D-1 */ { 36.70809599, 0x73, 36.40080049 },
+    /* D#1 */ { 38.89087297, 0x6c, 38.73846658 },
+    /* E-1 */ { 41.20344461, 0x66, 40.99507628 },
+    /* F-1 */ { 43.65352893, 0x60, 43.53085420 },
+    /* F#1 */ { 46.24930284, 0x5a, 46.40102041 },
+    /* G-1 */ { 48.99942950, 0x55, 49.09875415 },
+    /* G#1 */ { 51.91308720, 0xf2, 52.12954145 }, /* buzzy from here */
+    /* A-1 */ { 55.00000000, 0xe6, 54.83756957 },
+    /* A#1 */ { 58.27047019, 0xd7, 58.64573413 },
+    /* B-1 */ { 61.73541266, 0xcb, 62.09548319 },
+    /* C-2 */ { 65.40639133, 0xbf, 65.97645089 },
+    /* C#2 */ { 69.29565774, 0xb6, 69.22119438 },
+    /* D-2 */ { 73.41619198, 0xad, 72.80160099 },
+    /* D#2 */ { 77.78174593, 0xa1, 78.19431217 },
+    /* E-2 */ { 82.40688923, 0x98, 82.79397759 },
+    /* F-2 */ { 87.30705786, 0x8f, 87.96860119 },
+    /* F#2 */ { 92.49860568, 0x89, 91.79332298 },
+    /* G-2 */ { 97.99885900, 0x80, 98.19750831 },
+    /* G#2 */ { 103.82617439, 0x7a, 102.98763066 },
+    /* A-2 */ { 110.00000000, 0x71, 111.11823308 },
+    /* A#2 */ { 116.54094038, 0x6b, 117.29146825 },
+    /* B-2 */ { 123.47082531, 0x65, 124.19096639 },
+};
 
 /* ------------------------------------------------------------------------ */
 
 void usage(void) {
-    fprintf(stderr, "usage: sid2sapr [-b type] sid-file\n\n"
-"   -b type     bass type (transpose [default], gritty, buzzy or softbass)\n");
+    fprintf(stderr, "usage: sid2sapr [-b type] [-o file] sid-file\n\n"
+"   -h          display help\n"
+"   -b type     bass type (transpose [default], gritty, buzzy or softbass)\n"
+"   -o file     output sap-r data to file [default: output.sapr]\n"
+"   -p volume   pokey maximum per channel volume [default: 12, softbass: 11]\n"
+"   -n num      number of frames to process [default: 3000] (60s)\n"
+);
 }
 
 /* ------------------------------------------------------------------------ */
@@ -51,7 +170,7 @@ void usage(void) {
 int main(int argc, char *argv[]) {
     int option, i;
 
-    while ((option = getopt(argc, argv, "dhe:f:c:p:r:mb:")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:")) != -1) {
         switch (option) {
         case 'b':
             bassstring = strdup(optarg);
@@ -67,6 +186,18 @@ int main(int argc, char *argv[]) {
             basstype = i;
             if (basstype == BASS_SOFTBASS && maxpokvol == DEFAULT_MAXPOKVOL)
                 maxpokvol = 11;             // 12 sometimes distorts
+            break;
+        case 'o':
+            outfile = strdup(optarg);
+            break;
+        case 'n':
+            nframes = atoi(optarg);
+            if (nframes <= 0) {
+                fprintf(stderr, "invalid number of frames (%d)\n", nframes);
+                return 1;
+            }
+        case 'p':
+            maxpokvol = atoi(optarg);
             break;
         case 'h':
         default:
@@ -92,16 +223,16 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("Title     : %s\n", song_name);
-    printf("Author    : %s\n", song_author);
-    printf("Copyright : %s\n", song_copyright);
-    printf("Speed     : %s\n", speed100Hz ? "100Hz" : "50Hz");
+    fprintf(stderr, "Title     : %s\nAuthor    : %s\n"
+                    "Copyright : %s\nSpeed     : %s\n", 
+                            song_name, song_author, song_copyright, 
+                            speed100Hz ? "100Hz" : "50Hz");
 
     cpuJSR(init_addr, actual_subsong);
 
     int counter = 0;
 
-    while (counter != 500) {
+    while (counter != nframes) {
         if (!speed100Hz) {
                 cpuJSR(play_addr, 0);
                 synth_render(soundbuffer, NSAMPLES);
