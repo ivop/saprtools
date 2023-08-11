@@ -115,7 +115,7 @@ void synth_render(uint32_t len) {
                 osc[v].envphase = 3;
             else if (osc[v].envphase == 3) {
                 osc[v].envphase = 0;
-//                osc[v].envval = 0;
+                osc[v].envval = 0x40000;
             }
             // so now process the volume according to the phase and adsr values         
             switch (osc[v].envphase) {

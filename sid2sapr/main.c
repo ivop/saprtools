@@ -174,8 +174,10 @@ static bool save_pokey(uint8_t *pokey, FILE *outf) {
 /* ------------------------------------------------------------------------ */
 
 static void init_voltab(int maxvol) {
-    for (int i=0; i<16; i++) {
+    voltab[0] = 0;
+    for (int i=1; i<16; i++) {
         voltab[i] = round(i*maxvol/15.0);
+        if (!voltab[i]) voltab[i]++;
     }
 }
 
