@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include "sidengine.h"
 
 #define USE_FILTER
 
@@ -33,57 +34,6 @@ enum {
     xxx
 };
 
-
-// SID register definition
-
-struct s6581 {
-    struct sidvoice {
-        uint16_t freq;
-        uint16_t pulse;
-        uint8_t wave;
-        uint8_t ad;
-        uint8_t sr;
-    } v[3];
-    uint8_t ffreqlo;
-    uint8_t ffreqhi;
-    uint8_t res_ftv;
-    uint8_t ftp_vol;
-};
-
-// internal oscillator def
-
-struct sidosc {
-    uint32_t freq;
-    uint32_t pulse;
-    uint8_t wave;
-    uint8_t filter;
-    uint32_t attack;
-    uint32_t decay;
-    uint32_t sustain;
-    uint32_t release;
-    uint32_t counter;           // Variablen
-    signed int envval;
-    uint8_t envphase;
-    uint32_t noisepos;
-    uint32_t noiseval;
-    uint8_t noiseout;
-};
-
-// internal filter def
-
-struct sidflt {
-    int freq;
-    uint8_t l_ena;
-    uint8_t b_ena;
-    uint8_t h_ena;
-    uint8_t v3ena;
-    int vol;
-    int rez;
-    int h;
-    int b;
-    int l;
-};
-
 // ------------------------------------------------------------- constants
 
 static float attackTimes[16] = {
@@ -107,8 +57,8 @@ static int attacks[16];
 static int releases[16];
 
 // --------------------------------------------------------------- globals
-static struct s6581 sid;
-static struct sidosc osc[3];
+struct s6581 sid;
+struct sidosc osc[3];
 static struct sidflt filter;
 
 // --------------------------------------------------------- some aux stuff
