@@ -9,7 +9,7 @@ Convert Commodore C64 .ym files to Atari XL/XE SAP-R
 ```
 cd saprtools/sid2sapr
 make
-./sid2sapr -n 3850 -b softbass sid/freeze.sid
+./sid2sapr -n 3850 -b softbass sid/Freeze.sid
 make compress-softbass
 echo -n "Freeze - Laxity" > asm/songname.txt
 make player-softbass
