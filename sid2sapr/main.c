@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
@@ -46,11 +47,10 @@ static uint8_t actual_subsong, max_subsong, speed100Hz;
 static char song_name[33], song_author[33], song_copyright[33];
 
 #define DEFAULT_MAXPOKVOL 12
-unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
+static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
 
-unsigned int mono = 0;
-int basstype = 0;
-char *bassstring;
+static int basstype = 0;
+static char *bassstring;
 
 enum {
     BASS_TRANSPOSE = 0,
@@ -60,12 +60,12 @@ enum {
     BASS_COUNT
 };
 
-const char *basstypes[BASS_COUNT] = {
+static const char *basstypes[BASS_COUNT] = {
     "transpose", "gritty", "buzzy", "softbass"
 };
 
-char *outfile = "output.sapr";
-int nframes = 3000;
+static char *outfile = "output.sapr";
+static int nframes = 3000;
 
 /* ------------------------------------------------------------------------ */
 
@@ -155,13 +155,38 @@ static const struct bass buzzy[36] = {
 
 /* ------------------------------------------------------------------------ */
 
-void usage(void) {
+static bool write_sapr_header(FILE *file) {
+    if (fprintf(file, "SAP\r\nAUTHOR \"\"\r\nNAME \"\"\r\nDATE \"\"\r\nTYPE R\r\n\r\n") < 0) {
+        fprintf(stderr, "error writing to file\n");
+        return false;
+    }
+    return true;
+}
+
+/* ------------------------------------------------------------------------ */
+
+static bool save_pokey(uint8_t *pokey, FILE *outf) {
+    if (fwrite(pokey, 9, 1, outf) < 1) {
+        fprintf(stderr, "error writing to file\n");
+        return false;
+    }
+    return true;
+}
+
+/* ------------------------------------------------------------------------ */
+
+static void sid2pokey(uint8_t *pokey) {
+}
+
+/* ------------------------------------------------------------------------ */
+
+static void usage(void) {
     fprintf(stderr, "usage: sid2sapr [-b type] [-o file] sid-file\n\n"
 "   -h          display help\n"
 "   -b type     bass type (transpose [default], gritty, buzzy or softbass)\n"
 "   -o file     output sap-r data to file [default: output.sapr]\n"
 "   -p volume   pokey maximum per channel volume [default: 12, softbass: 11]\n"
-"   -n num      number of frames to process [default: 3000] (60s)\n"
+"   -n num      number of frames to process [default: 3000] (60s at 50Hz)\n"
 );
 }
 
@@ -230,18 +255,36 @@ int main(int argc, char *argv[]) {
 
     cpuJSR(init_addr, actual_subsong);
 
+    FILE *outf = fopen(outfile, "wb");
+    if (!outf) {
+        fprintf(stderr, "unable to open %s for writing\n", outfile);
+        return 1;
+    }
+    if (!write_sapr_header(outf))
+        return 1;
+
     int counter = 0;
 
     while (counter != nframes) {
+        uint8_t pokey[9];
+        memset(pokey, 0, 9);
+
         if (!speed100Hz) {
                 cpuJSR(play_addr, 0);
                 synth_render(soundbuffer, NSAMPLES);
-                fprintf(stderr, "wave = $%02x, freq = %04x, vol = %03x\n", sid.v[1].wave, sid.v[1].freq, osc[1].envval>>20);
+                sid2pokey(pokey);
+                if (!save_pokey(pokey, outf)) return 1;
         } else {
                 cpuJSR(play_addr, 0);
                 synth_render(soundbuffer, NSAMPLES/2);
+                sid2pokey(pokey);
+                if (!save_pokey(pokey, outf)) return 1;
+                counter++;
+
                 cpuJSR(play_addr, 0);
                 synth_render(soundbuffer + (NSAMPLES/2*2), NSAMPLES/2);
+                sid2pokey(pokey);
+                if (!save_pokey(pokey, outf)) return 1;
         }
         counter++;
     }
