@@ -549,7 +549,7 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
 /* ------------------------------------------------------------------------ */
 
 static void usage(void) {
-    fprintf(stderr, "usage: ym2sapr [-dh][-e value][-f value] input.ym\n\n"
+    fprintf(stderr, "usage: ym2sapr [-dhm][-efcprb value] input.ym\n\n"
 "   -h          display help\n"
 "   -d          disable envelopes\n"
 "   -e volume   envelopes as fixed YM volume\n"
