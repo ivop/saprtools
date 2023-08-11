@@ -667,7 +667,7 @@ int main(int argc, char **argv) {
             }
             basstype = i;
             if (basstype == BASS_SOFTBASS && maxpokvol == DEFAULT_MAXPOKVOL)
-                maxpokvol = 11;             // 12 sometimes distorts
+                maxpokvol = 10;             // 11 and 12 sometimes distorts
             break;
         case 'h':
         default:
