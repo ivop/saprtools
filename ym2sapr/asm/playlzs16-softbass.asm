@@ -1,5 +1,5 @@
-; ym2sapr lzss player
-; adapted for ym2sapr by Ivo van Poorten, based on dmsc's player.
+; XXX2sapr lzss player
+; adapted for XXX2sapr by Ivo van Poorten, based on dmsc's player.
 ; added 3 channel softsynth for the lower octaves
 ;
 ; LZSS Compressed SAP player for 16 match bits
@@ -68,7 +68,11 @@ SKCTL  = $d20f
     mva #15 $02c5   ; white foreground
     mva #0 82       ; left margin
     prints 0, " "
+.ifdef SID2SAPR
+    prints 0, "SID2SAPR v1.3 (MONO) [SOFTBASS]"
+.else
     prints 0, "YM2SAPR v1.9 (MONO) [SOFTBASS]"
+.endif
     prints 0, "Copyright (C) 2023 by Ivo van Poorten"
     prints 0, "LZSS routines (C) 2020 by DMSC"
     prints 0, " "
@@ -117,7 +121,11 @@ buffers
     .ds 256 * 9
 
 song_data
+.ifdef SID2SAPR
+        ins     'output.lz16'
+.else
         ins     'left.lz16'
+.endif
 song_end
 
 
