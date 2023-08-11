@@ -41,8 +41,6 @@
 
 /* ------------------------------------------------------------------------ */
 
-static uint16_t soundbuffer[NSAMPLES*2];
-
 static uint16_t init_addr, play_addr;
 static uint8_t actual_subsong, max_subsong, speed100Hz;
 static char song_name[33], song_author[33], song_copyright[33];
@@ -400,7 +398,7 @@ int main(int argc, char *argv[]) {
 
         if (!speed100Hz) {
                 cpuJSR(play_addr, 0);
-                synth_render(soundbuffer, NSAMPLES);
+                synth_render(NSAMPLES);
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
@@ -408,7 +406,7 @@ int main(int argc, char *argv[]) {
                 if (!save_pokey(pokey, outf)) return 1;
         } else {
                 cpuJSR(play_addr, 0);
-                synth_render(soundbuffer, NSAMPLES/2);
+                synth_render(NSAMPLES/2);
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
@@ -417,7 +415,7 @@ int main(int argc, char *argv[]) {
                 counter++;
 
                 cpuJSR(play_addr, 0);
-                synth_render(soundbuffer + (NSAMPLES/2*2), NSAMPLES/2);
+                synth_render(NSAMPLES/2);
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);

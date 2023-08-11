@@ -91,7 +91,7 @@ void synth_init(uint32_t mixfrq) {
     osc[2].noiseval = 0xffffff;
 }
 
-void synth_render(uint16_t * buffer, uint32_t len) {
+void synth_render(uint32_t len) {
     uint8_t v;
     uint32_t bp;
 
@@ -105,7 +105,7 @@ void synth_render(uint16_t * buffer, uint32_t len) {
         osc[v].freq = ((uint32_t) sid.v[v].freq) * freqmul;
     }
 
-    // now "render" the buffer
+    // now "render"
     for (bp = 0; bp < len; bp++) {
         for (v = 0; v < 3; v++) {
             // now process the envelopes. the first thing about this is testing
