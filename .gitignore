@@ -11,3 +11,6 @@ lzss-sap/bin
 lzss-sap/bin/*
 sid2sapr/sid2sapr
 sid2sapr/asm/songname.txt
+sid2sapr/*.sapr
+sid2sapr/*.lz16
+sid2sapr/*.xex
