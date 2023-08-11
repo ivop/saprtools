@@ -9,7 +9,7 @@ static uint16_t soundbuffer[NSAMPLES*2];
 
 static uint16_t init_addr, play_addr;
 static uint8_t actual_subsong, max_subsong, speed100Hz;
-static char song_name[32], song_author[32], song_copyright[32];
+static char song_name[33], song_author[33], song_copyright[33];
 
 void show_info(int argc) {
     fprintf(stderr, "usage: sid2sapr sid-file\n"
