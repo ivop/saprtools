@@ -264,6 +264,7 @@ static void sid2pokey(int voice, uint8_t *pokey) {
     if (noise) {
         POK = round(POKreal / 16.0); // divide by 16 (like I did w/ sid2gumby)
         if (POK > 255) POK = 255;
+        v >>= 1;
         pokey[0] = POK;
         pokey[1] = 0x80 + v;
     }

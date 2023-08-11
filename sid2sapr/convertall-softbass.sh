@@ -51,6 +51,15 @@ make compress-softbass
 make player-softbass
 mv player.xex xex-softbass/laxity-wisdom.xex
 
+./sid2sapr -n $(((10*60+45)*50)) -b softbass sid/'International_Karate.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : International Karate           " \
+    "Author: Rob Hubbard" > asm/songname.txt
+make compress-softbass
+make player-softbass
+mv player.xex xex-softbass/hubbard-ik.xex
+
 #fi
 
 # clear for further tests

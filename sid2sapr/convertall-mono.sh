@@ -51,6 +51,15 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/laxity-wisdom.xex
 
+./sid2sapr -n $(((10*60+45)*50)) -b buzzy sid/'International_Karate.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : International Karate           " \
+    "Author: Rob Hubbard" > asm/songname.txt
+make compress-mono
+make player-mono
+mv player.xex xex-mono/hubbard-ik.xex
+
 #fi
 
 # clear for further tests

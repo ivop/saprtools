@@ -39,7 +39,7 @@ SKCTL = $d20f
     mva #15 $02c5   ; white foreground
     mva #0 82       ; left margin
     prints 0, " "
-    prints 0, "SID2SAPR v1.0 (MONO)"
+    prints 0, "SID2SAPR v1.2 (MONO)"
     prints 0, "Copyright (C) 2023 by Ivo van Poorten"
     prints 0, "LZSS routines (C) 2020 by DMSC"
     prints 0, " "
