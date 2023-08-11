@@ -16,3 +16,4 @@ make player-softbass
 atari800 player.xex
 ```
 
+Note that this not magically make Pokey sound like SID. It plays everything with Pokey sound and noise generators with very little CPU usage. If you want a full blown softsynth with sawtooths, pulse, and triangle, take a look at [AtariSid](https://github.com/ivop/atarisid).
