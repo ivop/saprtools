@@ -11,8 +11,9 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 | Atari ST | YM2149 | .sndh | Use Hatari[^1] to record .ym, then use ym2sapr |
 | ZX Spectrum | AY8910 | .ay | Use aylet to convert to .ym, then use ym2sapr |
 | Amstrad CPC | AY8910 | .ay | Use aylet to convert to .ym, then use ym2sapr |
-| MSX1/MSX2 | AY8910 | .vgm | Use vgm2ym to convert to .ym, then use ym2sapr |
-| MSX1/MSX2 | AY8910 | .kss | Use kss2vgm[^2], vgm2ym and finally ym2sapr |
+| MSX/MSX2 | AY8910 | .vgm | Use vgm2ym to convert to .ym, then use ym2sapr |
+| MSX/MSX2 | AY8910 | .kss | Use kss2vgm[^2], vgm2ym and finally ym2sapr |
+| Commodore 64 | SID | .sid | Use sid2sapr |
 
 ### Credits
 
