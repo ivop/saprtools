@@ -15,7 +15,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/tel-cybernoid.xex
 
-./sid2sapr -n $(((5*60+46)*50)) -b buzzy sid/'Cybernoid_II.sid'
+./sid2sapr -a -n $(((5*60+46)*50)) -b buzzy sid/'Cybernoid_II.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Cybernoid II                   " \

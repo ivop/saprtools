@@ -294,6 +294,7 @@ static void usage(void) {
 "   -o file     output sap-r data to file [default: output.sapr]\n"
 "   -p volume   pokey maximum per channel volume [default: 12, softbass: 10]\n"
 "   -n num      number of frames to process [default: 3000] (60s at 50Hz)\n"
+"   -a          do not adjust for note cancellation\n"
 );
 }
 
@@ -302,11 +303,15 @@ static void usage(void) {
 int main(int argc, char *argv[]) {
     char *outfile = "output.sapr";
     int nframes = 3000;
+    bool no_adjust = false;
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:a")) != -1) {
         switch (option) {
+        case 'a':
+            no_adjust = true;
+            break;
         case 'b':
             bassstring = strdup(optarg);
             for (char *c=bassstring; *c; c++)
@@ -398,7 +403,7 @@ int main(int argc, char *argv[]) {
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
-                adjust_for_cancellation(pokey);
+                if (!no_adjust) adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
         } else {
                 cpuJSR(play_addr, 0);
@@ -406,7 +411,7 @@ int main(int argc, char *argv[]) {
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
-                adjust_for_cancellation(pokey);
+                if (!no_adjust) adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
                 counter++;
 
@@ -415,7 +420,7 @@ int main(int argc, char *argv[]) {
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
-                adjust_for_cancellation(pokey);
+                if (!no_adjust) adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
         }
         counter++;
