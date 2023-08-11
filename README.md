@@ -17,7 +17,7 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 
 ### Credits
 
-ym2sapr and vgm2ym are Copyright © 2023 by Ivo van Poorten. Licensed under the terms of the BSD-2 license. See LICENSE for details.
+ym2sapr, vgm2ym, and sid2sapr are Copyright © 2023 by Ivo van Poorten. Licensed under the terms of the BSD-2 license. See LICENSE for details.
 
 aylet is Copyright © 2001-2005 Russell Marks and Ian Collier. ym modifications are Copyright © 2023 by Ivo van Poorten. Licensed under the terms of the GPL-2. See COPYING for details.
 
