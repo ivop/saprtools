@@ -1,9 +1,8 @@
-FLAGS ?= -O2 -Wall
-LIBS ?= -lpthread
+CFLAGS ?= -O2 -Wall
 CC ?= gcc
 
 tinysid: tinysid.c sidengine.c
-		$(CC) $(FLAGS) -o tinysid tinysid.c sidengine.c $(LIBS)
+		$(CC) $(CFLAGS) -o tinysid tinysid.c sidengine.c
 
 clean:
 	rm -f *~ tinysid
