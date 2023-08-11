@@ -24,7 +24,7 @@ make compress-mono
 make player-mono
 mv player.xex xex-mono/tel-cybernoid2.xex
 
-./sid2sapr -n $(((1*60+17)*50)) -b buzzy sid/'freeze.sid'
+./sid2sapr -n $(((1*60+17)*50)) -b buzzy sid/'Freeze.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Freeze                         " \
@@ -32,6 +32,24 @@ echo -n \
 make compress-mono
 make player-mono
 mv player.xex xex-mono/laxity-freeze.xex
+
+./sid2sapr -n $(((2*60+22)*50)) -b buzzy sid/'Syncopated.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Syncopated                     " \
+    "Author: Thomas E. Petersen (Laxity)" > asm/songname.txt
+make compress-mono
+make player-mono
+mv player.xex xex-mono/laxity-syncopated.xex
+
+./sid2sapr -n $(((1*60+51)*50)) -b buzzy sid/'Wisdom.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Wisdom                         " \
+    "Author: Thomas E. Petersen (Laxity)" > asm/songname.txt
+make compress-mono
+make player-mono
+mv player.xex xex-mono/laxity-wisdom.xex
 
 #fi
 
