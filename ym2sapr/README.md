@@ -4,7 +4,6 @@ Convert Atari ST .ym files to Atari XL/XE stereo SAP-R
 
 ### Instructions
 
-* Install https://github.com/dmsc/lzss-sap
 * Clone saprtools repo
 
 ```
