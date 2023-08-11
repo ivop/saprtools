@@ -204,8 +204,9 @@ static uint8_t find_closest_distc(const struct bass table[], double f) {
 
 static void sid2pokey(int voice, uint8_t *pokey) {
     bool noise = false;
+    uint8_t wave = sid.v[voice].wave;
 
-    if (sid.v[voice].wave & 0x80) noise = true;
+    if (wave & 0x80) noise = true;
 
     double constant = pow(256.0, 3.0) / C64_CLOCK;
 
@@ -269,6 +270,9 @@ static void sid2pokey(int voice, uint8_t *pokey) {
         pokey[0] = POK;
         pokey[1] = 0x80 + v;
     }
+
+    if (wave == 0x16 || wave == 0x17)   // cybernoid 2 hack
+        pokey[1] = 0;
 }
 
 /* ------------------------------------------------------------------------ */
