@@ -75,6 +75,15 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/md-dose.xex
 
+./sid2sapr -n $(((2*60+19)*50)) -b $basstype sid/'Jigsaw.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Jigsaw                         " \
+    "Author: Mitch & Dane" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/md-jigsaw.xex
+
 done
 
 # clear for further tests
