@@ -12,16 +12,16 @@ compress-mono: $(LZSS)
 compress-softbass: compress-mono
 
 player-mono:
-	mads -o:player.xex asm/playlzs16-mono.asm
+	mads -d:SID2SAPR -o:player.xex asm/playlzs16-mono.asm
 
 player60-mono:
-	mads -d:HZ60 -o:player.xex asm/playlzs16-mono.asm
+	mads -d:SID2SAPR -d:HZ60 -o:player.xex asm/playlzs16-mono.asm
 
 player-softbass:
-	mads -o:player.xex asm/playlzs16-softbass.asm
+	mads -d:SID2SAPR -o:player.xex asm/playlzs16-softbass.asm
 
 player60-softbass:
-	mads -d:HZ60 -o:player.xex asm/playlzs16-softbass.asm
+	mads -d:SID2SAPR -d:HZ60 -o:player.xex asm/playlzs16-softbass.asm
 
 $(LZSS):
 	make -C ../lzss-sap
