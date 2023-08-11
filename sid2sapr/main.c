@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include "sidengine.h"
 
 #define C64_CLOCK        985248L
@@ -66,6 +67,8 @@ static const char *basstypes[BASS_COUNT] = {
 
 static char *outfile = "output.sapr";
 static int nframes = 3000;
+
+static uint8_t voltab[16];
 
 /* ------------------------------------------------------------------------ */
 
@@ -175,6 +178,14 @@ static bool save_pokey(uint8_t *pokey, FILE *outf) {
 
 /* ------------------------------------------------------------------------ */
 
+static void init_voltab(int maxvol) {
+    for (int i=0; i<16; i++) {
+        voltab[i] = round(i*maxvol/15.0);
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
 static void sid2pokey(uint8_t *pokey) {
 }
 
@@ -223,6 +234,10 @@ int main(int argc, char *argv[]) {
             }
         case 'p':
             maxpokvol = atoi(optarg);
+            if (maxpokvol < 0 || maxpokvol > 15) {
+                fprintf(stderr, "invalid maximum pokey volume\n");
+                return 1;
+            }
             break;
         case 'h':
         default:
@@ -255,6 +270,8 @@ int main(int argc, char *argv[]) {
 
     cpuJSR(init_addr, actual_subsong);
 
+    fprintf(stderr, "write output to %s\n", outfile);
+
     FILE *outf = fopen(outfile, "wb");
     if (!outf) {
         fprintf(stderr, "unable to open %s for writing\n", outfile);
@@ -262,6 +279,12 @@ int main(int argc, char *argv[]) {
     }
     if (!write_sapr_header(outf))
         return 1;
+
+    fprintf(stderr, "maximum pokey volume: %d\n", maxpokvol);
+
+    init_voltab(maxpokvol);
+
+    fprintf(stderr, "bass type: %s\n", basstypes[basstype]);
 
     int counter = 0;
 
