@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 
 //---------------------------------------SOUNDCARD-VARS--------------
 #define DEVICE_NAME "/dev/dsp"
@@ -102,8 +103,7 @@ static void *play_thread_func(void *arg)
 	
 	while (play_active)
 	{		
-                if (play_speed==0) // Single Speed (50Hz)
-				   // Render 16*50Hz buffer
+        if (play_speed==0) // Single Speed (50Hz)
 		{
 			for (j=0;j<8;j++)
 			{
@@ -112,15 +112,20 @@ static void *play_thread_func(void *arg)
 			}
 		}
 		
-		if (play_speed==1) // Double Speed (100Hz)
-				   // Render 16*50Hz buffer
-			for (j=0;j<16;j++)
+		if (play_speed==1)  // Double Speed (100Hz)
+        {
+            for (j=0;j<16;j++)
 			{
 				cpuJSR(play_addr, 0);
 				synth_render(&soundbuffer[441*j], 441);
 			}
+        }
 		
-			write(audio_fd, soundbuffer, BUF_SIZE*8);
+			int ret = write(audio_fd, soundbuffer, BUF_SIZE*8);
+            if (ret < 0) {
+                fprintf(stderr, "error writing to audio device!\n");
+                return NULL;
+            }
 	}
 	return NULL;
 }

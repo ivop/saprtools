@@ -136,7 +136,7 @@ static int sample_nibble;
 
 static inline int GenerateDigi(int sIn)
 {
-    static int last_sample = 0;
+//    static int last_sample = 0;
     static int sample = 0;
 
     if (!sample_active) return(sIn);
@@ -156,7 +156,7 @@ static inline int GenerateDigi(int sIn)
         {
             fracPos%=mixing_frequency;
 
-            last_sample = sample;			
+//            last_sample = sample;
 						
 			// N�hstes Samples holen
             if (sample_order == 0) {
@@ -377,14 +377,17 @@ void synth_render (uint16_t *buffer, uint32_t len)
       // now route the voice output to either the non-filtered or the
       // filtered channel and dont forget to blank out osc3 if desired	  
 #ifdef USE_FILTER
-      if (v<2 || filter.v3ena)
-        if (osc[v].filter)
+      if (v<2 || filter.v3ena) {
+        if (osc[v].filter) {
           //outf+=((float)osc[v].envval*(float)outv-0x8000000)/0x30000000;
 		  outf+=(((int)(outv-0x80))*osc[v].envval)>>22;
 		
-        else
+        } else {
           //outo+=((float)osc[v].envval*(float)outv-0x8000000)/0x30000000;
                   outo+=(((int)(outv-0x80))*osc[v].envval)>>22;
+        }
+      }
+
 #endif
 #ifndef USE_FILTER
         
