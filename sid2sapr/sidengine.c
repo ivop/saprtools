@@ -1351,59 +1351,6 @@ uint16_t c64SidLoad(char *filename, uint16_t * init_addr, uint16_t * play_addr,
                     uint8_t * sub_song_start, uint8_t * max_sub_songs,
                     uint8_t * speed, char *name, char *author,
                     char *copyright) {
-    /*
-       uint16_t adr, offset=0, i;
-       uint16_t data_file_offset;
-       FILE *f;
-
-       if ( (f=fopen(filename, "rb")) == NULL) return(0);
-       // Feststellen von wo an das Datenfile beginnt
-       fseek(f, 7, 0);
-       data_file_offset = fgetc(f);
-
-       // Init Adresse holen
-       fseek(f, 10, 0);
-       *init_addr = fgetc(f)<<8;
-       *init_addr|= fgetc(f);
-
-       // Play Adresse holen
-       *play_addr = fgetc(f)<<8;
-       *play_addr|= fgetc(f);
-
-       // Anzahl Subsongs holen
-       fseek(f, 0x0f,0);
-       *max_sub_songs = fgetc(f)-1;
-
-       // Start song holen
-       fseek(f, 0x11,0);
-       *sub_song_start = fgetc(f)-1;
-
-       // Song Speed holen (0=50Hz, 1=Double Speed)
-       fseek(f, 0x15, 0);
-       *speed = fgetc(f);
-
-       // Name holen
-       fseek(f, 0x16, 0);
-       for (i=0;i<32;i++) name[i] = fgetc(f);
-
-       // Author holen
-       fseek(f, 0x36, 0);
-       for (i=0;i<32;i++) author[i] = fgetc(f);
-
-       // Copyright holen
-       fseek(f, 0x56, 0);
-       for (i=0;i<32;i++) copyright[i] = fgetc(f);
-
-       // Load Adresse holen
-       fseek(f, data_file_offset, 0);
-       adr = fgetc(f);
-       adr|= fgetc(f)<<8;
-
-       // Daten einlesen
-       while(!feof(f)) memory[(adr+offset++)%65536]=fgetc(f);
-       fclose(f);
-       //return adr;    
-     */
     FILE *f;
     int i;
 

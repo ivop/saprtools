@@ -12,14 +12,14 @@
 //
 #define DEVICE_NAME "/dev/dsp"
 
-static const int BUF_SIZE = 882 * 2;   // Audio Buffer size in uint8_t
-static int audio_fd;                   // Audio Device Handler
-static uint16_t soundbuffer[882 * 16]; // The soundbuffer, 16*50Hz WORD Buffer
+#define NSAMPLES 882                    // 44100/50 = 882
+static int audio_fd;
+static uint16_t soundbuffer[NSAMPLES*2];
 
 //---------------------------------------SID-VARS--------------------
 //
 static uint16_t init_addr, play_addr;
-static uint8_t actual_subsong, max_subsong, play_speed;
+static uint8_t actual_subsong, max_subsong, speed100Hz;
 static char song_name[32], song_author[32], song_copyright[32];
 
 int is_little_endian(void) {
@@ -85,37 +85,32 @@ int main(int argc, char *argv[]) {
 
     if (c64SidLoad
         (argv[1], &init_addr, &play_addr, &actual_subsong, &max_subsong,
-         &play_speed, song_name, song_author, song_copyright) == 0) {
+         &speed100Hz, song_name, song_author, song_copyright) == 0) {
         fprintf(stderr, "Failed to load %s\n", argv[1]);
         return 1;
     }
 
     printf("TITLE    : %s\n", song_name);
     printf("AUTHOR   : %s\n", song_author);
-    printf("COPYRIGHT: %s\n\n", song_copyright);
+    printf("COPYRIGHT: %s\n", song_copyright);
+    printf("SPEED    : %s\n", speed100Hz ? "100Hz" : "50Hz");
+    printf("Playing... Press ctrl-C to quit.\n");
+
 
     cpuJSR(init_addr, actual_subsong);
 
-    printf("Playing... Press ctrl-C to quit.\n");
-
     while (1) {
-        if (play_speed == 0)    // Single Speed (50Hz)
-        {
-            for (int j = 0; j < 8; j++) {
+        if (!speed100Hz) {
                 cpuJSR(play_addr, 0);
-                synth_render(&soundbuffer[882 * j], 882);
-            }
+                synth_render(soundbuffer, NSAMPLES);
+        } else {
+                cpuJSR(play_addr, 0);
+                synth_render(soundbuffer, NSAMPLES/2);
+                cpuJSR(play_addr, 0);
+                synth_render(soundbuffer + (NSAMPLES/2*2), NSAMPLES/2);
         }
 
-        if (play_speed == 1)    // Double Speed (100Hz)
-        {
-            for (int j = 0; j < 16; j++) {
-                cpuJSR(play_addr, 0);
-                synth_render(&soundbuffer[441 * j], 441);
-            }
-        }
-
-        int ret = write(audio_fd, soundbuffer, BUF_SIZE * 8);
+        int ret = write(audio_fd, soundbuffer, NSAMPLES*2);
 
         if (ret < 0) {
             fprintf(stderr, "error writing to audio device!\n");
