@@ -1,9 +1,11 @@
+/* Largely TinySID with the sound emulation removed.
+ * ADSR and 6502 code Copyright (C) 1999-2006 T. Hinrichs and R. Sinsch.
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <math.h>
 #include "sidengine.h"
-
-#define USE_FILTER
 
 #define FLAG_N 128
 #define FLAG_V 64
@@ -59,7 +61,6 @@ static int releases[16];
 // --------------------------------------------------------------- globals
 struct s6581 sid;
 struct sidosc osc[3];
-static struct sidflt filter;
 
 // --------------------------------------------------------- some aux stuff
 
@@ -70,81 +71,6 @@ static inline uint8_t get_bit(uint32_t val, uint8_t b) {
 // ------------------------------------------------------------- synthesis
 
 uint8_t memory[65536];          /* The C64 memory */
-
-static int sample_active;
-static int sample_position, sample_start, sample_end, sample_repeat_start;
-static int fracPos = 0;         /* Fractal position of sample */
-static int sample_period;
-static int sample_repeats;
-static int sample_order;
-static int sample_nibble;
-
-static inline int GenerateDigi(int sIn) {
-//    static int last_sample = 0;
-    static int sample = 0;
-
-    if (!sample_active)
-        return (sIn);
-
-    if ((sample_position < sample_end) && (sample_position >= sample_start)) {
-        //Interpolation routine
-        //float a = (float)fracPos/(float)mixing_frequency;
-        //float b = 1-a;
-        //sIn += a*sample + b*last_sample;
-
-        sIn += sample;
-
-        fracPos += 985248 / sample_period;
-
-        if (fracPos > mixing_frequency) {
-            fracPos %= mixing_frequency;
-
-//            last_sample = sample;
-
-            // N�hstes Samples holen
-            if (sample_order == 0) {
-                sample_nibble++;        // Nähstes Sample-Nibble
-                if (sample_nibble == 2) {
-                    sample_nibble = 0;
-                    sample_position++;
-                }
-            } else {
-                sample_nibble--;
-                if (sample_nibble < 0) {
-                    sample_nibble = 1;
-                    sample_position++;
-                }
-            }
-            if (sample_repeats) {
-                if (sample_position > sample_end) {
-                    sample_repeats--;
-                    sample_position = sample_repeat_start;
-                } else
-                    sample_active = 0;
-            }
-
-            sample = memory[sample_position & 0xffff];
-            if (sample_nibble == 1)     // Hi-Nibble holen?             
-                sample = (sample & 0xf0) >> 4;
-            else
-                sample = sample & 0x0f;
-
-
-            sample -= 7;
-            sample <<= 10;
-        }
-    }
-
-    /* Clipping */
-    /*
-       if (sIn < -32767) return -32767;
-       else if (sIn > 32767) return 32767;
-     */
-
-
-    return (sIn);
-}
-
 
 // initialize SID and frequency dependant values
 
@@ -160,28 +86,17 @@ void synth_init(uint32_t mixfrq) {
     }
     memset(&sid, 0, sizeof(sid));
     memset(osc, 0, sizeof(osc));
-    memset(&filter, 0, sizeof(filter));
     osc[0].noiseval = 0xffffff;
     osc[1].noiseval = 0xffffff;
     osc[2].noiseval = 0xffffff;
 }
 
-// render a buffer of n samples with the actual register contents
-float filterl1 = 0, filterb1 = 0, freq = 0.8, filterrez = 0.1;
-
-#include <math.h>
 void synth_render(uint16_t * buffer, uint32_t len) {
-    uint8_t v, refosc, outv;
+    uint8_t v;
     uint32_t bp;
-    uint8_t triout, sawout, plsout, nseout;
-    signed short final_sample;
 
-    // step 1: convert the not easily processable sid registers into some
-    //         more convenient and fast values (makes the thing much faster
-    //         if you process more than 1 sample value at once)
     for (v = 0; v < 3; v++) {
         osc[v].pulse = (sid.v[v].pulse & 0xfff) << 16;
-        osc[v].filter = get_bit(sid.res_ftv, v);
         osc[v].attack = attacks[sid.v[v].ad >> 4];
         osc[v].decay = releases[sid.v[v].ad & 0xf];
         osc[v].sustain = sid.v[v].sr & 0xf0;
@@ -190,97 +105,12 @@ void synth_render(uint16_t * buffer, uint32_t len) {
         osc[v].freq = ((uint32_t) sid.v[v].freq) * freqmul;
     }
 
-#ifdef USE_FILTER
-    filter.freq = (4 * sid.ffreqhi + (sid.ffreqlo & 0x7)) * filtmul;
-
-    if (filter.freq > pfloat_ConvertFromInt(1))
-        filter.freq = pfloat_ConvertFromInt(1);
-    // the above line isnt correct at all - the problem is that the filter
-    // works only up to rmxfreq/4 - this is sufficient for 44KHz but isnt
-    // for 32KHz and lower - well, but sound quality is bad enough then to
-    // neglect the fact that the filter doesnt come that high ;)
-    filter.l_ena = get_bit(sid.ftp_vol, 4);
-    filter.b_ena = get_bit(sid.ftp_vol, 5);
-    filter.h_ena = get_bit(sid.ftp_vol, 6);
-    filter.v3ena = !get_bit(sid.ftp_vol, 7);
-    filter.vol = (sid.ftp_vol & 0xf);
-    //filter.rez   = 1.0-0.04*(float)(sid.res_ftv >> 4);
-    filter.rez = pfloat_ConvertFromFloat(1.2f) -
-        pfloat_ConvertFromFloat(0.04f) * (sid.res_ftv >> 4);
-    /* We precalculate part of the quick float operation, saves time in loop later */
-    filter.rez >>= 8;
-#endif
-
-    // now render the buffer
+    // now "render" the buffer
     for (bp = 0; bp < len; bp++) {
-        int outo = 0;
-        int outf = 0;
-
-        // step 2 : generate the two output signals (for filtered and non-
-        //          filtered) from the osc/eg sections
         for (v = 0; v < 3; v++) {
-            // update wave counter
-            osc[v].counter = (osc[v].counter + osc[v].freq) & 0xFFFFFFF;
-            // reset counter / noise generator if reset get_bit set
-            if (osc[v].wave & 0x08) {
-                osc[v].counter = 0;
-                osc[v].noisepos = 0;
-                osc[v].noiseval = 0xffffff;
-            }
-            refosc = v ? v - 1 : 2;     // reference oscillator for sync/ring
-            // sync oscillator to refosc if sync bit set
-            if (osc[v].wave & 0x02)
-                if (osc[refosc].counter < osc[refosc].freq)
-                    osc[v].counter =
-                        osc[refosc].counter * osc[v].freq / osc[refosc].freq;
-            // generate waveforms with really simple algorithms
-            triout = (uint8_t) (osc[v].counter >> 19);
-            if (osc[v].counter >> 27)
-                triout ^= 0xff;
-            sawout = (uint8_t) (osc[v].counter >> 20);
-            plsout = (uint8_t) ((osc[v].counter > osc[v].pulse) - 1);
-
-            // generate noise waveform exactly as the SID does.
-            if (osc[v].noisepos != (osc[v].counter >> 23)) {
-                osc[v].noisepos = osc[v].counter >> 23;
-                osc[v].noiseval = (osc[v].noiseval << 1) |
-                    (get_bit(osc[v].noiseval, 22) ^
-                     get_bit(osc[v].noiseval, 17));
-                osc[v].noiseout =
-                    (get_bit(osc[v].noiseval, 22) << 7) |
-                    (get_bit(osc[v].noiseval, 20) << 6) |
-                    (get_bit(osc[v].noiseval, 16) << 5) |
-                    (get_bit(osc[v].noiseval, 13) << 4) |
-                    (get_bit(osc[v].noiseval, 11) << 3) |
-                    (get_bit(osc[v].noiseval, 7) << 2) |
-                    (get_bit(osc[v].noiseval, 4) << 1) |
-                    (get_bit(osc[v].noiseval, 2) << 0);
-            }
-            nseout = osc[v].noiseout;
-
-            // modulate triangle wave if ringmod bit set
-
-            if (osc[v].wave & 0x04)
-                if (osc[refosc].counter < 0x8000000)
-                    triout ^= 0xff;
-
-            // now mix the oscillators with an AND operation as stated in
-            // the SID's reference manual - even if this is completely wrong.
-            // well, at least, the $30 and $70 waveform sounds correct and there's
-            // no real solution to do $50 and $60, so who cares.
-
-            outv = 0xFF;
-            if (osc[v].wave & 0x10)
-                outv &= triout;
-            if (osc[v].wave & 0x20)
-                outv &= sawout;
-            if (osc[v].wave & 0x40)
-                outv &= plsout;
-            if (osc[v].wave & 0x80)
-                outv &= nseout;
-
             // now process the envelopes. the first thing about this is testing
-            // the gate bit and put the EG into attack or release phase if desired
+            // the gate bit and put the EG into attack or release phase if
+            // desired
             if (!(osc[v].wave & 0x01))
                 osc[v].envphase = 3;
             else if (osc[v].envphase == 3)
@@ -325,93 +155,14 @@ void synth_render(uint16_t * buffer, uint32_t len) {
                 break;
             }
             }
-            // now route the voice output to either the non-filtered or the
-            // filtered channel and dont forget to blank out osc3 if desired    
-#ifdef USE_FILTER
-            if (v < 2 || filter.v3ena) {
-                if (osc[v].filter) {
-                    //outf+=((float)osc[v].envval*(float)outv-0x8000000)/0x30000000;
-                    outf += (((int)(outv - 0x80)) * osc[v].envval) >> 22;
-
-                } else {
-                    //outo+=((float)osc[v].envval*(float)outv-0x8000000)/0x30000000;
-                    outo += (((int)(outv - 0x80)) * osc[v].envval) >> 22;
-                }
-            }
-#endif
-#ifndef USE_FILTER
-
-            outf += ((signed short)(outv - 0x80)) * (osc[v].envval >> 8);
-#endif
         }
-        // step 3
-        // so, now theres finally time to apply the multi-mode resonant filter
-        // to the signal. The easiest thing ist just modelling a real electronic
-        // filter circuit instead of fiddling around with complex IIRs or even
-        // FIRs ...
-        // it sounds as good as them or maybe better and needs only 3 MULs and
-        // 4 ADDs for EVERYTHING. SIDPlay uses this kind of filter, too, but
-        // Mage messed the whole thing completely up - as the rest of the
-        // emulator.
-        // This filter sounds a lot like the 8580, as the low-quality, dirty
-        // sound of the 6581 is uuh too hard to achieve :)
-
-#ifdef USE_FILTER
-
-        //filter.h = outf - filter.b*filter.rez - filter.l;   
-        //filter.h = pfloat_ConvertFromInt(outf) - pfloat_Multiply(filter.b, filter.rez) - filter.l;
-        filter.h =
-            pfloat_ConvertFromInt(outf) - (filter.b >> 8) * filter.rez -
-            filter.l;
-        //filter.b += filter.freq * filter.h;
-        filter.b += pfloat_Multiply(filter.freq, filter.h);
-        //filter.l += filter.freq * filter.b;
-        filter.l += pfloat_Multiply(filter.freq, filter.b);
-
-        outf = 0;
-
-        if (filter.l_ena)
-            outf += pfloat_ConvertToInt(filter.l);
-        if (filter.b_ena)
-            outf += pfloat_ConvertToInt(filter.b);
-        if (filter.h_ena)
-            outf += pfloat_ConvertToInt(filter.h);
-
-        final_sample = (signed short)(filter.vol * (outo + outf));
-#endif
-#ifndef USE_FILTER
-
-        final_sample = outf >> 10;
-#endif
-
-
-        *(buffer + bp) = (signed short)GenerateDigi(final_sample);
     }
 }
 
 
-//
-// C64 Mem Routinen
-//
-
-/*
-static const int ROMbasicStart=0xA000;
-static const int ROMbasicEnd=0xBFFF;
-static uint8_t ROMbasic[ROMbasicEnd-ROMbasicStart+1];
-
-static const int ROMkernalStart=0xE000;
-static const int ROMkernalEnd=0xFFFF;
-static uint8_t ROMkernal[ROMkernalEnd-ROMkernalStart+1];
-
-static const int ROMcharStart=0xD000;
-static const int ROMcharEnd=0xDFFF;
-static uint8_t ROMchar[ROMcharEnd-ROMcharStart+1];
-*/
 void sidPoke(int reg, unsigned char val) {
     int voice = 0;
 
-    if ((reg >= 0) && (reg <= 6))
-        voice = 0;
     if ((reg >= 7) && (reg <= 13)) {
         voice = 1;
         reg -= 7;
@@ -422,53 +173,18 @@ void sidPoke(int reg, unsigned char val) {
     }
 
     switch (reg) {
-    case 0:{                   // Frequenz niederwertiges uint8_t Stimme 1
-        sid.v[voice].freq = (sid.v[voice].freq & 0xff00) + val;
-        //printf("Voice%d: %d\n", voice, sid.v[voice].freq);
-        break;
-    }
-    case 1:{                   // Frequenz h�erwertiges uint8_t Stimme 1
-        sid.v[voice].freq = (sid.v[voice].freq & 0xff) + (val << 8);
-        break;
-    }
-    case 2:{                   // Pulsbreite niederwertiges uint8_t Stimme 1
-        sid.v[voice].pulse = (sid.v[voice].pulse & 0xff00) + val;
-        break;
-    }
-    case 3:{                   // Pulsbreite h�erwertiges uint8_t Stimme 1
-        sid.v[voice].pulse = (sid.v[voice].pulse & 0xff) + (val << 8);
-        break;
-    }
-    case 4:{
-        sid.v[voice].wave = val;
-        break;
-    }
+    case 0: sid.v[voice].freq = (sid.v[voice].freq & 0xff00) + val; break;
+    case 1: sid.v[voice].freq = (sid.v[voice].freq & 0xff) + (val<<8); break;
+    case 2: sid.v[voice].pulse = (sid.v[voice].pulse & 0xff00) + val; break;
+    case 3: sid.v[voice].pulse = (sid.v[voice].pulse & 0xff) + (val<<8); break;
+    case 4: sid.v[voice].wave = val; break;
+    case 5: sid.v[voice].ad   = val; break;
+    case 6: sid.v[voice].sr   = val; break;
 
-    case 5:{
-        sid.v[voice].ad = val;
-        break;
-    }
-    case 6:{
-        sid.v[voice].sr = val;
-        break;
-    }
-
-    case 21:{
-        sid.ffreqlo = val;
-        break;
-    }
-    case 22:{
-        sid.ffreqhi = val;
-        break;
-    }
-    case 23:{
-        sid.res_ftv = val;
-        break;
-    }
-    case 24:{
-        sid.ftp_vol = val;
-        break;
-    }
+    case 21: sid.ffreqlo = val; break;
+    case 22: sid.ffreqhi = val; break;
+    case 23: sid.res_ftv = val; break;
+    case 24: sid.ftp_vol = val; break;
     }
     return;
 }
@@ -495,74 +211,7 @@ void setmem(uint16_t addr, uint8_t value) {
     //#endif
 
     if ((addr & 0xfc00) == 0xd400) {
-        //addr&=0x1f;
         sidPoke(addr & 0x1f, value);
-        // Neue SID-Register
-        if ((addr > 0xd418) && (addr < 0xd500)) {
-            // Start-Hi
-            if (addr == 0xd41f)
-                internal_start = (internal_start & 0x00ff) | (value << 8);
-            // Start-Lo
-            if (addr == 0xd41e)
-                internal_start = (internal_start & 0xff00) | (value);
-            // Repeat-Hi
-            if (addr == 0xd47f)
-                internal_repeat_start =
-                    (internal_repeat_start & 0x00ff) | (value << 8);
-            // Repeat-Lo
-            if (addr == 0xd47e)
-                internal_repeat_start =
-                    (internal_repeat_start & 0xff00) | (value);
-
-            // End-Hi
-            if (addr == 0xd43e) {
-                internal_end = (internal_end & 0x00ff) | (value << 8);
-            }
-            // End-Lo
-            if (addr == 0xd43d) {
-                internal_end = (internal_end & 0xff00) | (value);
-            }
-            // Loop-Size 
-            if (addr == 0xd43f)
-                internal_repeat_times = value;
-            // Period-Hi
-            if (addr == 0xd45e)
-                internal_period = (internal_period & 0x00ff) | (value << 8);
-            // Period-Lo
-            if (addr == 0xd45d) {
-                internal_period = (internal_period & 0xff00) | (value);
-            }
-            // Sample Order
-            if (addr == 0xd47d)
-                internal_order = value;
-            // Sample Add
-            if (addr == 0xd45f)
-                internal_add = value;
-            // Start-Sampling
-            if (addr == 0xd41d) {
-                sample_repeats = internal_repeat_times;
-                sample_position = internal_start;
-                sample_start = internal_start;
-                sample_end = internal_end;
-                sample_repeat_start = internal_repeat_start;
-                sample_period = internal_period;
-                sample_order = internal_order;
-                switch (value) {
-                case 0xfd:
-                    sample_active = 0;
-                    break;
-                case 0xfe:
-                case 0xff:
-                    sample_active = 1;
-                    break;
-
-                default:
-                    return;
-                }
-
-            }
-        }
-
     }
 
 }
@@ -1242,9 +891,6 @@ int cpuJSR(uint16_t npc, uint8_t na) {
     }
     return ccl;
 }
-
-
-
 
 void c64Init(void) {
     int i;
