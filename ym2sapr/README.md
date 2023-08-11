@@ -1,6 +1,6 @@
 # YM2SAPR
 
-Convert Atari ST .ym files to Atari XL/XE stereo SAP-R
+Convert Atari ST .ym files to Atari XL/XE mono or stereo SAP-R
 
 ### Instructions
 
