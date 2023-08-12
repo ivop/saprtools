@@ -196,16 +196,17 @@ static void setmem(uint16_t addr, uint8_t value) {
     }
 }
 
-int c64_cpu_jsr(uint16_t npc, uint8_t na) {
+int c64_cpu_jsr(uint16_t newpc, uint8_t newa) {
     int ccl=0;
     memory[0xff00] = 0x20;          // JSR
-    memory[0xff01] = npc & 0xff;    // LSB
-    memory[0xff02] = npc >> 8;      // MSB
+    memory[0xff01] = newpc & 0xff;    // LSB
+    memory[0xff02] = newpc >> 8;      // MSB
 
     pins = M6502_SYNC;
     M6502_SET_ADDR(pins, 0xff00);
     M6502_SET_DATA(pins, memory[0xff00]);
     m6502_set_pc(&cpu, 0xff00);
+    m6502_set_a(&cpu, newa);
 
     while (m6502_pc(&cpu) != 0xff03) {
         pins = m6502_tick(&cpu, pins);
