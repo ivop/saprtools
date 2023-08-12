@@ -12,6 +12,8 @@ else
     basstype=softbass
 fi
 
+if false; then
+
 # JEROEN TEL
 
 ./sid2sapr -p 8 -n $(((6*60+47)*50)) -b $basstype sid/'Alloyrun.sid'
@@ -208,6 +210,66 @@ echo -n \
 make compress-$player
 make player-$player
 mv player.xex xex-$player/md-jigsaw.xex
+
+fi
+
+# CADAVER
+
+./sid2sapr -n $(((4*60+44)*50)) -b $basstype sid/'Aces_High.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Aces High                      " \
+    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/cadaver-aceshigh.xex
+
+# loop once
+./sid2sapr -a -n $(((1*60+38)*50)) -b $basstype sid/'Escape_from_New_York.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Escape from New York           " \
+    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/cadaver-escapefromny.xex
+
+# loop once
+./sid2sapr -n $(((1*60+18)*50)) -b $basstype sid/'GoatTracker_example_MW1_title.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : GoatTracker example MW1 title  " \
+    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/cadaver-goatexample.xex
+
+./sid2sapr -n $(((1*60+53)*50)) -b $basstype sid/'Metal_Warrior_4.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Metal Warrior 4                " \
+    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/cadaver-mw4.xex
+
+./sid2sapr -n $(((1*60+57)*50)) -b $basstype sid/'Tarantula.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Tarantula                      " \
+    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/cadaver-tarantula.xex
+
+./sid2sapr -n $(((1*60+57)*50)) -b $basstype sid/'Unleash_the_Fucking_Fury.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Unleash The Fucking Fury       " \
+    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/cadaver-unleash.xex
 
 done
 
