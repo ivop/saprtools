@@ -32,7 +32,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
-#include "sidengine.h"
+#include "c64.h"
 
 #define C64_CLOCK        985248L
 #define ATARI_CLOCK     1773447L
@@ -374,8 +374,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    c64Init();
-    synth_init(44100);
+    c64_init();
+    c64_sid_init(44100);
 
     if (c64SidLoad
         (argv[optind], &init_addr, &play_addr, &actual_subsong, &max_subsong,
@@ -389,7 +389,7 @@ int main(int argc, char *argv[]) {
                             song_name, song_author, song_copyright, 
                             speed100Hz ? "100Hz" : "50Hz");
 
-    cpuJSR(init_addr, actual_subsong);
+    c64_cpu_jsr(init_addr, actual_subsong);
 
     fprintf(stderr, "write output to %s\n", outfile);
 
@@ -414,31 +414,31 @@ int main(int argc, char *argv[]) {
         memset(pokey, 0, 9);
 
         if (!speed100Hz) {
-                cpuJSR(play_addr, 0);
-                synth_render(NSAMPLES/2);
+                c64_cpu_jsr(play_addr, 0);
+                c64_handle_adsr(NSAMPLES/2);
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
-                synth_render(NSAMPLES/2);
+                c64_handle_adsr(NSAMPLES/2);
                 if (!no_adjust) adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
         } else {
-                cpuJSR(play_addr, 0);
-                synth_render(NSAMPLES/4);
+                c64_cpu_jsr(play_addr, 0);
+                c64_handle_adsr(NSAMPLES/4);
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
-                synth_render(NSAMPLES/4);
+                c64_handle_adsr(NSAMPLES/4);
                 if (!no_adjust) adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
                 counter++;
 
-                cpuJSR(play_addr, 0);
-                synth_render(NSAMPLES/4);
+                c64_cpu_jsr(play_addr, 0);
+                c64_handle_adsr(NSAMPLES/4);
                 sid2pokey(0, &pokey[0]);
                 sid2pokey(1, &pokey[2]);
                 sid2pokey(2, &pokey[6]);
-                synth_render(NSAMPLES/4);
+                c64_handle_adsr(NSAMPLES/4);
                 if (!no_adjust) adjust_for_cancellation(pokey);
                 if (!save_pokey(pokey, outf)) return 1;
         }
