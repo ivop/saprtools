@@ -12,7 +12,7 @@ else
     basstype=softbass
 fi
 
-if false; then
+#if false; then
 
 # JEROEN TEL
 
@@ -211,8 +211,6 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/md-jigsaw.xex
 
-fi
-
 # CADAVER
 
 ./sid2sapr -n $(((4*60+44)*50)) -b $basstype sid/'Aces_High.sid'
@@ -270,6 +268,8 @@ echo -n \
 make compress-$player
 make player-$player
 mv player.xex xex-$player/cadaver-unleash.xex
+
+#fi
 
 done
 
