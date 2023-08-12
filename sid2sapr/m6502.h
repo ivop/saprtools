@@ -1345,12 +1345,23 @@ uint64_t m6502_tick(m6502_t* c, uint64_t pins) {
         case (0x3F<<3)|6: _FETCH();break;
         case (0x3F<<3)|7: assert(false);break;
     /* RTI  */
+#if 0
         case (0x40<<3)|0: _SA(c->PC);break;
         case (0x40<<3)|1: _SA(0x0100|c->S++);break;
         case (0x40<<3)|2: _SA(0x0100|c->S++);break;
         case (0x40<<3)|3: _SA(0x0100|c->S++);c->P=(_GD()|M6502_BF)&~M6502_XF;break;
         case (0x40<<3)|4: _SA(0x0100|c->S);c->AD=_GD();break;
         case (0x40<<3)|5: c->PC=(_GD()<<8)|c->AD;_FETCH();break;
+        case (0x40<<3)|6: assert(false);break;
+        case (0x40<<3)|7: assert(false);break;
+#endif
+                          // sid2sapr RTI does RTS :-)
+        case (0x40<<3)|0: _SA(c->PC);break;
+        case (0x40<<3)|1: _SA(0x0100|c->S++);break;
+        case (0x40<<3)|2: _SA(0x0100|c->S++);break;
+        case (0x40<<3)|3: _SA(0x0100|c->S);c->AD=_GD();break;
+        case (0x40<<3)|4: c->PC=(_GD()<<8)|c->AD;_SA(c->PC++);break;
+        case (0x40<<3)|5: _FETCH();break;
         case (0x40<<3)|6: assert(false);break;
         case (0x40<<3)|7: assert(false);break;
     /* EOR (zp,X) */
