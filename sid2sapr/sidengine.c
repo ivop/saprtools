@@ -197,9 +197,6 @@ uint8_t getmem(uint16_t addr) {
     return memory[addr];
 }
 
-int internal_period, internal_order, internal_start, internal_end,
-    internal_add, internal_repeat_times, internal_repeat_start;
-
 void setmem(uint16_t addr, uint8_t value) {
 
     memory[addr] = value;
