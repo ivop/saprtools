@@ -12,6 +12,26 @@ else
     basstype=softbass
 fi
 
+# JEROEN TEL
+
+./sid2sapr -p 9 -n $(((6*60+47)*50)) -b $basstype sid/'Alloyrun.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Alloyrun                       " \
+    "Author: Jeroen Tel" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/tel-alloy.xex
+
+./sid2sapr -n $(((2*60+35)*50)) -b $basstype sid/'Alternative_Fuel.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Alternative Fuel               " \
+    "Author: Jeroen Tel" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/tel-fuel.xex
+
 ./sid2sapr -n $(((6*60+40)*50)) -b $basstype sid/'Cybernoid.sid'
 echo -n \
     "Source: Commodore 64                   " \
@@ -29,6 +49,8 @@ echo -n \
 make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-cybernoid2.xex
+
+# LAXITY
 
 ./sid2sapr -n $(((1*60+17)*50)) -b $basstype sid/'Freeze.sid'
 echo -n \
@@ -57,6 +79,8 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/laxity-wisdom.xex
 
+# ROB HUBBARD
+
 ./sid2sapr -n $(((10*60+45)*50)) -b $basstype sid/'International_Karate.sid'
 echo -n \
     "Source: Commodore 64                   " \
@@ -65,6 +89,71 @@ echo -n \
 make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-ik.xex
+
+./sid2sapr -n $(((4*60+36)*50)) -b $basstype sid/'Crazy_Comets.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Crazy Comets                   " \
+    "Author: Rob Hubbard" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/hubbard-comets.xex
+
+./sid2sapr -p 9 -n $(((1*60+17)*50)) -b $basstype sid/'Delta.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Delta                          " \
+    "Author: Rob Hubbard" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/hubbard-delta.xex
+
+./sid2sapr -p 9 -n $(((7*60+13)*50)) -b $basstype sid/'Lightforce.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Lightforce                     " \
+    "Author: Rob Hubbard" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/hubbard-lightforce.xex
+
+./sid2sapr -p 9 -n $(((5*60+50)*50)) -b $basstype sid/'Monty_on_the_Run.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Monty on the Run               " \
+    "Author: Rob Hubbard" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/hubbard-monty.xex
+
+./sid2sapr -p 9 -n $(((5*60+41)*50)) -b $basstype sid/'Spellbound.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Spellbound                     " \
+    "Author: Rob Hubbard" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/hubbard-spellbound.xex
+
+./sid2sapr -p 9 -n $(((3*60+48)*50)) -b $basstype sid/'Thing_on_a_Spring.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Thing On A Spring              " \
+    "Author: Rob Hubbard" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/hubbard-toas.xex
+
+./sid2sapr -p 9 -n $(((4*60+24)*50)) -b $basstype sid/'Warhawk.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Warhawk                        " \
+    "Author: Rob Hubbard" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/hubbard-warhawk.xex
+
+# MITCH & DANE
 
 ./sid2sapr -n $(((2*60+19)*50)) -b $basstype sid/'Dose_of_D.sid'
 echo -n \

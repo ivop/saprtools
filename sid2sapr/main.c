@@ -45,7 +45,7 @@ static uint16_t init_addr, play_addr;
 static uint8_t actual_subsong, max_subsong, speed100Hz;
 static char song_name[33], song_author[33], song_copyright[33];
 
-#define DEFAULT_MAXPOKVOL 12
+#define DEFAULT_MAXPOKVOL 10
 static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
 
 static int basstype = 0;
@@ -341,7 +341,7 @@ int main(int argc, char *argv[]) {
             }
             basstype = i;
             if (basstype == BASS_SOFTBASS && maxpokvol == DEFAULT_MAXPOKVOL)
-                maxpokvol = 10;             // 11 and 12 sometimes distorts
+                maxpokvol = 9;
             break;
         case 'o':
             outfile = strdup(optarg);
