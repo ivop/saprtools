@@ -198,7 +198,7 @@ static void setmem(uint16_t addr, uint8_t value) {
 
 int c64_cpu_jsr(uint16_t newpc, uint8_t newa) {
     int ccl=0;
-    memory[0xff00] = 0x20;          // JSR
+    memory[0xff00] = 0x20;            // JSR
     memory[0xff01] = newpc & 0xff;    // LSB
     memory[0xff02] = newpc >> 8;      // MSB
 
@@ -292,6 +292,19 @@ uint16_t c64_load_sid(char *filename,
         memory[p] = c;
         p++;
         c = fgetc(f);
+    }
+
+    if (!*playAddress) {
+        fprintf(stderr, "play address not set, trying interrupt vector(s)\n");
+        c64_cpu_jsr(*initAddress, 0);
+        if ((memory[1] & 7) == 5)
+            *playAddress = memory[0xfffe] + (memory[0xffff] << 8);
+        else
+            *playAddress = memory[0x0314] + (memory[0x0315] << 8);
+        if (!*playAddress) {
+            fprintf(stderr, "interrupt vector is also not set!\n");
+            return 0;
+        }
     }
 
     return loadAddress;
