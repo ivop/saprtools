@@ -14,7 +14,7 @@ fi
 
 # JEROEN TEL
 
-./sid2sapr -p 9 -n $(((6*60+47)*50)) -b $basstype sid/'Alloyrun.sid'
+./sid2sapr -n $(((6*60+47)*50)) -b $basstype sid/'Alloyrun.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Alloyrun                       " \
@@ -49,6 +49,42 @@ echo -n \
 make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-cybernoid2.xex
+
+./sid2sapr -n $(((6*60+25)*50)) -b $basstype sid/'Hawkeye.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Hawkeye                        " \
+    "Author: Jeroen Tel" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/tel-hawkeye.xex
+
+./sid2sapr -n $(((5*60+46)*50)) -b $basstype sid/'Ice_Age.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Ice Age                        " \
+    "Author: Jeroen Tel" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/tel-iceage.xex
+
+./sid2sapr -n $(((2*60+34)*50)) -b $basstype sid/'JT_42.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : JT 42                          " \
+    "Author: Jeroen Tel" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/tel-jt42.xex
+
+./sid2sapr -n $(((2*60+38)*50)) -b $basstype sid/'Kinetix.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Kinetix                        " \
+    "Author: Jeroen Tel" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/tel-kinetix.xex
 
 # LAXITY
 
@@ -99,7 +135,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-comets.xex
 
-./sid2sapr -p 9 -n $(((1*60+17)*50)) -b $basstype sid/'Delta.sid'
+./sid2sapr -n $(((1*60+17)*50)) -b $basstype sid/'Delta.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Delta                          " \
@@ -108,7 +144,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-delta.xex
 
-./sid2sapr -p 9 -n $(((7*60+13)*50)) -b $basstype sid/'Lightforce.sid'
+./sid2sapr -n $(((7*60+13)*50)) -b $basstype sid/'Lightforce.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Lightforce                     " \
@@ -117,7 +153,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-lightforce.xex
 
-./sid2sapr -p 9 -n $(((5*60+50)*50)) -b $basstype sid/'Monty_on_the_Run.sid'
+./sid2sapr -n $(((5*60+50)*50)) -b $basstype sid/'Monty_on_the_Run.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Monty on the Run               " \
@@ -126,7 +162,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-monty.xex
 
-./sid2sapr -p 9 -n $(((5*60+41)*50)) -b $basstype sid/'Spellbound.sid'
+./sid2sapr -n $(((5*60+41)*50)) -b $basstype sid/'Spellbound.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Spellbound                     " \
@@ -135,7 +171,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-spellbound.xex
 
-./sid2sapr -p 9 -n $(((3*60+48)*50)) -b $basstype sid/'Thing_on_a_Spring.sid'
+./sid2sapr -n $(((3*60+48)*50)) -b $basstype sid/'Thing_on_a_Spring.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Thing On A Spring              " \
@@ -144,7 +180,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-toas.xex
 
-./sid2sapr -p 9 -n $(((4*60+24)*50)) -b $basstype sid/'Warhawk.sid'
+./sid2sapr -n $(((4*60+24)*50)) -b $basstype sid/'Warhawk.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Warhawk                        " \
