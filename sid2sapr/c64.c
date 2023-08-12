@@ -23,7 +23,7 @@
  * SUCH DAMAGE.
  *
  */
-/* SID Loader and ADSR Copyright (C) 1999-2006 T. Hinrichs and R. Sinsch.
+/* ADSR code Copyright (C) 1999-2006 T. Hinrichs and R. Sinsch.
  */
 /* M6502 emulator Copyright (c) 2018 Andre Weissflog.
  * See m6502.h for zlib license
@@ -227,89 +227,73 @@ void c64_init(void) {
 
 /* ------------------------------------------------------------------------- */
 
-unsigned short LoadSIDFromMemory(void *pSidData, unsigned short *load_addr,
-                                 unsigned short *init_addr,
-                                 unsigned short *play_addr,
-                                 unsigned char *subsongs,
-                                 unsigned char *startsong,
-                                 unsigned char *speed, unsigned short size) {
-    unsigned char *pData;
-    unsigned char data_file_offset;
+static inline uint16_t readLE16(FILE *f) {
+    uint16_t t = fgetc(f);
+    return t + (fgetc(f)<<8);
+}
 
-    pData = (unsigned char *)pSidData;
-    data_file_offset = pData[7];
+static inline uint16_t readBE16(FILE *f) {
+    uint16_t t = fgetc(f) << 8;
+    return t + fgetc(f);
+}
 
-    *load_addr = pData[8] << 8;
-    *load_addr |= pData[9];
+static inline uint16_t readBE32(FILE *f) {
+    uint32_t t = fgetc(f) << 24;
+    t += fgetc(f) << 16;
+    t += fgetc(f) << 8;
+    return t + fgetc(f);
+}
 
-    *init_addr = pData[10] << 8;
-    *init_addr |= pData[11];
+uint16_t c64_load_sid(char *filename,
+                    uint16_t *initAddress, uint16_t *playAddress,
+                    uint16_t *songs, uint16_t *startSong,
+                    uint32_t *speed, char *name, char *author,
+                    char *copyright) {
+    char magic[4];
+    uint16_t version, dataOffset, loadAddress;
 
-    *play_addr = pData[12] << 8;
-    *play_addr |= pData[13];
-
-    *subsongs = pData[0xf] - 1;
-    *startsong = pData[0x11] - 1;
-
-    *load_addr = pData[data_file_offset];
-    *load_addr |= pData[data_file_offset + 1] << 8;
-
-    *speed = pData[0x15];
-
-    memset(memory, 0, sizeof(memory));
-    memcpy(&memory[*load_addr], &pData[data_file_offset + 2],
-           size - (data_file_offset + 2));
-
-    if (*play_addr == 0) {
-        c64_cpu_jsr(*init_addr, 0);
-        *play_addr = (memory[0x0315] << 8) + memory[0x0314];
+    FILE *f = fopen(filename, "rb");
+    if (!f) {
+        fprintf(stderr, "unable to open %s\n", filename);
+        return 0;
     }
 
-    return *load_addr;
+    if (fread(magic, 4, 1, f) < 1) return 0;
+
+    if (strncmp(magic+1, "SID", 3)) {
+        fprintf(stderr, "not a valid SID file\n");
+        return 0;
+    }
+
+    version = readBE16(f);
+    fprintf(stderr, "%s version %d\n", magic, version);
+
+     dataOffset  = readBE16(f);
+     loadAddress = readBE16(f);
+    *initAddress = readBE16(f);
+    *playAddress = readBE16(f);
+    *songs       = readBE16(f);
+    *startSong   = readBE16(f);
+    *speed       = readBE32(f);
+
+    if (fread(name, 32, 1, f) < 1) return 0;
+    if (fread(author, 32, 1, f) < 1) return 0;
+    if (fread(copyright, 32, 1, f) < 1) return 0;
+
+    if (fseek(f, dataOffset, SEEK_SET) < 0) return 0;
+
+    if (!loadAddress)
+        loadAddress = readLE16(f);
+
+    int c = fgetc(f);
+    uint16_t p = loadAddress;
+
+    while (c >= 0) {
+        memory[p] = c;
+        p++;
+        c = fgetc(f);
+    }
+
+    return loadAddress;
 }
 
-uint16_t c64SidLoad(char *filename, uint16_t * init_addr, uint16_t * play_addr,
-                    uint8_t * sub_song_start, uint8_t * max_sub_songs,
-                    uint8_t * speed, char *name, char *author,
-                    char *copyright) {
-    FILE *f;
-    int i;
-
-    if ((f = fopen(filename, "rb")) == NULL)
-        return (0);
-    // Name holen
-    fseek(f, 0x16, 0);
-    for (i = 0; i < 32; i++)
-        name[i] = fgetc(f);
-
-    // Author holen
-    fseek(f, 0x36, 0);
-    for (i = 0; i < 32; i++)
-        author[i] = fgetc(f);
-
-    // Copyright holen
-    fseek(f, 0x56, 0);
-    for (i = 0; i < 32; i++)
-        copyright[i] = fgetc(f);
-    fclose(f);
-
-
-    unsigned char sidmem[65536];
-    unsigned char *p = sidmem;
-    unsigned short load_addr;
-
-    if ((f = fopen(filename, "rb")) == NULL)
-        return (0);
-    while (!feof(f))
-        *p++ = fgetc(f);
-    fclose(f);
-
-    LoadSIDFromMemory(sidmem, &load_addr,
-                      init_addr, play_addr, max_sub_songs, sub_song_start,
-                      speed, p - sidmem);
-    name = NULL;
-    author = NULL;
-    copyright = NULL;
-
-    return load_addr;
-}

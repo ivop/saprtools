@@ -36,6 +36,10 @@ extern int  c64_cpu_jsr(uint16_t npc, uint8_t na);
 extern void c64_sid_init(uint32_t mixfrq);
 extern void c64_handle_adsr (uint32_t len);
 
-extern uint16_t c64SidLoad(char *filename, uint16_t *init_addr, uint16_t *play_addr, uint8_t *sub_song_start, uint8_t *max_sub_songs, uint8_t *speed, char *name, char *author, char *copyright);
+extern uint16_t c64_load_sid(char *filename,
+                    uint16_t *initAddress, uint16_t *playAddress,
+                    uint16_t *songs, uint16_t *startSong,
+                    uint32_t *speed, char *name, char *author,
+                    char *copyright);
 
 #endif

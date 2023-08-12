@@ -41,9 +41,9 @@
 
 /* ------------------------------------------------------------------------ */
 
-static uint16_t init_addr, play_addr;
-static uint8_t actual_subsong, max_subsong, speed100Hz;
-static char song_name[33], song_author[33], song_copyright[33];
+static uint16_t initAddress, playAddress, songs, startSong;
+static uint32_t speed;
+static char name[33], author[33], copyright[33];
 
 #define DEFAULT_MAXPOKVOL 10
 static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
@@ -377,19 +377,16 @@ int main(int argc, char *argv[]) {
     c64_init();
     c64_sid_init(44100);
 
-    if (c64SidLoad
-        (argv[optind], &init_addr, &play_addr, &actual_subsong, &max_subsong,
-         &speed100Hz, song_name, song_author, song_copyright) == 0) {
+    if (!c64_load_sid(argv[optind], &initAddress, &playAddress, &songs,
+                &startSong, &speed, name, author, copyright)) {
         fprintf(stderr, "Failed to load %s\n", argv[optind]);
         return 1;
     }
 
     fprintf(stderr, "Title     : %s\nAuthor    : %s\n"
-                    "Copyright : %s\nSpeed     : %s\n", 
-                            song_name, song_author, song_copyright, 
-                            speed100Hz ? "100Hz" : "50Hz");
+                    "Copyright : %s\n", name, author, copyright);
 
-    c64_cpu_jsr(init_addr, actual_subsong);
+    c64_cpu_jsr(initAddress, startSong-1);
 
     fprintf(stderr, "write output to %s\n", outfile);
 
@@ -413,35 +410,18 @@ int main(int argc, char *argv[]) {
         uint8_t pokey[9];
         memset(pokey, 0, 9);
 
-        if (!speed100Hz) {
-                c64_cpu_jsr(play_addr, 0);
-                c64_handle_adsr(NSAMPLES/2);
-                sid2pokey(0, &pokey[0]);
-                sid2pokey(1, &pokey[2]);
-                sid2pokey(2, &pokey[6]);
-                c64_handle_adsr(NSAMPLES/2);
-                if (!no_adjust) adjust_for_cancellation(pokey);
-                if (!save_pokey(pokey, outf)) return 1;
-        } else {
-                c64_cpu_jsr(play_addr, 0);
-                c64_handle_adsr(NSAMPLES/4);
-                sid2pokey(0, &pokey[0]);
-                sid2pokey(1, &pokey[2]);
-                sid2pokey(2, &pokey[6]);
-                c64_handle_adsr(NSAMPLES/4);
-                if (!no_adjust) adjust_for_cancellation(pokey);
-                if (!save_pokey(pokey, outf)) return 1;
-                counter++;
+        c64_cpu_jsr(playAddress, 0);
+        c64_handle_adsr(NSAMPLES/2);
 
-                c64_cpu_jsr(play_addr, 0);
-                c64_handle_adsr(NSAMPLES/4);
-                sid2pokey(0, &pokey[0]);
-                sid2pokey(1, &pokey[2]);
-                sid2pokey(2, &pokey[6]);
-                c64_handle_adsr(NSAMPLES/4);
-                if (!no_adjust) adjust_for_cancellation(pokey);
-                if (!save_pokey(pokey, outf)) return 1;
-        }
+        sid2pokey(0, &pokey[0]);
+        sid2pokey(1, &pokey[2]);
+        sid2pokey(2, &pokey[6]);
+
+        c64_handle_adsr(NSAMPLES/2);
+
+        if (!no_adjust) adjust_for_cancellation(pokey);
+        if (!save_pokey(pokey, outf)) return 1;
+
         counter++;
     }
 
