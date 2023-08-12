@@ -14,7 +14,7 @@ fi
 
 # JEROEN TEL
 
-./sid2sapr -n $(((6*60+47)*50)) -b $basstype sid/'Alloyrun.sid'
+./sid2sapr -p 8 -n $(((6*60+47)*50)) -b $basstype sid/'Alloyrun.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Alloyrun                       " \
