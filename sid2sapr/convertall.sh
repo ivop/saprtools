@@ -269,6 +269,37 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/cadaver-unleash.xex
 
+# MARTIN GALWAY
+
+./sid2sapr -n $(((3*60+22)*50)) -b $basstype sid/'Ocean_Loader_1.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Ocean Loader 1                 " \
+    "Author: Martin Galway" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/galway-ocean1.xex
+
+./sid2sapr -n $(((4*60+13)*50)) -b $basstype sid/'Ocean_Loader_2.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Ocean Loader 2                 " \
+    "Author: Martin Galway" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/galway-ocean2.xex
+
+# PETER CLARKE
+
+./sid2sapr -n $(((2*60+47)*50)) -b $basstype sid/'Ocean_Loader_3.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Ocean Loader 3                 " \
+    "Author: Peter Clarke" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/clarke-ocean3.xex
+
 #fi
 
 done
