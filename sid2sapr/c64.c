@@ -23,7 +23,8 @@
  * SUCH DAMAGE.
  *
  */
-/* ADSR code Copyright (C) 1999-2006 T. Hinrichs and R. Sinsch.
+/* Some lines have survived the original ADSR code after my rewrite.
+ * These are Copyright (C) 1999-2006 T. Hinrichs and R. Sinsch.
  */
 /* M6502 emulator Copyright (c) 2018 Andre Weissflog.
  * See m6502.h for zlib license
@@ -46,25 +47,20 @@ static inline int fixed_from_float(float f) {
 }
 
 // --------------------------------------------------------------------------
-// CONSTANTS
-//
-static const float attack_times[16] = {
-    0.0022528606, 0.0080099577, 0.0157696042, 0.0237795619, 0.0372963655,
-    0.0550684591, 0.0668330845, 0.0783473987, 0.0981219818, 0.244554021,
-    0.489108042, 0.782472742, 0.977715461, 2.93364701, 4.88907793, 7.82272493
-};
-
-static const float decay_release_times[16] = {
-    0.00891777693, 0.024594051, 0.0484185907, 0.0730116639, 0.114512475,
-    0.169078356, 0.205199432, 0.240551975, 0.301266125, 0.750858245,
-    1.50171551, 2.40243682, 3.00189298, 9.00721405, 15.010998, 24.0182111
-};
-
-// --------------------------------------------------------------------------
 // CALCULATED "CONSTANTS"
 //
-static int attacks[16];
-static int releases[16];
+static int adr_table[16];
+
+// Proper rate counter periods
+//
+static const uint32_t periods[16] = {
+    9, 32, 63, 95, 149, 220, 267, 313,
+    392, 977, 1954, 3126, 3907, 11720, 19532, 31251
+};
+
+enum {
+    ATTACK, DECAY, SUSTAIN, RELEASE
+};
 
 // --------------------------------------------------------------------------
 // OUR "CHIPS"
@@ -78,13 +74,11 @@ static uint8_t memory[65536];
 // --------------------------------------------------------------------------
 // INIT SID
 //
-void c64_sid_init(uint32_t mixfrq) {
-    int i;
+void c64_sid_init(uint32_t mixfreq) {
+    int cycles_per_sample = 985248.444 / mixfreq;
+    for (int i = 0; i < 16; i++)
+        adr_table[i] = (cycles_per_sample << 16) / periods[i];
 
-    for (i = 0; i < 16; i++) {
-        attacks[i] = (int)(0x1000000 / (attack_times[i] * mixfrq));
-        releases[i] = (int)(0x1000000 / (decay_release_times[i] * mixfrq));
-    }
     memset(&sid, 0, sizeof(sid));
     memset(osc, 0, sizeof(osc));
 }
@@ -93,12 +87,12 @@ void c64_handle_adsr(uint32_t len) {
     uint8_t v;
 
     for (v = 0; v < 3; v++) {
-        osc[v].pulse = (sid.v[v].pulse & 0xfff) << 16;
-        osc[v].attack = attacks[sid.v[v].ad >> 4];
-        osc[v].decay = releases[sid.v[v].ad & 0xf];
-        osc[v].sustain = sid.v[v].sr & 0xf0;
-        osc[v].release = releases[sid.v[v].sr & 0xf];
-        osc[v].wave = sid.v[v].wave;
+        osc[v].pulse   = (sid.v[v].pulse & 0xfff) << 16;
+        osc[v].attack  = adr_table[sid.v[v].ad >> 4];
+        osc[v].decay   = adr_table[sid.v[v].ad & 0xf];
+        osc[v].sustain = (sid.v[v].sr & 0xf0) << 16;
+        osc[v].release = adr_table[sid.v[v].sr & 0xf];
+        osc[v].wave    = sid.v[v].wave;
     }
 
     for (int scnt=0; scnt<len; scnt++) {            // sample counter
@@ -106,41 +100,35 @@ void c64_handle_adsr(uint32_t len) {
         for (v = 0; v < 3; v++) {       // handle ADSR for each voice
 
             if (!(osc[v].wave & 0x01))  // not gate, release
-                osc[v].envphase = 3;
-            else if (osc[v].envphase == 3) {
-                osc[v].envphase = 0;
+                osc[v].envphase = RELEASE;
+            else if (osc[v].envphase == RELEASE) {
+                osc[v].envphase = ATTACK;
             }
             switch (osc[v].envphase) {
-            case 0:{           // Phase 0 : Attack
+            case ATTACK:
                 osc[v].envval += osc[v].attack;
-                if (osc[v].envval >= 0xFFFFFF) {
-                    osc[v].envval = 0xFFFFFF;
-                    osc[v].envphase = 1;
+                if (osc[v].envval >= 0xffffff) {
+                    osc[v].envval = 0xffffff;
+                    osc[v].envphase = DECAY;
                 }
                 break;
-            }
-            case 1:{           // Phase 1 : Decay
+            case DECAY:
                 osc[v].envval -= osc[v].decay;
-                if ((signed int)osc[v].envval <=
-                    (signed int)(osc[v].sustain << 16)) {
-                    osc[v].envval = osc[v].sustain << 16;
-                    osc[v].envphase = 2;
+                if ((int)osc[v].envval <= (int)(osc[v].sustain)) {
+                    osc[v].envval = osc[v].sustain;
+                    osc[v].envphase = SUSTAIN;
                 }
                 break;
-            }
-            case 2:{           // Phase 2 : Sustain
-                if ((signed int)osc[v].envval !=
-                    (signed int)(osc[v].sustain << 16)) {
-                    osc[v].envphase = 1;
+            case SUSTAIN:
+                if (osc[v].envval != osc[v].sustain) {
+                    osc[v].envphase = DECAY;
                 }
                 break;
-            }
-            case 3:{           // Phase 3 : _release
+            case RELEASE:
                 osc[v].envval -= osc[v].release;
                 if (osc[v].envval < 0x40000)
                     osc[v].envval = 0x40000;
                 break; 
-            }
             }       // switch envphase
 
         }           // ADSR for each voice loop
