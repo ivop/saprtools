@@ -109,7 +109,6 @@ void c64_handle_adsr(uint32_t len) {
                 osc[v].envphase = 3;
             else if (osc[v].envphase == 3) {
                 osc[v].envphase = 0;
-                osc[v].envval = 0x40000;
             }
             switch (osc[v].envphase) {
             case 0:{           // Phase 0 : Attack
