@@ -107,8 +107,8 @@ static void write_ym_header(FILE *out, uint32_t clock, double rate) {
 static void usage() {
     fprintf(stderr, "usage: sndh2ym [-o filename.ym] filename.sndh\n\n"
     "   -o filename     write YM output to filename\n"
-    "   -s number       select subtune number [default: 1]\n"
-    "   -t seconds      dump this number of seconds [default: 60]\n"
+    "   -s seconds      dump this number of seconds [default: 60]\n"
+    "   -t number       select track/subtune number [default: 1]\n"
     );
 }
 
@@ -128,10 +128,10 @@ int main(int argc, char **argv) {
             outfile = strdup(optarg);
             break;
         case 's':
-            subtune = atoi(optarg);
+            seconds = atoi(optarg);
             break;
         case 't':
-            seconds = atoi(optarg);
+            subtune = atoi(optarg);
             break;
         case 'h':
         default:
