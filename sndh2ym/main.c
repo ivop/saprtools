@@ -121,8 +121,8 @@ static void calculate_hash(uint8_t *data, int len, unsigned int *hptr) {
 static void usage() {
     fprintf(stderr, "usage: sndh2ym [-o filename.ym] filename.sndh\n\n"
     "   -o filename     write YM output to filename\n"
-    "   -s seconds      dump this number of seconds [default: 60]\n"
-    "   -t number       select track/subtune number [default: 1]\n"
+    "   -s seconds      dump this number of seconds [default: timedb or 60]\n"
+    "   -t number       select track/subtune number [default: sndh or 1]\n"
     );
 }
 
@@ -131,7 +131,10 @@ static void usage() {
 int main(int argc, char **argv) {
     char *outfile = "output.ym";
     int option;
+    int subtune_count = 1;
+    int subtune_default = 1;
     int subtune = 1;
+    bool subtune_override = false;
     int seconds = 60;
     bool seconds_override = false;
     int timer_frequency = 50;
@@ -148,6 +151,7 @@ int main(int argc, char **argv) {
             break;
         case 't':
             subtune = atoi(optarg);
+            subtune_override = true;
             break;
         case 'h':
         default:
@@ -190,7 +194,22 @@ int main(int argc, char **argv) {
         timer_frequency = timer.frequency;
     }
 
-    fprintf(stderr, "size: %ld\n", f.size);
+    if (sndh_tag_subtune_count(&subtune_count, f.data, f.size)) {
+        fprintf(stderr, "number of subtunes: %d\n", subtune_count);
+        if (sndh_tag_default_subtune(&subtune_default, f.data, f.size)) {
+            fprintf(stderr, "default subtune: %d\n", subtune_default);
+            if (!subtune_override)
+                subtune = subtune_default;
+        }
+        if (subtune_override) {
+            if (subtune < 1 || subtune > subtune_count) {
+                fprintf(stderr, "invalid subtune %d selected!\n", subtune);
+                return 1;
+            }
+        }
+    }
+
+    fprintf(stderr, "dumping subtune %d\n", subtune);
 
     unsigned int hash = 0;
     calculate_hash(f.data, 32, &hash);
@@ -199,14 +218,16 @@ int main(int argc, char **argv) {
     fprintf(stderr, "timedb hash: %08x\n", hash);
 
     unsigned int frames, flags;
-    if (timedb_get(hash, subtune, &frames, &flags) >= 0) {
-        fprintf(stderr, "has found!\n");
+    if (timedb_get(hash, subtune-1, &frames, &flags) >= 0) {
+        fprintf(stderr, "hash found!\n");
         if (!seconds_override) {
             fprintf(stderr, "setting time to dump\n");
             seconds = frames / timer_frequency;
         } else {
             fprintf(stderr, "using command line override of seconds\n");
         }
+    } else {
+        fprintf(stderr, "hash not found\n");
     }
 
     stop_position = timer_frequency * seconds;
