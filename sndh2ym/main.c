@@ -56,21 +56,18 @@ struct cb_vars {
  * cycles.
  */
 
+/* XXXXXXXXXXXXXX we must count machine cycles instead of this STOP hack
+ */
+
 static void cb(uint32_t pc, void *arg) {
     uint16_t insn = probe_read_memory_16(pc);
     struct cb_vars *cb_vars = arg;
     FILE *out = cb_vars->out;
     uint8_t regs[16];
+    union psg *psg = psg_device.state.internal;
 
     if (insn == STOP_INSTR && cb_vars->counter < cb_vars->stop) {
-        // psg_device.state.internal is not set to anything (should be
-        // a pointer to psg_state which is a struct containing union psg
-        // and reg_select), so we read the registers one by one
-        for (int i = 0; i < 16; i++) {
-            psg_device.wr_u8(&psg_device, 0, i);
-            regs[i] = psg_device.rd_u8(&psg_device, 0);
-        }
-        fwrite(regs, 16, 1, out);
+        fwrite(psg, 16, 1, out);
         cb_vars->counter++;
     }
 }
