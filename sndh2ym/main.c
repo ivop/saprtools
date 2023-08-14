@@ -47,17 +47,12 @@ struct cb_vars {
     FILE *out;
     int counter;
     int stop;
+    int interval;
 };
 
 /* ------------------------------------------------------------------------ */
 
-/* We us the STOP instruction to determine when the machine is waiting
- * for the next interrupt to occur. Happens in periods of 8M/framerate
- * cycles.
- */
-
-/* XXXXXXXXXXXXXX we must count machine cycles instead of this STOP hack
- */
+/* Count machine cycles and capture PSG registers every interval */
 
 static void cb(uint32_t pc, void *arg) {
     uint16_t insn = probe_read_memory_16(pc);
@@ -65,10 +60,13 @@ static void cb(uint32_t pc, void *arg) {
     FILE *out = cb_vars->out;
     uint8_t regs[16];
     union psg *psg = psg_device.state.internal;
+    static uint64_t prev_cycle = 40000, cycle;
 
-    if (insn == STOP_INSTR && cb_vars->counter < cb_vars->stop) {
+    cycle = machine_cycle();
+    if (cycle - prev_cycle >= cb_vars->interval) {
         fwrite(psg, 16, 1, out);
         cb_vars->counter++;
+        prev_cycle = cycle;
     }
 }
 
@@ -170,11 +168,12 @@ int main(int argc, char **argv) {
     bool ret = sndh_tag_timer(&timer, f.data, f.size);
 
     if (!ret) {
-        fprintf(stderr, "cannot determine timer frequency\n");
-        return 1;
-    } 
+        fprintf(stderr, "cannot determine timer frequency, assuming 50Hz\n");
+        timer_frequency = 50;
+    } else {
+        timer_frequency = timer.frequency;
+    }
 
-    timer_frequency = timer.frequency;
     stop_position = timer_frequency * seconds;
 
     fprintf(stderr, "dumping %d seconds of data\n", seconds);
@@ -189,7 +188,7 @@ int main(int argc, char **argv) {
 
     write_ym_header(out, 2000000, timer_frequency);
 
-    struct cb_vars cb_vars = { out, 0, stop_position };
+    struct cb_vars cb_vars = { out, 0, stop_position, 8000000/timer_frequency };
 
     psgplay_instruction_callback(pp, cb, &cb_vars);
 
