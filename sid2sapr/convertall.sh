@@ -300,6 +300,17 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/clarke-ocean3.xex
 
+# CHRIS HUELSBECK
+
+./sid2sapr -n $(((2*60+11)*50)) -b $basstype sid/'R-Type.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : R-Type                         " \
+    "Author: Chris Huelsbeck & Ramiro Vaca" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/huelsbeck-rtype.xex
+
 #fi
 
 done
