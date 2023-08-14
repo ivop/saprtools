@@ -1,0 +1,15 @@
+Makefile targets:
+
+  all            - compile TOS/libc and examples (default)
+  version        - display TOS/libc version
+  clean          - remove generated files
+
+Makefile options:
+
+  V              - set to 1 to compile verbosely
+  S              - set to 1 for sanitation checks
+  TARGET_COMPILE - set the m68k target compiler suite to use for Atari ST code
+
+Example:
+
+	$ make TARGET_COMPILE=m68k-elf-

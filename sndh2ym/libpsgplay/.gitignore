@@ -1,0 +1,9 @@
+/version
+/psgplay
+/PSGPLAY.*
+*.sndh
+*.o
+*.o.d
+/GPATH
+/GRTAGS
+/GTAGS

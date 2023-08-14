@@ -1,0 +1,9 @@
+/version
+*.o
+*.o.d
+*.PRG
+*.TOS
+*.TTP
+/GPATH
+/GRTAGS
+/GTAGS
