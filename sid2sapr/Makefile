@@ -24,7 +24,7 @@ player60-softbass:
 	mads -d:SID2SAPR -d:HZ60 -o:player.xex asm/playlzs16-softbass.asm
 
 $(LZSS):
-	make -C ../lzss-sap
+	+make -C ../lzss-sap
 
 clean:
 	rm -f *~ sid2sapr */*~

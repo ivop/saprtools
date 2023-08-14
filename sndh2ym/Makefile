@@ -12,7 +12,7 @@ sndh2ym: $(SRC) $(LIB)
 	gcc $(CFLAGS) -o sndh2ym $(SRC) $(LIB) -lm
 
 $(LIB):
-	make -C libpsgplay lib/psgplay/libpsgplay.a
+	+make -C libpsgplay lib/psgplay/libpsgplay.a
 
 clean:
 	rm -f *~ sndh2ym
