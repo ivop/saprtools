@@ -104,6 +104,20 @@ static void write_ym_header(FILE *out, uint32_t clock, double rate) {
 
 /* ------------------------------------------------------------------------ */
 
+int timedb_get(int hash, int track, unsigned int *frames, int *flags);
+
+static void calculate_hash(uint8_t *data, int len, unsigned int *hptr) {
+    uint32_t h = *hptr;
+    do {
+        h += *data++;
+        h += h << 10;
+        h ^= h >> 6;
+    } while (--len);
+    *hptr = h;
+}
+
+/* ------------------------------------------------------------------------ */
+
 static void usage() {
     fprintf(stderr, "usage: sndh2ym [-o filename.ym] filename.sndh\n\n"
     "   -o filename     write YM output to filename\n"
@@ -119,6 +133,7 @@ int main(int argc, char **argv) {
     int option;
     int subtune = 1;
     int seconds = 60;
+    bool seconds_override = false;
     int timer_frequency = 50;
     int stop_position;
 
@@ -129,6 +144,7 @@ int main(int argc, char **argv) {
             break;
         case 's':
             seconds = atoi(optarg);
+            seconds_override = true;
             break;
         case 't':
             subtune = atoi(optarg);
@@ -172,6 +188,25 @@ int main(int argc, char **argv) {
         timer_frequency = 50;
     } else {
         timer_frequency = timer.frequency;
+    }
+
+    fprintf(stderr, "size: %ld\n", f.size);
+
+    unsigned int hash = 0;
+    calculate_hash(f.data, 32, &hash);
+    calculate_hash(f.data, f.size, &hash);
+
+    fprintf(stderr, "timedb hash: %08x\n", hash);
+
+    unsigned int frames, flags;
+    if (timedb_get(hash, subtune, &frames, &flags) >= 0) {
+        fprintf(stderr, "has found!\n");
+        if (!seconds_override) {
+            fprintf(stderr, "setting time to dump\n");
+            seconds = frames / timer_frequency;
+        } else {
+            fprintf(stderr, "using command line override of seconds\n");
+        }
     }
 
     stop_position = timer_frequency * seconds;
