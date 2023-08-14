@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <math.h>
 
 #include "psgplay/psgplay.h"
 #include "psgplay/sndh.h"
@@ -40,13 +41,15 @@
 #include "atari/mmu.h"
 #include "atari/psg.h"
 
+#define STOP_INSTR  0x4e72
+
 struct cb_vars {
     FILE *out;
     int counter;
     int stop;
 };
 
-#define STOP_INSTR  0x4e72
+/* ------------------------------------------------------------------------ */
 
 /* We us the STOP instruction to determine when the machine is waiting
  * for the next interrupt to occur. Happens in periods of 8M/framerate
@@ -67,9 +70,44 @@ static void cb(uint32_t pc, void *arg) {
             psg_device.wr_u8(&psg_device, 0, i);
             regs[i] = psg_device.rd_u8(&psg_device, 0);
         }
+        fwrite(regs, 16, 1, out);
         cb_vars->counter++;
     }
 }
+
+/* ------------------------------------------------------------------------ */
+
+static void write_ym_header(FILE *out, uint32_t clock, double rate) {
+    fwrite("YM6!LeOnArD!", 1, 12, out);
+
+    unsigned char dword[4];
+
+    memset(dword,0,4);                  // write later when we know nframes
+    fwrite(dword, 1, 4, out);
+
+    fwrite(dword, 1, 4, out);           // attributes, not "interleaved"
+    fwrite(dword, 1, 2, out);           // zero digidrums
+
+    dword[0] = (clock >> 24) & 0xff;
+    dword[1] = (clock >> 16) & 0xff;
+    dword[2] = (clock >>  8) & 0xff;
+    dword[3] =  clock        & 0xff;
+    fwrite(dword, 1, 4, out);           // master clock
+
+    memset(dword,0,4);
+    dword[1] = round(rate);
+    fwrite(dword, 1, 2, out);           // playrate
+
+    memset(dword,0,4);
+    fwrite(dword, 1, 4, out);           // loop frame
+    fwrite(dword, 1, 2, out);           // skip
+
+    fwrite("name\000", 1, 5, out);
+    fwrite("author\000", 1, 7, out);
+    fwrite("comment\000", 1, 8, out);
+}
+
+/* ------------------------------------------------------------------------ */
 
 static void usage() {
     fprintf(stderr, "usage: sndh2ym [-o filename.ym] filename.sndh\n\n"
@@ -79,12 +117,14 @@ static void usage() {
     );
 }
 
+/* ------------------------------------------------------------------------ */
+
 int main(int argc, char **argv) {
     char *outfile = "output.ym";
     int option;
     int subtune = 1;
     int seconds = 60;
-    int timer_frequency;
+    int timer_frequency = 50;
     int stop_position;
 
     while ((option = getopt(argc, argv, "ho:s:t:")) != -1) {
@@ -133,10 +173,11 @@ int main(int argc, char **argv) {
     bool ret = sndh_tag_timer(&timer, f.data, f.size);
 
     if (!ret) {
-        fprintf(stderr, "warning: cannot determine timer frequency, assuming 50Hz\n");
-    } else {
-        timer_frequency = timer.frequency;
-    }
+        fprintf(stderr, "cannot determine timer frequency\n");
+        return 1;
+    } 
+
+    timer_frequency = timer.frequency;
     stop_position = timer_frequency * seconds;
 
     fprintf(stderr, "dumping %d seconds of data\n", seconds);
@@ -148,6 +189,8 @@ int main(int argc, char **argv) {
         fprintf(stderr, "%s: cannot open for writing\n", outfile);
         return 1;
     }
+
+    write_ym_header(out, 2000000, timer_frequency);
 
     struct cb_vars cb_vars = { out, 0, stop_position };
 
@@ -165,6 +208,16 @@ int main(int argc, char **argv) {
 
     psgplay_free(pp);
     file_free(f);
+
+    fseek(out, 12, SEEK_SET);
+
+    uint8_t dword[4];
+    dword[0] = (stop_position >> 24) & 0xff;
+    dword[1] = (stop_position >> 16) & 0xff;
+    dword[2] = (stop_position >>  8) & 0xff;
+    dword[3] =  stop_position        & 0xff;
+    fwrite(dword, 1, 4, out);           // number of frames
+
     fclose(out);
 
     fprintf(stderr, "finished!\n");

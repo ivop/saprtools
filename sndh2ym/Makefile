@@ -9,7 +9,7 @@ CFLAGS = -O2 -I$(BASE)/include
 LIB = $(BASE)/lib/psgplay/libpsgplay.a
 
 sndh2ym: $(SRC) $(LIB)
-	gcc $(CFLAGS) -o sndh2ym $(SRC) $(LIB)
+	gcc $(CFLAGS) -o sndh2ym $(SRC) $(LIB) -lm
 
 $(LIB):
 	make -C libpsgplay lib/psgplay/libpsgplay.a
