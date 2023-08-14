@@ -26,8 +26,13 @@ struct psg_state {
 	u8 reg_select;
 };
 
-static union psg psg;
-static u8 reg_select;
+struct psg_state psg_state;
+
+#define psg (psg_state.psg)
+#define reg_select (psg_state.reg_select)
+
+//static union psg psg;
+//static u8 reg_select;
 static u32 env_index;
 static u32 env_wave_index;
 
@@ -324,6 +329,7 @@ const struct device psg_device = {
 		.size = 256,
 	},
 	.state = {
+        .internal = &psg_state,
 		.size = sizeof(struct psg_state),
 	},
 	.reset = psg_reset,
