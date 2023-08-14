@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "psgplay/psgplay.h"
 #include "psgplay/sndh.h"
@@ -39,76 +40,134 @@
 #include "atari/mmu.h"
 #include "atari/psg.h"
 
+struct cb_vars {
+    FILE *out;
+    int counter;
+    int stop;
+};
+
 #define STOP_INSTR  0x4e72
+
+/* We us the STOP instruction to determine when the machine is waiting
+ * for the next interrupt to occur. Happens in periods of 8M/framerate
+ * cycles.
+ */
 
 static void cb(uint32_t pc, void *arg) {
     uint16_t insn = probe_read_memory_16(pc);
+    struct cb_vars *cb_vars = arg;
+    FILE *out = cb_vars->out;
+    uint8_t regs[16];
 
-    if (insn == STOP_INSTR) {
+    if (insn == STOP_INSTR && cb_vars->counter < cb_vars->stop) {
         // psg_device.state.internal is not set to anything (should be
         // a pointer to psg_state which is a struct containing union psg
         // and reg_select), so we read the registers one by one
-        fprintf(stderr, "psg: ");
         for (int i = 0; i < 16; i++) {
             psg_device.wr_u8(&psg_device, 0, i);
-            fprintf(stderr, "%02x ", psg_device.rd_u8(&psg_device, 0));
+            regs[i] = psg_device.rd_u8(&psg_device, 0);
         }
-        fprintf(stderr, "\n");
+        cb_vars->counter++;
     }
 }
 
+static void usage() {
+    fprintf(stderr, "usage: sndh2ym [-o filename.ym] filename.sndh\n\n"
+    "   -o filename     write YM output to filename\n"
+    "   -s number       select subtune number [default: 1]\n"
+    "   -t seconds      dump this number of seconds [default: 60]\n"
+    );
+}
+
 int main(int argc, char **argv) {
-    if (argc <= 1) {
-        fprintf(stderr, "usage: sndh2ym <sndh-file>...\n");
+    char *outfile = "output.ym";
+    int option;
+    int subtune = 1;
+    int seconds = 60;
+    int timer_frequency;
+    int stop_position;
+
+    while ((option = getopt(argc, argv, "ho:s:t:")) != -1) {
+        switch (option) {
+        case 'o':
+            outfile = strdup(optarg);
+            break;
+        case 's':
+            subtune = atoi(optarg);
+            break;
+        case 't':
+            seconds = atoi(optarg);
+            break;
+        case 'h':
+        default:
+            usage();
+            return 1;
+        }
+    }
+
+    if (optind+1 != argc) {
+        fprintf(stderr, "wrong arguments\n");
+        usage();
         return 1;
     }
 
-    const char *path = argv[1];
+    const char *path = argv[optind];
     struct file f = sndh_read_file(path);
 
     if (!file_valid(f)) {
-        fprintf(stderr, "%s: Not a valid SNDH file\n", path);
+        fprintf(stderr, "%s: not a valid SNDH file\n", path);
         return 1;
     }
 
     sndh_for_each_tag (f.data, f.size)
-        printf("%s %s\n", sndh_tag_name, sndh_tag_value);
-
-    struct sndh_timer timer;
-    bool ret = sndh_tag_timer(&timer, f.data, f.size);
-
-    if (ret) {
-        fprintf(stderr, "timer freq: %d Hz\n", timer.frequency);
-    }
-
-    int subtune = 4;
+        fprintf(stderr, "%s %s\n", sndh_tag_name, sndh_tag_value);
 
     struct psgplay *pp = psgplay_init(f.data, f.size, subtune, 44100);
 
     if (!pp) {
-        fprintf(stderr, "%s: Failed to play file\n", path);
+        fprintf(stderr, "%s: failed to play file\n", path);
         return 1;
     }
 
-    psgplay_instruction_callback(pp, cb, 0);
+    struct sndh_timer timer;
+    bool ret = sndh_tag_timer(&timer, f.data, f.size);
+
+    if (!ret) {
+        fprintf(stderr, "warning: cannot determine timer frequency, assuming 50Hz\n");
+    } else {
+        timer_frequency = timer.frequency;
+    }
+    stop_position = timer_frequency * seconds;
+
+    fprintf(stderr, "dumping %d seconds of data\n", seconds);
+
+    fprintf(stderr, "writing output to %s\n", outfile);
+
+    FILE *out = fopen(outfile, "wb");
+    if (!out) {
+        fprintf(stderr, "%s: cannot open for writing\n", outfile);
+        return 1;
+    }
+
+    struct cb_vars cb_vars = { out, 0, stop_position };
+
+    psgplay_instruction_callback(pp, cb, &cb_vars);
 
     for (;;) {
-        struct psgplay_stereo buffer[4096];
-        const ssize_t r = psgplay_read_stereo(pp, buffer, 4096);
-
-        if (r <= 0)
+        const ssize_t r = psgplay_read_stereo(pp, NULL, 4096);
+        if (r <= 0) {
+            fprintf(stderr, "unexpected end of audio data\n");
             break;
-
-        const ssize_t s = sizeof(struct psgplay_stereo[r]);
-        const ssize_t w = xwrite(STDOUT_FILENO, buffer, s);
-
-        if (w != s)
+        }
+        if (cb_vars.counter >= stop_position)
             break;
     }
 
     psgplay_free(pp);
-
     file_free(f);
+    fclose(out);
+
+    fprintf(stderr, "finished!\n");
 
     return 0;
 }
