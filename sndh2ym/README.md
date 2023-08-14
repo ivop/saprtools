@@ -2,8 +2,12 @@
 
 Convert .sndh files to .ym.
 
+### Instructions
+
+* Clone saprtools repo
+
 ```
-cd sndh2ym
+cd saprtools/sndh2ym
 make
 ./sndh2ym -o foo.ym foo.sndh
 ```
