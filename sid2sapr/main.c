@@ -308,7 +308,7 @@ static void usage(void) {
 "   -h          display help\n"
 "   -b type     bass type (transpose [default], gritty, buzzy or softbass)\n"
 "   -o file     output sap-r data to file [default: output.sapr]\n"
-"   -p volume   pokey maximum per channel volume [default: 12, softbass: 10]\n"
+"   -p volume   pokey maximum per channel volume [default: 10, softbass: 9]\n"
 "   -n num      number of frames to process [default: 3000] (60s at 50Hz)\n"
 "   -a          do not adjust for note cancellation\n"
 );
