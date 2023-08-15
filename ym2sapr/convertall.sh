@@ -283,4 +283,4 @@ mv player.xex xex/xak-ending2.xex
 #fi
 
 # clear for further tests
-echo -ne "Source\nTitle\nAuthor" > asm/songname.txt
+echo -n " " > asm/songname.txt
