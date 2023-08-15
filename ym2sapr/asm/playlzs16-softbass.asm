@@ -26,6 +26,8 @@
 
     icl 'cio.s'
 
+SAVMSC = 88
+
 AUDF1  = $d200
 AUDC1  = $d201
 AUDF2  = $d202
@@ -83,6 +85,19 @@ SKCTL  = $d20f
 .endif
     prints 0, " "
     print 0, songname
+    prints 0, " "
+    prints 0, "Time: 00:00"
+
+    lda #0
+    sta minutes
+    sta seconds
+.ifdef HZ60
+    lda #60
+.else
+    lda #50
+.endif
+    sta frames
+    inc SAVMSC+1
     rts
 
 songname
@@ -113,6 +128,9 @@ skip
 .endp
 song_ptr = get_byte + 1
 
+minutes .ds 1
+seconds .ds 1
+frames  .ds 1
 
 POKEY = $D200
 
@@ -196,6 +214,12 @@ no_loop
     sta $d01a
 
 dont_show
+    dec frames
+    bne no_clock
+
+    jsr do_clock
+
+no_clock
 .endp
 
     jsr copy_shadow_registers
@@ -436,6 +460,63 @@ wave2
 wave4
     dta $1c, $1c, $10, $10, $10, $10, $1c, $1c
 
+; ----------------------------------------------------------------------------
+
+    .proc do_clock
+.ifdef HZ60
+    lda #60
+.else
+    lda #50
+.endif
+    sta frames
+
+    sed
+    lda seconds
+    clc
+    adc #1
+    sta seconds
+    cmp #$60
+    bne no_minutes
+
+    lda #0
+    sta seconds
+    lda minutes
+    clc
+    adc #1
+    sta minutes
+
+no_minutes
+    cld
+
+    ldy #190
+    lda minutes
+    lsr
+    lsr
+    lsr
+    lsr
+    ora #$10
+    sta (SAVMSC),y
+    lda minutes
+    and #$0f
+    ora #$10
+    iny
+    sta (SAVMSC),y
+    lda seconds
+    lsr
+    lsr
+    lsr
+    lsr
+    ora #$10
+    iny
+    iny
+    sta (SAVMSC),y
+    lda seconds
+    and #$0f
+    ora #$10
+    iny
+    sta (SAVMSC),y
+    rts
+    .endp
 
 ; ----------------------------------------------------------------------------
 
