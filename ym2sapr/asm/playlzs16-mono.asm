@@ -25,6 +25,7 @@
 
     icl 'cio.s'
 
+ROWCRS = 84
 SAVMSC = 88
 
 SSKCTL = $0232
@@ -56,7 +57,8 @@ SKCTL = $d20f
 .endif
     prints 0, " "
     print 0, songname
-    prints 0, " "
+    lda #11
+    sta ROWCRS
     prints 0, "Time: 00:00"
 
     lda #0
