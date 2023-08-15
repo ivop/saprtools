@@ -119,7 +119,7 @@ static void calculate_hash(uint8_t *data, int len, unsigned int *hptr) {
 /* ------------------------------------------------------------------------ */
 
 static void usage() {
-    fprintf(stderr, "usage: sndh2ym [-o filename.ym] filename.sndh\n\n"
+    fprintf(stderr, "usage: sndh2ym [options] filename.sndh\n\n"
     "   -o filename     write YM output to filename\n"
     "   -s seconds      dump this number of seconds [default: timedb or 60]\n"
     "   -t number       select track/subtune number [default: sndh or 1]\n"
