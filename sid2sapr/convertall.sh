@@ -311,6 +311,17 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/huelsbeck-rtype.xex
 
+# CHARLES DEENEN
+
+./sid2sapr -n $(((5*60+31)*50)) -f -b $basstype sid/'Zamzara.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Zamzara                        " \
+    "Author: Charles Deenen" > asm/songname.txt
+make compress-$player
+make player-$player
+mv player.xex xex-$player/deenen-zamzara.xex
+
 #fi
 
 done
