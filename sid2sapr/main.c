@@ -63,6 +63,8 @@ static const char *basstypes[BASS_COUNT] = {
     "transpose", "gritty", "buzzy", "softbass"
 };
 
+static bool bassfix = false;
+
 static uint8_t voltab[16];
 
 /* ------------------------------------------------------------------------ */
@@ -264,6 +266,8 @@ static void sid2pokey(int voice, uint8_t *pokey) {
                     dist = 0x70;            // gigadist uses this?
                 }
             }
+            if (bassfix)
+                POK -= 1;
             break;
         }
     }
@@ -304,13 +308,15 @@ static void adjust_for_cancellation(uint8_t *pokey) {
 /* ------------------------------------------------------------------------ */
 
 static void usage(void) {
-    fprintf(stderr, "usage: sid2sapr [-b type] [-o file] sid-file\n\n"
+    fprintf(stderr, "usage: sid2sapr [options] sid-file\n\n"
 "   -h          display help\n"
 "   -b type     bass type (transpose [default], gritty, buzzy or softbass)\n"
 "   -o file     output sap-r data to file [default: output.sapr]\n"
 "   -p volume   pokey maximum per channel volume [default: 10, softbass: 9]\n"
 "   -n num      number of frames to process [default: 3000] (60s at 50Hz)\n"
 "   -a          do not adjust for note cancellation\n"
+"   -t num      select track/subtune [default: from file or 1]\n"
+"   -f          enable softbass off-by-one bassfix [default: off]\n"
 );
 }
 
@@ -320,10 +326,12 @@ int main(int argc, char *argv[]) {
     char *outfile = "output.sapr";
     int nframes = 3000;
     bool no_adjust = false;
+    int subtune = 1;
+    bool subtune_override = false;
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:a")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:f")) != -1) {
         switch (option) {
         case 'a':
             no_adjust = true;
@@ -343,6 +351,9 @@ int main(int argc, char *argv[]) {
             if (basstype == BASS_SOFTBASS && maxpokvol == DEFAULT_MAXPOKVOL)
                 maxpokvol = 9;
             break;
+        case 'f':
+            bassfix = true;
+            break;
         case 'o':
             outfile = strdup(optarg);
             break;
@@ -359,6 +370,10 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "invalid maximum pokey volume\n");
                 return 1;
             }
+            break;
+        case 't':
+            subtune = atoi(optarg);
+            subtune_override = true;
             break;
         case 'h':
         default:
@@ -386,7 +401,20 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Title     : %s\nAuthor    : %s\n"
                     "Copyright : %s\n", name, author, copyright);
 
-    c64_cpu_jsr(initAddress, startSong-1);
+    fprintf(stderr, "number of subtunes: %d\n", songs);
+
+    if (!subtune_override) {
+        subtune = startSong;
+    }
+
+    if (subtune < 1 || subtune > songs) {
+        fprintf(stderr, "selected subtune %d is invalid\n", subtune);
+        return 1;
+    }
+
+    fprintf(stderr, "converting subtune %d\n", subtune);
+
+    c64_cpu_jsr(initAddress, subtune-1);
 
     fprintf(stderr, "write output to %s\n", outfile);
 
@@ -403,6 +431,8 @@ int main(int argc, char *argv[]) {
     init_voltab(maxpokvol);
 
     fprintf(stderr, "bass type: %s\n", basstypes[basstype]);
+    fprintf(stderr, "bassfix: %s\n", bassfix ? "enabled" : "disabled");
+    fprintf(stderr, "dumping %d frames\n", nframes);
 
     int counter = 0;
 
