@@ -327,4 +327,4 @@ mv player.xex xex-$player/deenen-zamzara.xex
 done
 
 # clear for further tests
-echo -n " " > asm/songname.txt
+echo -ne "Source\nTitle\nAuthor" > asm/songname.txt
