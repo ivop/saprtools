@@ -26,6 +26,8 @@
 
     icl 'cio.s'
 
+SAVMSC = 88
+
 SSKCTL = $0232
 CONSOL = $d01f
 RANDOM = $d20a
@@ -51,6 +53,7 @@ SKCTL = $d20f
 .endif
     prints 0, " "
     print 0, songname
+    prints 0, " "
 
 .proc detect_2nd_pokey
     lda 20
@@ -90,6 +93,20 @@ detected_mono
 
 detected_stereo
     mva #3 SKCTL+$10            ; start second pokey here
+
+    prints 0, "Time: 00:00"
+
+    lda #0
+    sta minutes
+    sta seconds
+.ifdef HZ60
+    lda #60
+.else
+    lda #50
+.endif
+    sta frames
+    inc SAVMSC+1
+
     rts
 .endp
 
@@ -139,6 +156,9 @@ skip
 .endp
 right_song_ptr = right_get_byte + 1
 
+minutes .ds 1
+seconds .ds 1
+frames  .ds 1
 
 left_POKEY = $D200
 right_POKEY = $D210
@@ -157,7 +177,6 @@ left_song_end
 right_song_data
         ins     'right.lz16'
 right_song_end
-
 
 start
 
@@ -237,6 +256,12 @@ no_loop
     sta $d01a
 
 dont_show
+    dec frames
+    bne no_clock
+
+    jsr do_clock
+
+no_clock
 .endp
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -387,6 +412,66 @@ wait_table
     dta 8, 8, 8, 8, 8, 8
 .endif
 wait_table_len = * - wait_table
+
+; ----------------------------------------------------------------------------
+
+    .proc do_clock
+.ifdef HZ60
+    lda #60
+.else
+    lda #50
+.endif
+    sta frames
+
+    sed
+    lda seconds
+    clc
+    adc #1
+    sta seconds
+    cmp #$60
+    bne no_minutes
+
+    lda #0
+    sta seconds
+    lda minutes
+    clc
+    adc #1
+    sta minutes
+
+no_minutes
+    cld
+
+    ldy #190
+    lda minutes
+    lsr
+    lsr
+    lsr
+    lsr
+    ora #$10
+    sta (SAVMSC),y
+    lda minutes
+    and #$0f
+    ora #$10
+    iny
+    sta (SAVMSC),y
+    lda seconds
+    lsr
+    lsr
+    lsr
+    lsr
+    ora #$10
+    iny
+    iny
+    sta (SAVMSC),y
+    lda seconds
+    and #$0f
+    ora #$10
+    iny
+    sta (SAVMSC),y
+    rts
+    .endp
+
+; ----------------------------------------------------------------------------
 
     run start
 
