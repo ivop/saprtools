@@ -290,7 +290,7 @@ static void sid2pokey(int voice, uint8_t *pokey) {
     }
 
     if (mute_ringmod_sync)
-        if (wave == 0x16 || wave == 0x17)
+        if (wave & 0x06)
             pokey[1] = 0;
 }
 
