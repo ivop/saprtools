@@ -1,0 +1,26 @@
+TODO:
+
+check if the songs below sound different/better if the detected features
+are muted:
+
+alloyrun: sync
+fuel: sync
+jt42: ringmod
+kinetix: ringmod
+
+wisdom: sync
+
+ik: sync
+
+comets: ringmod and sync
+delta: ringmod
+lightforce: ringmod
+spellbound: sync
+warhawk: sync
+
+jigsaw: ringmod
+
+aceshigh: ringmod
+tarantula: ringmod and sync
+unleash: ringmod
+
