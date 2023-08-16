@@ -99,11 +99,11 @@ void c64_handle_adsr(uint32_t len) {
 
         for (v = 0; v < 3; v++) {       // handle ADSR for each voice
 
-            if (!(osc[v].wave & 0x01))  // not gate, release
-                osc[v].envphase = RELEASE;
-            else if (osc[v].envphase == RELEASE) {
-                osc[v].envphase = ATTACK;
-            }
+//            if (!(osc[v].wave & 0x01))  // not gate, release
+//                osc[v].envphase = RELEASE;
+//            else if (osc[v].envphase == RELEASE) {
+//                osc[v].envphase = ATTACK;
+//            }
             switch (osc[v].envphase) {
             case ATTACK:
                 osc[v].envval += osc[v].attack;
@@ -156,7 +156,16 @@ static void sidPoke(int reg, unsigned char val) {
     case 1: sid.v[voice].freq = (sid.v[voice].freq & 0xff) + (val<<8); break;
     case 2: sid.v[voice].pulse = (sid.v[voice].pulse & 0xff00) + val; break;
     case 3: sid.v[voice].pulse = (sid.v[voice].pulse & 0xff) + (val<<8); break;
-    case 4: sid.v[voice].wave = val; break;
+    case 4:
+        sid.v[voice].wave = val;
+        if ((val&1) != sid.v[voice].gate) {
+            if (val&1)
+                osc[voice].envphase = ATTACK;
+            else
+                osc[voice].envphase = RELEASE;
+        }
+        sid.v[voice].gate = val&1;
+        break;
     case 5: sid.v[voice].ad   = val; break;
     case 6: sid.v[voice].sr   = val; break;
 

@@ -10,6 +10,7 @@ struct s6581 {
         uint8_t wave;
         uint8_t ad;
         uint8_t sr;
+        uint8_t gate;
     } v[3];
     uint8_t ffreqlo;
     uint8_t ffreqhi;
