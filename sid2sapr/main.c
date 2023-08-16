@@ -64,6 +64,7 @@ static const char *basstypes[BASS_COUNT] = {
 };
 
 static bool bassfix = false;
+static bool mute_ringmod_sync = false;
 
 static uint8_t voltab[16];
 
@@ -288,8 +289,9 @@ static void sid2pokey(int voice, uint8_t *pokey) {
         pokey[1] = 0x80 + v;
     }
 
-    if (wave == 0x16 || wave == 0x17)   // cybernoid 2 hack
-        pokey[1] = 0;
+    if (mute_ringmod_sync)
+        if (wave == 0x16 || wave == 0x17)
+            pokey[1] = 0;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -317,6 +319,7 @@ static void usage(void) {
 "   -a          do not adjust for note cancellation\n"
 "   -t num      select track/subtune [default: from file or 1]\n"
 "   -f          enable softbass off-by-one bassfix [default: off]\n"
+"   -m          mute ringmod and sync [default: off]\n"
 );
 }
 
@@ -331,7 +334,7 @@ int main(int argc, char *argv[]) {
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:f")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm")) != -1) {
         switch (option) {
         case 'a':
             no_adjust = true;
@@ -374,6 +377,9 @@ int main(int argc, char *argv[]) {
         case 't':
             subtune = atoi(optarg);
             subtune_override = true;
+            break;
+        case 'm':
+            mute_ringmod_sync = true;
             break;
         case 'h':
         default:
@@ -434,6 +440,8 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "bassfix: %s\n", bassfix ? "enabled" : "disabled");
     fprintf(stderr, "note cancellation adjustment: %s\n", no_adjust ?
                                                "disabled" : "enabled");
+    fprintf(stderr, "ringmod & sync mute: %s\n", mute_ringmod_sync ?
+                                               "enabled" : "disabled");
     fprintf(stderr, "dumping %d frames\n", nframes);
 
     int counter = 0;

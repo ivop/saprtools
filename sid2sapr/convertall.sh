@@ -43,7 +43,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-cybernoid.xex
 
-./sid2sapr -a -n $(((5*60+46)*50)) -b $basstype sid/'Cybernoid_II.sid'
+./sid2sapr -m -a -n $(((5*60+46)*50)) -b $basstype sid/'Cybernoid_II.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Cybernoid II                   " \
@@ -61,7 +61,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-hawkeye.xex
 
-./sid2sapr -n $(((5*60+46)*50)) -b $basstype sid/'Ice_Age.sid'
+./sid2sapr -m -n $(((5*60+46)*50)) -b $basstype sid/'Ice_Age.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Ice Age                        " \
@@ -313,7 +313,7 @@ mv player.xex xex-$player/huelsbeck-rtype.xex
 
 # CHARLES DEENEN
 
-./sid2sapr -n $(((5*60+13)*50)) -f -b $basstype sid/'Zamzara.sid'
+./sid2sapr -m -n $(((5*60+13)*50)) -f -b $basstype sid/'Zamzara.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Zamzara                        " \
