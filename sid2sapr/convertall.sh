@@ -251,7 +251,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/cadaver-mw4.xex
 
-./sid2sapr -n $(((1*60+57)*50)) -b $basstype sid/'Tarantula.sid'
+./sid2sapr -a -n $(((1*60+57)*50)) -b $basstype sid/'Tarantula.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Tarantula                      " \

@@ -3,9 +3,7 @@ TODO:
 check if the songs below sound different/better if the detected features
 are muted:
 
-alloyrun: ringmod
-fuel: ringmod
-jt42: sync
+fuel: ringmod   (could use half volume on ringmod?)
 kinetix: sync
 
 wisdom: ringmod
@@ -19,8 +17,4 @@ spellbound: ringmod
 warhawk: ringmod
 
 jigsaw: sync
-
-aceshigh: sync
-tarantula: sync and ringmod
-unleash: sync
 
