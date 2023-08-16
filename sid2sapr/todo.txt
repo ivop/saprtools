@@ -3,18 +3,7 @@ TODO:
 check if the songs below sound different/better if the detected features
 are muted:
 
-fuel: ringmod   (could use half volume on ringmod?)
-kinetix: sync
+these two could use a half-volume mode for ringmod
 
-wisdom: ringmod
-
-ik: ringmod
-
-comets: sync and ringmod
-delta: sync
-lightforce: sync
-spellbound: ringmod
+fuel: ringmod
 warhawk: ringmod
-
-jigsaw: sync
-
