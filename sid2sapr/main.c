@@ -432,6 +432,8 @@ int main(int argc, char *argv[]) {
 
     fprintf(stderr, "bass type: %s\n", basstypes[basstype]);
     fprintf(stderr, "bassfix: %s\n", bassfix ? "enabled" : "disabled");
+    fprintf(stderr, "note cancellation adjustment: %s\n", no_adjust ?
+                                               "disabled" : "enabled");
     fprintf(stderr, "dumping %d frames\n", nframes);
 
     int counter = 0;
