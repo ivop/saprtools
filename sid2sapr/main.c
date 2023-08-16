@@ -65,7 +65,7 @@ static const char *basstypes[BASS_COUNT] = {
 
 static int mute = 0;
 static char *mutestring;
-static bool mute_detect[4];
+static int mute_detect[4];
 
 enum {
     MUTE_NONE,
@@ -327,7 +327,8 @@ static void sid2pokey(int voice, uint8_t *pokey) {
         if (wave & 6) pokey[1] = 0;
     case MUTE_NONE:
     default:
-        mute_detect[(wave>>1)&3] = true;
+        if (wave & 6)
+            mute_detect[(wave>>1)&3]++;
         break;
     }
 }
@@ -519,9 +520,9 @@ int main(int argc, char *argv[]) {
 
     if (!mute) {
         for (int i=1; i<4; i++) {
-            if (mute_detect[i])
-                fprintf(stderr, "usage of %s detected but not muted\n",
-                                            mute_detect_combinations[i]);
+          if (mute_detect[i])
+            fprintf(stderr, "usage of %s detected but not muted (%d times)\n",
+                                mute_detect_combinations[i], mute_detect[i]);
         }
     }
 
