@@ -63,8 +63,24 @@ static const char *basstypes[BASS_COUNT] = {
     "transpose", "gritty", "buzzy", "softbass"
 };
 
+static int mute = 0;
+static char *mutestring;
+
+enum {
+    MUTE_NONE,
+    MUTE_RINGMOD,
+    MUTE_SYNC,
+    MUTE_EITHER,
+    MUTE_BOTH,
+    MUTE_ALL,
+    MUTE_COUNT
+};
+
+static const char *mutetypes[MUTE_COUNT] = {
+    "none", "ringmod", "sync", "either", "both", "all"
+};
+
 static bool bassfix = false;
-static bool mute_ringmod_sync = false;
 
 static uint8_t voltab[16];
 
@@ -289,9 +305,25 @@ static void sid2pokey(int voice, uint8_t *pokey) {
         pokey[1] = 0x80 + v;
     }
 
-    if (mute_ringmod_sync)
-        if (wave & 0x06)
-            pokey[1] = 0;
+    switch (mute) {
+    case MUTE_RINGMOD:
+        if (wave & 4) pokey[1] = 0;
+        break;
+    case MUTE_SYNC:
+        if (wave & 2) pokey[1] = 0;
+        break;
+    case MUTE_EITHER:
+        if (wave & 2 || wave & 4) pokey[1] = 0;
+        break;
+    case MUTE_BOTH:
+        if ((wave & 6) == 6) pokey[1] = 0;
+        break;
+    case MUTE_ALL:
+        if (wave & 6) pokey[1] = 0;
+    case MUTE_NONE:
+    default:
+        break;
+    }
 }
 
 /* ------------------------------------------------------------------------ */
@@ -319,7 +351,12 @@ static void usage(void) {
 "   -a          do not adjust for note cancellation\n"
 "   -t num      select track/subtune [default: from file or 1]\n"
 "   -f          enable softbass off-by-one bassfix [default: off]\n"
-"   -m          mute ringmod and sync [default: off]\n"
+"   -m which    mute ringmod and/or sync [default: none]\n"
+"                   ringmod\n"
+"                   sync\n"
+"                   either (either one, but not both at the same time)\n"
+"                   both (only both at the same time)\n"
+"                   all (every combination)\n"
 );
 }
 
@@ -334,7 +371,7 @@ int main(int argc, char *argv[]) {
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:")) != -1) {
         switch (option) {
         case 'a':
             no_adjust = true;
@@ -379,7 +416,17 @@ int main(int argc, char *argv[]) {
             subtune_override = true;
             break;
         case 'm':
-            mute_ringmod_sync = true;
+            mutestring = strdup(optarg);
+            for (char *c=mutestring; *c; c++)
+                *c = tolower(*c);
+            for (i=0; i<MUTE_COUNT; i++)
+                if (!strcmp(mutestring, mutetypes[i]))
+                    break;
+            if (i==MUTE_COUNT) {
+                fprintf(stderr, "invalid mute type\n");
+                return 1;
+            }
+            mute = i;
             break;
         case 'h':
         default:
@@ -440,8 +487,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "bassfix: %s\n", bassfix ? "enabled" : "disabled");
     fprintf(stderr, "note cancellation adjustment: %s\n", no_adjust ?
                                                "disabled" : "enabled");
-    fprintf(stderr, "ringmod & sync mute: %s\n", mute_ringmod_sync ?
-                                               "enabled" : "disabled");
+    fprintf(stderr, "mute: %s\n", mutetypes[mute]);
     fprintf(stderr, "dumping %d frames\n", nframes);
 
     int counter = 0;
