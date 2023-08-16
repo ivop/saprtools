@@ -520,7 +520,7 @@ int main(int argc, char *argv[]) {
     if (!mute) {
         for (int i=1; i<4; i++) {
             if (mute_detect[i])
-                fprintf(stderr, "usage of %s detected nut not muted\n",
+                fprintf(stderr, "usage of %s detected but not muted\n",
                                             mute_detect_combinations[i]);
         }
     }
