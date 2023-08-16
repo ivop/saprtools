@@ -52,7 +52,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-cybernoid2.xex
 
-./sid2sapr -n $(((6*60+25)*50)) -b $basstype sid/'Hawkeye.sid'
+./sid2sapr -m -n $(((6*60+25)*50)) -b $basstype sid/'Hawkeye.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Hawkeye                        " \
