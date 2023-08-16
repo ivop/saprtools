@@ -82,7 +82,7 @@ static const char *mutetypes[MUTE_COUNT] = {
 };
 
 static const char *mute_detect_combinations[4] = {
-    "none", "ringmod", "sync", "ringmod+sync"
+    "none", "sync", "ringmod", "ringmod+sync"
 };
 
 static bool bassfix = false;
