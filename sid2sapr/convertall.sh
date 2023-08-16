@@ -25,7 +25,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-alloy.xex
 
-./sid2sapr -n $(((2*60+35)*50)) -b $basstype sid/'Alternative_Fuel.sid'
+./sid2sapr -a -n $(((2*60+35)*50)) -b $basstype sid/'Alternative_Fuel.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Alternative Fuel               " \
