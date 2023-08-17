@@ -25,7 +25,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-alloy.xex
 
-./sid2sapr -d -a -n $(((2*60+35)*50)) -b $basstype sid/'Alternative_Fuel.sid'
+./sid2sapr -d -n $(((2*60+35)*50)) -b $basstype sid/'Alternative_Fuel.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Alternative Fuel               " \
@@ -34,7 +34,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-fuel.xex
 
-./sid2sapr -n $(((6*60+40)*50)) -b $basstype sid/'Cybernoid.sid'
+./sid2sapr -a -n $(((6*60+40)*50)) -b $basstype sid/'Cybernoid.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Cybernoid                      " \
@@ -43,7 +43,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-cybernoid.xex
 
-./sid2sapr -m both -a -n $(((5*60+46)*50)) -b $basstype sid/'Cybernoid_II.sid'
+./sid2sapr -m both -n $(((5*60+46)*50)) -b $basstype sid/'Cybernoid_II.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Cybernoid II                   " \
@@ -223,7 +223,7 @@ make player-$player
 mv player.xex xex-$player/cadaver-aceshigh.xex
 
 # loop once
-./sid2sapr -a -n $(((1*60+38)*50)) -b $basstype sid/'Escape_from_New_York.sid'
+./sid2sapr -n $(((1*60+38)*50)) -b $basstype sid/'Escape_from_New_York.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Escape from New York           " \
@@ -251,7 +251,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/cadaver-mw4.xex
 
-./sid2sapr -a -n $(((1*60+57)*50)) -b $basstype sid/'Tarantula.sid'
+./sid2sapr -n $(((1*60+57)*50)) -b $basstype sid/'Tarantula.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Tarantula                      " \

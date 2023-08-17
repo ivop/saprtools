@@ -358,7 +358,7 @@ static void usage(void) {
 "   -o file     output sap-r data to file [default: output.sapr]\n"
 "   -p volume   pokey maximum per channel volume [default: 10, softbass: 9]\n"
 "   -n num      number of frames to process [default: 3000] (60s at 50Hz)\n"
-"   -a          do not adjust for note cancellation\n"
+"   -a          adjust for note cancellation\n"
 "   -t num      select track/subtune [default: from file or 1]\n"
 "   -f          enable softbass off-by-one bassfix [default: off]\n"
 "   -m which    mute ringmod and/or sync [default: none]\n"
@@ -376,7 +376,7 @@ static void usage(void) {
 int main(int argc, char *argv[]) {
     char *outfile = "output.sapr";
     int nframes = 3000;
-    bool no_adjust = false;
+    bool adjust = false;
     int subtune = 1;
     bool subtune_override = false;
 
@@ -385,7 +385,7 @@ int main(int argc, char *argv[]) {
     while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:d")) != -1) {
         switch (option) {
         case 'a':
-            no_adjust = true;
+            adjust = true;
             break;
         case 'b':
             bassstring = strdup(optarg);
@@ -499,8 +499,8 @@ int main(int argc, char *argv[]) {
 
     fprintf(stderr, "bass type: %s\n", basstypes[basstype]);
     fprintf(stderr, "bassfix: %s\n", bassfix ? "enabled" : "disabled");
-    fprintf(stderr, "note cancellation adjustment: %s\n", no_adjust ?
-                                               "disabled" : "enabled");
+    fprintf(stderr, "note cancellation adjustment: %s\n", adjust ?
+                                               "enabled" : "disabled");
     fprintf(stderr, "mute: %s\n", mutetypes[mute]);
     fprintf(stderr, "damp ringmod: %s\n", damp ? "enabled" : "disabled");
     fprintf(stderr, "dumping %d frames\n", nframes);
@@ -520,7 +520,7 @@ int main(int argc, char *argv[]) {
 
         c64_handle_adsr(NSAMPLES/2);
 
-        if (!no_adjust) adjust_for_cancellation(pokey);
+        if (adjust) adjust_for_cancellation(pokey);
         if (!save_pokey(pokey, outf)) return 1;
 
         counter++;
