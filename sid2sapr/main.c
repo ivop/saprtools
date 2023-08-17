@@ -296,7 +296,7 @@ static void sid2pokey(int voice, uint8_t *pokey) {
         }
     }
 
-    if (p->test) v = 0; 
+    if (p->test || p->off) v = 0; 
  
     if (p->ringmod && damp) v /= 2;
 
