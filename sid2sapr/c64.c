@@ -127,14 +127,7 @@ void c64_handle_adsr(uint32_t len) {
 static void sid_write(int reg, unsigned char val) {
     int voice = 0;
 
-    if ((reg >= 7) && (reg <= 13)) {
-        voice = 1;
-        reg -= 7;
-    }
-    if ((reg >= 14) && (reg <= 20)) {
-        voice = 2;
-        reg -= 14;
-    }
+    for (; reg >= 7 && reg < 21; voice++, reg-=7) ;
 
     struct sid_voice     *p = &sid.v[voice];
     struct sid_registers *r = &sid.r[voice];
