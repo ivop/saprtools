@@ -225,13 +225,13 @@ static uint8_t find_closest_distc(const struct bass table[], double f) {
 
 static void sid2pokey(int voice, uint8_t *pokey) {
     bool noise = false;
-    uint8_t wave = sid.v[voice].wave;
+    uint8_t wave = sid.r[voice].wave;
 
     if (wave & 0x80) noise = true;
 
     double constant = pow(256.0, 3.0) / C64_CLOCK;
 
-    double f = sid.v[voice].freq / constant;
+    double f = sid.r[voice].freq / constant;
 
     double POKreal = (ATARI_CLOCK / 28.0 / 2.0 / f) - 1;
 
@@ -239,7 +239,7 @@ static void sid2pokey(int voice, uint8_t *pokey) {
 
     int dist = 0xa0;
 
-    int volume = (osc[voice].envval >> 20) & 0xf;
+    int volume = (sid.v[voice].envval >> 20) & 0xf;
     int v = voltab[volume];
 
     switch (wave&0x70) {

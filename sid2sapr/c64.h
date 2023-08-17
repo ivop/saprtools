@@ -3,24 +3,16 @@
 
 #include <stdint.h>
 
-struct s6581 {
-    struct sidvoice {
-        uint16_t freq;
-        uint16_t pulse;
-        uint8_t wave;
-        uint8_t ad;
-        uint8_t sr;
-        uint8_t gate;
-    } v[3];
-    uint8_t ffreqlo;
-    uint8_t ffreqhi;
-    uint8_t res_ftv;
-    uint8_t ftp_vol;
+struct sid_registers {
+    uint16_t freq;
+    uint16_t pulse;
+    uint8_t wave;
+    uint8_t ad;
+    uint8_t sr;
 };
 
-struct sidosc {
-    uint32_t pulse;
-    uint8_t wave;
+struct sid_voice {
+    uint8_t gate;
     uint32_t attack;
     uint32_t decay;
     uint32_t sustain;
@@ -29,8 +21,16 @@ struct sidosc {
     uint8_t envphase;
 };
 
-extern struct s6581 sid;
-extern struct sidosc osc[3];
+struct sid {
+    struct sid_registers r[3];
+    struct sid_voice v[3];
+    uint8_t ffreqlo;
+    uint8_t ffreqhi;
+    uint8_t res_ftv;
+    uint8_t ftp_vol;
+};
+
+extern struct sid sid;
 
 extern void c64_init(void);
 extern int  c64_cpu_jsr(uint16_t npc, uint8_t na);

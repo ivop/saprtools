@@ -65,8 +65,7 @@ enum {
 // --------------------------------------------------------------------------
 // OUR "CHIPS"
 //
-struct s6581 sid;
-struct sidosc osc[3];
+struct sid sid;
 static m6502_t cpu;
 static uint64_t pins;
 static uint8_t memory[65536];
@@ -80,54 +79,50 @@ void c64_sid_init(uint32_t mixfreq) {
         adr_table[i] = (cycles_per_sample << 16) / periods[i];
 
     memset(&sid, 0, sizeof(sid));
-    memset(osc, 0, sizeof(osc));
 }
 
 void c64_handle_adsr(uint32_t len) {
     uint8_t v;
 
     for (v = 0; v < 3; v++) {
-        osc[v].pulse   = (sid.v[v].pulse & 0xfff) << 16;
-        osc[v].attack  = adr_table[sid.v[v].ad >> 4];
-        osc[v].decay   = adr_table[sid.v[v].ad & 0xf];
-        osc[v].sustain = (sid.v[v].sr & 0xf0) << 16;
-        osc[v].release = adr_table[sid.v[v].sr & 0xf];
-        osc[v].wave    = sid.v[v].wave;
+        struct sid_registers *r = &sid.r[v];
+        struct sid_voice     *p = &sid.v[v];
+
+        p->attack  = adr_table[r->ad >> 4];
+        p->decay   = adr_table[r->ad & 0xf];
+        p->sustain = (r->sr & 0xf0) << 16;
+        p->release = adr_table[r->sr & 0xf];
     }
 
     for (int scnt=0; scnt<len; scnt++) {            // sample counter
 
         for (v = 0; v < 3; v++) {       // handle ADSR for each voice
+            struct sid_voice *p = &sid.v[v];
 
-//            if (!(osc[v].wave & 0x01))  // not gate, release
-//                osc[v].envphase = RELEASE;
-//            else if (osc[v].envphase == RELEASE) {
-//                osc[v].envphase = ATTACK;
-//            }
-            switch (osc[v].envphase) {
+            switch (p->envphase) {
             case ATTACK:
-                osc[v].envval += osc[v].attack;
-                if (osc[v].envval >= 0xffffff) {
-                    osc[v].envval = 0xffffff;
-                    osc[v].envphase = DECAY;
+                p->envval += p->attack;
+                if (p->envval >= 0xffffff) {
+                    p->envval = 0xffffff;
+                    p->envphase = DECAY;
                 }
                 break;
             case DECAY:
-                osc[v].envval -= osc[v].decay;
-                if ((int)osc[v].envval <= (int)(osc[v].sustain)) {
-                    osc[v].envval = osc[v].sustain;
-                    osc[v].envphase = SUSTAIN;
+                p->envval -= p->decay;
+                if (p->envval <= (int)(p->sustain)) {
+                    p->envval = p->sustain;
+                    p->envphase = SUSTAIN;
                 }
                 break;
             case SUSTAIN:
-                if (osc[v].envval != osc[v].sustain) {
-                    osc[v].envphase = DECAY;
+                if (p->envval != p->sustain) {
+                    p->envphase = DECAY;
                 }
                 break;
             case RELEASE:
-                osc[v].envval -= osc[v].release;
-                if (osc[v].envval < 0x40000)
-                    osc[v].envval = 0x40000;
+                p->envval -= p->release;
+                if (p->envval < 0x40000)
+                    p->envval = 0x40000;
                 break; 
             }       // switch envphase
 
@@ -151,23 +146,26 @@ static void sidPoke(int reg, unsigned char val) {
         reg -= 14;
     }
 
+    struct sid_voice     *p = &sid.v[voice];
+    struct sid_registers *r = &sid.r[voice];
+
     switch (reg) {
-    case 0: sid.v[voice].freq = (sid.v[voice].freq & 0xff00) + val; break;
-    case 1: sid.v[voice].freq = (sid.v[voice].freq & 0xff) + (val<<8); break;
-    case 2: sid.v[voice].pulse = (sid.v[voice].pulse & 0xff00) + val; break;
-    case 3: sid.v[voice].pulse = (sid.v[voice].pulse & 0xff) + (val<<8); break;
+    case 0: r->freq = (r->freq & 0xff00) + val; break;
+    case 1: r->freq = (r->freq & 0xff) + (val<<8); break;
+    case 2: r->pulse = (r->pulse & 0xff00) + val; break;
+    case 3: r->pulse = (r->pulse & 0xff) + (val<<8); break;
     case 4:
-        sid.v[voice].wave = val;
-        if ((val&1) != sid.v[voice].gate) {
+        r->wave = val;
+        if ((val&1) != p->gate) {
             if (val&1)
-                osc[voice].envphase = ATTACK;
+                p->envphase = ATTACK;
             else
-                osc[voice].envphase = RELEASE;
+                p->envphase = RELEASE;
         }
-        sid.v[voice].gate = val&1;
+        p->gate = val&1;
         break;
-    case 5: sid.v[voice].ad   = val; break;
-    case 6: sid.v[voice].sr   = val; break;
+    case 5: r->ad = val; break;
+    case 6: r->sr = val; break;
 
     case 21: sid.ffreqlo = val; break;
     case 22: sid.ffreqhi = val; break;
