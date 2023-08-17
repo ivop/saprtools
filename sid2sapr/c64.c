@@ -84,16 +84,6 @@ void c64_sid_init(uint32_t mixfreq) {
 void c64_handle_adsr(uint32_t len) {
     uint8_t v;
 
-    for (v = 0; v < 3; v++) {
-        struct sid_registers *r = &sid.r[v];
-        struct sid_voice     *p = &sid.v[v];
-
-        p->attack  = adr_table[r->ad >> 4];
-        p->decay   = adr_table[r->ad & 0xf];
-        p->sustain = (r->sr & 0xf0) << 16;
-        p->release = adr_table[r->sr & 0xf];
-    }
-
     for (int scnt=0; scnt<len; scnt++) {            // sample counter
 
         for (v = 0; v < 3; v++) {       // handle ADSR for each voice
@@ -164,8 +154,16 @@ static void sidPoke(int reg, unsigned char val) {
         }
         p->gate = val&1;
         break;
-    case 5: r->ad = val; break;
-    case 6: r->sr = val; break;
+    case 5:
+        r->ad = val;
+        p->attack  = adr_table[r->ad >> 4];
+        p->decay   = adr_table[r->ad & 0xf];
+        break;
+    case 6:
+        r->sr = val;
+        p->sustain = (r->sr & 0xf0) << 16;
+        p->release = adr_table[r->sr & 0xf];
+        break;
 
     case 21: sid.ffreqlo = val; break;
     case 22: sid.ffreqhi = val; break;
