@@ -63,6 +63,7 @@ static const char *basstypes[BASS_COUNT] = {
     "transpose", "gritty", "buzzy", "softbass"
 };
 
+static bool damp = false;
 static int mute = 0;
 static char *mutestring;
 static int mute_detect[4];
@@ -296,6 +297,8 @@ static void sid2pokey(int voice, uint8_t *pokey) {
 
     if (wave & 0x08) v = 0;             // test bit
  
+    if ((wave & 0x04) && damp) v /= 2;  // damp ringmod
+
     pokey[0] = POK;
     pokey[1] = dist + v;
 
@@ -364,6 +367,7 @@ static void usage(void) {
 "                   either (either one, but not both at the same time)\n"
 "                   both (only both at the same time)\n"
 "                   all (every combination)\n"
+"   -d          damp ringmod to half volume\n"
 );
 }
 
@@ -378,7 +382,7 @@ int main(int argc, char *argv[]) {
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:d")) != -1) {
         switch (option) {
         case 'a':
             no_adjust = true;
@@ -400,6 +404,9 @@ int main(int argc, char *argv[]) {
             break;
         case 'f':
             bassfix = true;
+            break;
+        case 'd':
+            damp = true;
             break;
         case 'o':
             outfile = strdup(optarg);
@@ -495,6 +502,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "note cancellation adjustment: %s\n", no_adjust ?
                                                "disabled" : "enabled");
     fprintf(stderr, "mute: %s\n", mutetypes[mute]);
+    fprintf(stderr, "damp ringmod: %s\n", damp ? "enabled" : "disabled");
     fprintf(stderr, "dumping %d frames\n", nframes);
 
     int counter = 0;

@@ -25,7 +25,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-alloy.xex
 
-./sid2sapr -a -n $(((2*60+35)*50)) -b $basstype sid/'Alternative_Fuel.sid'
+./sid2sapr -d -a -n $(((2*60+35)*50)) -b $basstype sid/'Alternative_Fuel.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Alternative Fuel               " \
@@ -182,7 +182,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-toas.xex
 
-./sid2sapr -n $(((4*60+24)*50)) -b $basstype sid/'Warhawk.sid'
+./sid2sapr -d -n $(((4*60+24)*50)) -b $basstype sid/'Warhawk.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Warhawk                        " \
