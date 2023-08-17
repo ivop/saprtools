@@ -146,7 +146,14 @@ static void sid_write(int reg, unsigned char val) {
             else
                 p->envphase = RELEASE;
         }
-        p->gate = val&1;
+        p->gate    = val & 0x01;
+        p->sync    = val & 0x02;
+        p->ringmod = val & 0x04;
+        p->test    = val & 0x08;
+        p->tri     = val & 0x10;
+        p->saw     = val & 0x20;
+        p->pul     = val & 0x40;
+        p->noise   = val & 0x80;
         break;
     case 5:
         r->ad = val;
@@ -159,10 +166,25 @@ static void sid_write(int reg, unsigned char val) {
         p->release = adr_table[r->sr & 0xf];
         break;
 
-    case 21: sid.ffreqlo = val; break;
-    case 22: sid.ffreqhi = val; break;
-    case 23: sid.res_ftv = val; break;
-    case 24: sid.ftp_vol = val; break;
+    case 21:
+        sid.ffreq = (sid.ffreq & 0x7f8) | (val & 7);
+        break;
+    case 22:
+        sid.ffreq = (val << 3) | (sid.ffreq & 7);
+        break;
+    case 23:
+        sid.res_filt = val;
+        sid.v[0].filter = val & 1;
+        sid.v[1].filter = val & 2;
+        sid.v[2].filter = val & 4;
+        break;
+    case 24:
+        sid.mode_vol = val;
+        sid.lowpass  = val & 0x10;
+        sid.bandpass = val & 0x20;
+        sid.highpass = val & 0x40;
+        sid.v[2].off = val & 0x80;
+        break;
     }
     return;
 }

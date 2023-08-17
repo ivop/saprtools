@@ -2,6 +2,7 @@
 #define C64_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 struct sid_registers {
     uint16_t freq;
@@ -12,7 +13,17 @@ struct sid_registers {
 };
 
 struct sid_voice {
-    uint8_t gate;
+    bool gate;
+    bool sync;
+    bool ringmod;
+    bool test;
+    bool tri;
+    bool saw;
+    bool pul;
+    bool noise;
+    bool filter;
+    bool off;
+
     double attack;
     double decay;
     double sustain;
@@ -24,10 +35,13 @@ struct sid_voice {
 struct sid {
     struct sid_registers r[3];
     struct sid_voice v[3];
-    uint8_t ffreqlo;
-    uint8_t ffreqhi;
-    uint8_t res_ftv;
-    uint8_t ftp_vol;
+    uint16_t ffreq;
+    uint8_t res_filt;
+    uint8_t mode_vol;
+
+    bool lowpass;
+    bool bandpass;
+    bool highpass;
 };
 
 extern struct sid sid;

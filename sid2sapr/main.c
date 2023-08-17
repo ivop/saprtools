@@ -226,10 +226,10 @@ static uint8_t find_closest_distc(const struct bass table[], double f) {
 /* ------------------------------------------------------------------------ */
 
 static void sid2pokey(int voice, uint8_t *pokey) {
-    bool noise = false;
-    uint8_t wave = sid.r[voice].wave;
+    struct sid_voice     *p = &sid.v[voice];
+    struct sid_registers *r = &sid.r[voice];
 
-    if (wave & 0x80) noise = true;
+    uint8_t wave = sid.r[voice].wave;
 
     double constant = pow(256.0, 3.0) / C64_CLOCK;
 
@@ -241,11 +241,11 @@ static void sid2pokey(int voice, uint8_t *pokey) {
 
     int dist = 0xa0;
 
-    double volume = sid.v[voice].envval;
+    double volume = p->envval;
 
     if (pulse_volume > 0.0) {
-        if (wave & 0x40) {
-            int pulse = sid.r[voice].pulse;
+        if (p->pul) {
+            int pulse = r->pulse;
             if (pulse > 0x800)
                 pulse = 0x800 - (pulse - 0x800);
             double delta = volume - (volume * ((double)pulse/0x800));
@@ -258,7 +258,7 @@ static void sid2pokey(int voice, uint8_t *pokey) {
     if (POK < 0)
         POK = 0;
 
-    if (POK > 255 && !noise) {
+    if (POK > 255 && !p->noise) {
         switch (basstype) {
         default:
         case BASS_TRANSPOSE:
@@ -296,14 +296,14 @@ static void sid2pokey(int voice, uint8_t *pokey) {
         }
     }
 
-    if (wave & 0x08) v = 0;             // test bit
+    if (p->test) v = 0; 
  
-    if ((wave & 0x04) && damp) v /= 2;  // damp ringmod
+    if (p->ringmod && damp) v /= 2;
 
     pokey[0] = POK;
     pokey[1] = dist + v;
 
-    if (noise) {
+    if (p->noise) {
         POK = round(POKreal / 16.0); // divide by 16 (like I did w/ sid2gumby)
         if (POK > 255) POK = 255;
         if (v) {
@@ -316,19 +316,19 @@ static void sid2pokey(int voice, uint8_t *pokey) {
 
     switch (mute) {
     case MUTE_RINGMOD:
-        if (wave & 4) pokey[1] = 0;
+        if (p->ringmod) pokey[1] = 0;
         break;
     case MUTE_SYNC:
-        if (wave & 2) pokey[1] = 0;
+        if (p->sync) pokey[1] = 0;
         break;
     case MUTE_EITHER:
-        if (wave & 2 || wave & 4) pokey[1] = 0;
+        if ((p->sync && !p->ringmod) || (p->ringmod && !p->sync)) pokey[1] = 0;
         break;
     case MUTE_BOTH:
-        if ((wave & 6) == 6) pokey[1] = 0;
+        if (p->ringmod && p->sync) pokey[1] = 0;
         break;
     case MUTE_ALL:
-        if (wave & 6) pokey[1] = 0;
+        if (p->ringmod || p->sync) pokey[1] = 0;
     case MUTE_NONE:
     default:
         if (wave & 6)
