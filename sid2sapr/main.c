@@ -63,6 +63,7 @@ static const char *basstypes[BASS_COUNT] = {
     "transpose", "gritty", "buzzy", "softbass"
 };
 
+static double pulse_volume = 0.0;
 static bool damp = false;
 static int mute = 0;
 static char *mutestring;
@@ -241,6 +242,17 @@ static void sid2pokey(int voice, uint8_t *pokey) {
     int dist = 0xa0;
 
     double volume = sid.v[voice].envval;
+
+    if (pulse_volume > 0.0) {
+        if (wave & 0x40) {
+            int pulse = sid.r[voice].pulse;
+            if (pulse > 0x800)
+                pulse = 0x800 - (pulse - 0x800);
+            double delta = volume - (volume * ((double)pulse/0x800));
+            volume = volume - pulse_volume * delta;
+        }
+    }
+
     int v = voltab[(int)round(volume)];
 
     if (POK < 0)
@@ -357,6 +369,7 @@ static void usage(void) {
 "                   both (only both at the same time)\n"
 "                   all (every combination)\n"
 "   -d          damp ringmod to half volume\n"
+"   -w value    let PWM influence the volume by factor [0.0-1.0]\n"
 );
 }
 
@@ -371,7 +384,7 @@ int main(int argc, char *argv[]) {
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:d")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:")) != -1) {
         switch (option) {
         case 'a':
             adjust = true;
@@ -430,6 +443,13 @@ int main(int argc, char *argv[]) {
                 return 1;
             }
             mute = i;
+            break;
+        case 'w':
+            pulse_volume = strtod(optarg, NULL);
+            if (pulse_volume < 0.0 || pulse_volume > 1.0) {
+                fprintf(stderr, "invalid PWM volume value\n");
+                return 1;
+            }
             break;
         case 'h':
         default:

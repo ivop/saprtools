@@ -137,7 +137,7 @@ static void sid_write(int reg, unsigned char val) {
     case 0: r->freq = (r->freq & 0xff00) + val; break;
     case 1: r->freq = (r->freq & 0xff) + (val<<8); break;
     case 2: r->pulse = (r->pulse & 0xff00) + val; break;
-    case 3: r->pulse = (r->pulse & 0xff) + (val<<8); break;
+    case 3: r->pulse = (r->pulse & 0xff) + ((val&0x0f)<<8); break;
     case 4:
         r->wave = val;
         if ((val&1) != p->gate) {
