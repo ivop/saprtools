@@ -124,7 +124,7 @@ void c64_handle_adsr(uint32_t len) {
 // --------------------------------------------------------------------------
 // POKE SID REGISTERS
 //
-static void sidPoke(int reg, unsigned char val) {
+static void sid_write(int reg, unsigned char val) {
     int voice = 0;
 
     if ((reg >= 7) && (reg <= 13)) {
@@ -175,16 +175,16 @@ static void sidPoke(int reg, unsigned char val) {
 
 /* ------------------------------------------------------------------------- */
 
-static uint8_t getmem(uint16_t addr) {
+static uint8_t memory_read(uint16_t addr) {
     if (addr == 0xdd0d)
         memory[addr] = 0;
     return memory[addr];
 }
 
-static void setmem(uint16_t addr, uint8_t value) {
+static void memory_write(uint16_t addr, uint8_t value) {
     memory[addr] = value;
     if ((addr & 0xfc00) == 0xd400) {
-        sidPoke(addr & 0x1f, value);
+        sid_write(addr & 0x1f, value);
     }
 }
 
@@ -204,9 +204,9 @@ int c64_cpu_jsr(uint16_t newpc, uint8_t newa) {
         pins = m6502_tick(&cpu, pins);
         const uint16_t addr = M6502_GET_ADDR(pins);
         if (pins & M6502_RW) {
-            M6502_SET_DATA(pins, getmem(addr));
+            M6502_SET_DATA(pins, memory_read(addr));
         } else {
-            setmem(addr, M6502_GET_DATA(pins));
+            memory_write(addr, M6502_GET_DATA(pins));
         }
     }
     return ccl;
