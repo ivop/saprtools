@@ -512,6 +512,8 @@ int main(int argc, char *argv[]) {
                                                "enabled" : "disabled");
     fprintf(stderr, "mute: %s\n", mutetypes[mute]);
     fprintf(stderr, "damp ringmod: %s\n", damp ? "enabled" : "disabled");
+    fprintf(stderr, "PWM controls volume by %d%%\n",
+                                            (int)round(pulse_volume*100));
     fprintf(stderr, "dumping %d frames\n", nframes);
 
     int counter = 0;
