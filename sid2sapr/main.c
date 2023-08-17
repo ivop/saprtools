@@ -300,9 +300,6 @@ static void sid2pokey(int voice, uint8_t *pokey) {
  
     if (p->ringmod && damp) v /= 2;
 
-    pokey[0] = POK;
-    pokey[1] = dist + v;
-
     if (p->noise) {
         POK = round(POKreal / 16.0); // divide by 16 (like I did w/ sid2gumby)
         if (POK > 255) POK = 255;
@@ -310,31 +307,33 @@ static void sid2pokey(int voice, uint8_t *pokey) {
             v >>= 1;
             if (!v) v = 1;
         }
-        pokey[0] = POK;
-        pokey[1] = 0x80 + v;
+        dist = 0x80;
     }
 
     switch (mute) {
     case MUTE_RINGMOD:
-        if (p->ringmod) pokey[1] = 0;
+        if (p->ringmod) v = 0;
         break;
     case MUTE_SYNC:
-        if (p->sync) pokey[1] = 0;
+        if (p->sync) v = 0;
         break;
     case MUTE_EITHER:
-        if ((p->sync && !p->ringmod) || (p->ringmod && !p->sync)) pokey[1] = 0;
+        if ((p->sync && !p->ringmod) || (p->ringmod && !p->sync)) v = 0;
         break;
     case MUTE_BOTH:
-        if (p->ringmod && p->sync) pokey[1] = 0;
+        if (p->ringmod && p->sync) v = 0;
         break;
     case MUTE_ALL:
-        if (p->ringmod || p->sync) pokey[1] = 0;
+        if (p->ringmod || p->sync) v = 0;
     case MUTE_NONE:
     default:
         if (wave & 6)
             mute_detect[(wave>>1)&3]++;
         break;
     }
+
+    pokey[0] = POK;
+    pokey[1] = dist + v;
 }
 
 /* ------------------------------------------------------------------------ */
