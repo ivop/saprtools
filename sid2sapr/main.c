@@ -243,17 +243,6 @@ static void sid2pokey(int voice, uint8_t *pokey) {
     int volume = (sid.v[voice].envval >> 20) & 0xf;
     int v = voltab[volume];
 
-    switch (wave&0x70) {
-    case 4:
-    case 2:
-    case 1:
-        break;
-    default:
-        volume = 0;
-        break;
-    }
-    if (wave & 0b110) volume = 0;
-
     if (POK < 0)
         POK = 0;
 
