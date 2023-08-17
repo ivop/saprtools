@@ -240,8 +240,8 @@ static void sid2pokey(int voice, uint8_t *pokey) {
 
     int dist = 0xa0;
 
-    int volume = (sid.v[voice].envval >> 20) & 0xf;
-    int v = voltab[volume];
+    double volume = sid.v[voice].envval;
+    int v = voltab[(int)round(volume)];
 
     if (POK < 0)
         POK = 0;

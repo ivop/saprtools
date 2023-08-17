@@ -49,7 +49,7 @@ static inline int fixed_from_float(float f) {
 // --------------------------------------------------------------------------
 // CALCULATED "CONSTANTS"
 //
-static int adr_table[16];
+static double adr_table[16];
 
 // Proper rate counter periods
 //
@@ -74,9 +74,10 @@ static uint8_t memory[65536];
 // INIT SID
 //
 void c64_sid_init(uint32_t mixfreq) {
-    int cycles_per_sample = 985248.444 / mixfreq;
-    for (int i = 0; i < 16; i++)
-        adr_table[i] = (cycles_per_sample << 16) / periods[i];
+    double cycles_per_sample = 985248.444 / mixfreq;
+    for (int i = 0; i < 16; i++) {
+        adr_table[i] = cycles_per_sample / periods[i] / 16.0;
+    }
 
     memset(&sid, 0, sizeof(sid));
 }
@@ -92,14 +93,14 @@ void c64_handle_adsr(uint32_t len) {
             switch (p->envphase) {
             case ATTACK:
                 p->envval += p->attack;
-                if (p->envval >= 0xffffff) {
-                    p->envval = 0xffffff;
+                if (p->envval >= 15.0) {
+                    p->envval = 15.0;
                     p->envphase = DECAY;
                 }
                 break;
             case DECAY:
                 p->envval -= p->decay;
-                if (p->envval <= (int)(p->sustain)) {
+                if (p->envval <= p->sustain) {
                     p->envval = p->sustain;
                     p->envphase = SUSTAIN;
                 }
@@ -111,8 +112,8 @@ void c64_handle_adsr(uint32_t len) {
                 break;
             case RELEASE:
                 p->envval -= p->release;
-                if (p->envval < 0x40000)
-                    p->envval = 0x40000;
+                if (p->envval < 0.1)
+                    p->envval = 0.1;
                 break; 
             }       // switch envphase
 
@@ -154,7 +155,7 @@ static void sid_write(int reg, unsigned char val) {
         break;
     case 6:
         r->sr = val;
-        p->sustain = (r->sr & 0xf0) << 16;
+        p->sustain = (r->sr & 0xf0) >> 4;
         p->release = adr_table[r->sr & 0xf];
         break;
 

@@ -13,11 +13,11 @@ struct sid_registers {
 
 struct sid_voice {
     uint8_t gate;
-    uint32_t attack;
-    uint32_t decay;
-    uint32_t sustain;
-    uint32_t release;
-    signed int envval;
+    double attack;
+    double decay;
+    double sustain;
+    double release;
+    double envval;
     uint8_t envphase;
 };
 
