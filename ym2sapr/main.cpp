@@ -523,7 +523,7 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
 
     double f = (double) master_clock / (16*TP);
 
-    int POK = (ATARI_XL_CLOCK / 2.0 / f) - 7;
+    int POK = round((ATARI_XL_CLOCK / 2.0 / f) - 7);
 
     if (POK < 0)
         POK = 0;
