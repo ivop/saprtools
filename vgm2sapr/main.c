@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
@@ -147,6 +148,31 @@ double framerate;
 int debug;
 int force_new;
 
+union sn76489 {
+    struct {
+        uint16_t freq1;
+        uint16_t att1;
+        uint16_t freq2;
+        uint16_t att2;
+        uint16_t freq3;
+        uint16_t att3;
+        uint16_t ctrl;
+        uint16_t attn;
+    } v;
+    uint16_t r[8];
+};
+
+enum {
+    REG_FREQ1,
+    REG_ATT1,
+    REG_FREQ2,
+    REG_ATT2,
+    REG_FREQ3,
+    REG_ATT3,
+    REG_CTRL,
+    REG_ATTN
+};
+
 #define debug_fprintf(stream, ...) \
     if (debug) fprintf(stream, __VA_ARGS__);
 
@@ -207,11 +233,11 @@ static int write_sapr(gzFile file, struct vgm_header *v, char *output) {
     int run = 1;
     int synced = 0;
 
-    uint8_t registers[8];
-    uint8_t written[8];
+    union sn76489 sn;
+    uint8_t written[16];
 
-    memset(registers, 0, 8);
-    memset(written, 0, 8);
+    memset(&sn, 0, sizeof(union sn76489));
+    memset(written, 0, 16);
 
     while (run) {
         int wait = 0;
@@ -233,12 +259,62 @@ static int write_sapr(gzFile file, struct vgm_header *v, char *output) {
             break;
         case 0x31:
             break;      /* AY8910 stereo mask ignored */
-        case 0x50:
-            if (!unknown) {
-                fprintf(stderr, "skipping unknown chipset\n");
-                unknown = 1;
+        case 0x50: {
+            uint8_t val = gzgetc(file);
+            static uint8_t reg = 0;
+            uint8_t dat;
+            bool changed = false;
+
+            if (val & 0x80) {
+                reg = (val >> 4) & 0x07;
+
+                if (sn.r[reg] & 0x0f != val & 0x0f)
+                    changed = true;
+
+                switch (reg) {
+                case REG_FREQ1:
+                case REG_FREQ2:
+                case REG_FREQ3:
+                    if (sn.r[reg] & 0x0f != val & 0x0f)
+                        changed = true;
+                    sn.r[reg] &= 0x03f0;
+                    sn.r[reg] |= val & 0x0f;
+                    break;
+                case REG_ATT1:
+                case REG_ATT2:
+                case REG_ATT3:
+                case REG_CTRL:
+                case REG_ATTN:
+                    sn.r[reg] = val & 0x0f;
+                    break;
+                }
+            } else {
+                if (sn.r[reg] & (0x7f << 4) != (val & 0x7f))
+                    changed = true;
+
+                sn.r[reg] &= 0x000f;
+                sn.r[reg] |= (val & 0x7f) << 4;
+
+                if (changed)
+                    reg += 8;
             }
+
+            if (changed) {
+                if (!written[reg]) {
+                    written[reg]++;
+                } else {
+                    if (force_new) {
+                        debug_fprintf(stderr, "*** new frame forced\n");
+                        gzseek(file, -3, SEEK_CUR);
+                        fcnt=framelen;              // force new frame
+                        break;
+                    }
+                    written[reg]++;
+                }
+            }
+
             break;
+            }
         case 0x51:
         case 0x52:
         case 0x53:
@@ -254,6 +330,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, char *output) {
         case 0x5d:
         case 0x5e:
         case 0x5f:
+        case 0xa0:
         case 0xb0:
         case 0xb1:
         case 0xb2:
@@ -321,28 +398,9 @@ static int write_sapr(gzFile file, struct vgm_header *v, char *output) {
         case 0x7f:
             wait = (c & 0xf) + 1;
             break;
-        case 0xa0: {
-#if 0
-            uint8_t reg = gzgetc(file) & 0x0f;
-            uint8_t dat = gzgetc(file);
-
-            if (registers[reg] != dat) {
-                if (!written[reg]) {
-                    written[reg]++;
-                } else {
-                    if (force_new) {
-                        debug_fprintf(stderr, "*** new frame forced\n");
-                        gzseek(file, -3, SEEK_CUR);
-                        fcnt=framelen;              // force new frame
-                        break;
-                    }
-                    written[reg]++;
-                }
-                registers[reg] = dat;
-            }
+        case 0x80:
+            wait = (c & 0xf);
             break;
-#endif
-            }
         default:
             fprintf(stderr, "unhandled data command %02x\n", c);
             return 0;
@@ -358,7 +416,9 @@ static int write_sapr(gzFile file, struct vgm_header *v, char *output) {
 
         while (fcnt >= framelen) {
             nframes++;
-//            fwrite(registers, 1, 16, outfile);       // write to file
+
+            // sn_to_pokey(pokey, registers);
+            // fwrite(pokey, 1, 9, outfile);
 
             fcnt -= framelen;
             for (int i = 0; i<16; i++) {
@@ -371,16 +431,9 @@ static int write_sapr(gzFile file, struct vgm_header *v, char *output) {
     }
 
     nframes++;
-//    fwrite(registers, 1, 16, outfile);           // flush last registers
 
-    fseek(outfile, 12, SEEK_SET);
-
-    uint8_t dword[4];
-    dword[0] = (nframes >> 24) & 0xff;
-    dword[1] = (nframes >> 16) & 0xff;
-    dword[2] = (nframes >>  8) & 0xff;
-    dword[3] =  nframes        & 0xff;
-    fwrite(dword, 1, 4, outfile);           // number of frames
+    // sn_to_pokey(pokey, registers);
+    // fwrite(pokey, 1, 9, outfile);        // flush last registers or zero
 
     fclose(outfile);
 
@@ -486,15 +539,17 @@ int main(int argc, char **argv) {
     fprintf(stderr, "samples per frame: %.2f\n", 44100.0/framerate);
     fprintf(stderr, "song length: %.2f seconds\n", v->total_nsamples/44100.0);
 
-#if 0
-    if (v->ay8910_clock) {
-        fprintf(stderr, "detected AY8910\n");
-        write_ym6(file, v, output);
+    if (v->sn76489_clock) {
+        fprintf(stderr, "detected SN76489\n");
+        fprintf(stderr, "clock: %d Hz\n", v->sn76489_clock);
+        if (v->version < 0x0110)
+            v->sn76489_shift_width = 16;
+        fprintf(stderr, "shift register width: %d bits\n", v->sn76489_shift_width);
+        write_sapr(file, v, output);
     } else {
         fprintf(stderr, "no supported chip detected\n");
         return 1;
     }
-#endif
 
     fprintf(stderr, "finished!\n");
 
