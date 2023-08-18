@@ -210,18 +210,16 @@ static void read_header(gzFile file) {
 
 /* ------------------------------------------------------------------------ */
 
-static int write_sapr(gzFile file, struct vgm_header *v, char *output) {
+static int write_sapr(gzFile file, struct vgm_header *v) {
     FILE *outfile;
 
-    if (output) {
-        outfile = fopen(output, "wb");
-        if (!outfile) {
-            fprintf(stderr, "unable to open %s for writing\n", output);
-            return -1;
-        }
+    outfile = fopen("left.sapr", "wb");
+    if (!outfile) {
+        fprintf(stderr, "unable to open left.sapr for writing\n");
+        return -1;
     }
 
-    fprintf(stderr, "writing SAP-R file to %s\n", output);
+    fprintf(stderr, "writing SAP-R file to left.sapr\n");
 
     // write header
 
@@ -462,16 +460,12 @@ static void usage(void) {
 /* ------------------------------------------------------------------------ */
 
 int main(int argc, char **argv) {
-    char *output = NULL;
     int option;
 
     framerate = 0;
 
-    while ((option = getopt(argc, argv, "dfho:r:")) != -1) {
+    while ((option = getopt(argc, argv, "dfhr:")) != -1) {
         switch (option) {
-        case 'o':
-            output = strdup(optarg);
-            break;
         case 'r':
             framerate = strtod(optarg, NULL);
             break;
@@ -491,11 +485,6 @@ int main(int argc, char **argv) {
     if (optind+1 != argc) {
         fprintf(stderr, "wrong arguments\n");
         usage();
-        return 1;
-    }
-
-    if (!output) {
-        fprintf(stderr, "please specify an output file (-o file)\n");
         return 1;
     }
 
@@ -545,7 +534,7 @@ int main(int argc, char **argv) {
         if (v->version < 0x0110)
             v->sn76489_shift_width = 16;
         fprintf(stderr, "shift register width: %d bits\n", v->sn76489_shift_width);
-        write_sapr(file, v, output);
+        write_sapr(file, v);
     } else {
         fprintf(stderr, "no supported chip detected\n");
         return 1;
