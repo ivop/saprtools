@@ -173,6 +173,11 @@ enum {
     REG_ATTN
 };
 
+static uint8_t voltab[16];  // note that 0 is the loudest, and 15 is silent
+
+#define DEFAULT_MAXPOKVOL 12
+unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
+
 #define debug_fprintf(stream, ...) \
     if (debug) fprintf(stream, __VA_ARGS__);
 
@@ -440,19 +445,24 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
 
 /* ------------------------------------------------------------------------ */
 
+static void init_voltab(int maxvol) {
+    for (int i=0; i<16; i++) {
+        voltab[i] = maxvol * pow(10.0, -0.1 * i);
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
 static void usage(void) {
     fprintf(stderr,
-"usage: vgm2sapr [-o output] file.vgm\n"
+"usage: vgm2sapr [-options] file.vgm\n"
 "\n"
-"   -o  output      write output to file [default: stdout]\n"
-"\n"
-"   -r rate         specify framerate (i.e. 50, 59.94, ...)\n"
-"\n"
-"   -d              show debug output to analyze bad conversions\n"
-"                   try to reduce the number of bad writes by setting\n"
-"                   the proper framerate or slightly below, or try -f\n"
-"\n"
-"   -f              force new frame on double write\n"
+"   -r rate     specify framerate (i.e. 50, 59.94, ...)\n"
+"   -d          show debug output to analyze bad conversions\n"
+"               try to reduce the number of bad writes by setting\n"
+"               the proper framerate or slightly below, or try -f\n"
+"   -f          force new frame on double write\n"
+"   -p volume   pokey maximum per channel volume [default: 12, softbass: 11]\n"
 );
 
 }
@@ -464,7 +474,7 @@ int main(int argc, char **argv) {
 
     framerate = 0;
 
-    while ((option = getopt(argc, argv, "dfhr:")) != -1) {
+    while ((option = getopt(argc, argv, "dfhr:p:")) != -1) {
         switch (option) {
         case 'r':
             framerate = strtod(optarg, NULL);
@@ -474,6 +484,13 @@ int main(int argc, char **argv) {
             break;
         case 'f':
             force_new = 1;
+            break;
+        case 'p':
+            maxpokvol = atoi(optarg);
+            if (maxpokvol < 0 || maxpokvol > 15) {
+                fprintf(stderr, "invalid maximum pokey volume\n");
+                return 1;
+            }
             break;
         case 'h':
         default:
@@ -527,6 +544,9 @@ int main(int argc, char **argv) {
     fprintf(stderr, "total number of samples: %d\n", v->total_nsamples);
     fprintf(stderr, "samples per frame: %.2f\n", 44100.0/framerate);
     fprintf(stderr, "song length: %.2f seconds\n", v->total_nsamples/44100.0);
+    fprintf(stderr, "maximum pokey volume: %d\n", maxpokvol);
+
+    init_voltab(maxpokvol);
 
     if (v->sn76489_clock) {
         fprintf(stderr, "detected SN76489\n");
