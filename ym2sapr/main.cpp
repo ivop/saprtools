@@ -523,13 +523,13 @@ static void ym2pokey(uint8_t lsb, uint8_t msb, uint8_t volume,
 
     double f = (double) master_clock / (16*TP);
 
-    int POK1 = (ATARI_XL_CLOCK / 2.0 / f) - 7;
+    int POK = (ATARI_XL_CLOCK / 2.0 / f) - 7;
 
-    if (POK1 < 0)
-        POK1 = 0;
+    if (POK < 0)
+        POK = 0;
 
-    pokey[0] = POK1 & 0xff;
-    pokey[2] = (POK1 >> 8) & 0xff;
+    pokey[0] = POK & 0xff;
+    pokey[2] = (POK >> 8) & 0xff;
 
     int v = volumetab[volume & 0x0f];
 
