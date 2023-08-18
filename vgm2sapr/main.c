@@ -33,6 +33,8 @@
 #include <math.h>
 #include <zlib.h>
 
+#define ATARI_CLOCK      1773447L
+
 struct vgm_header {
     char ident[4];                      /* $00 */
     uint32_t eof_offset;
@@ -173,6 +175,18 @@ enum {
     REG_ATTN
 };
 
+enum {
+    PERIODIC_NOISE,
+    WHITE_NOISE
+};
+
+enum {
+    SHIFT_512,
+    SHIFT_1024,
+    SHIFT_2048,
+    SHIFT_TONE3
+};
+
 static uint8_t voltab[16];  // note that 0 is the loudest, and 15 is silent
 
 #define DEFAULT_MAXPOKVOL 12
@@ -215,18 +229,59 @@ static void read_header(gzFile file) {
 
 /* ------------------------------------------------------------------------ */
 
-static int write_sapr(gzFile file, struct vgm_header *v) {
-    FILE *outfile;
+static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
+                                                    struct vgm_header *v) {
+    uint16_t snf = sn->r[channel<<1];
+    uint16_t snv = sn->r[(channel<<1)+1];
 
-    outfile = fopen("left.sapr", "wb");
-    if (!outfile) {
+    double f = v->sn76489_clock / (2 * snf * 16);
+
+    int POK = round((ATARI_CLOCK / 2.0 / f) - 7);
+
+    pokey[0] = POK & 0xff;
+    pokey[2] = (POK >> 8) & 0xff;
+
+    int volume = voltab[snv];
+
+    pokey[3] = 0xa0 + volume;
+}
+
+/* ------------------------------------------------------------------------ */
+
+static bool write_sapr_header(FILE *file) {
+    if (fprintf(file, "SAP\r\nAUTHOR \"\"\r\nNAME \"\"\r\nDATE \"\"\r\nTYPE R\r\n\r\n") < 0) {
+        fprintf(stderr, "error writing to file\n");
+        return false;
+    }
+    return true;
+}
+
+/* ------------------------------------------------------------------------ */
+
+static int write_sapr(gzFile file, struct vgm_header *v) {
+    uint8_t pokeyL[9], pokeyR[9];
+    FILE *outleft, *outright;
+
+    memset(pokeyL, 0, 9);
+    memset(pokeyR, 0, 9);
+    pokeyL[8] = pokeyR[8] = 0x78;
+
+    outleft = fopen("left.sapr", "wb");
+    if (!outleft) {
         fprintf(stderr, "unable to open left.sapr for writing\n");
         return -1;
     }
 
-    fprintf(stderr, "writing SAP-R file to left.sapr\n");
+    outright = fopen("right.sapr", "wb");
+    if (!outright) {
+        fprintf(stderr, "unable to open right.sapr for writing\n");
+        return -1;
+    }
 
-    // write header
+    fprintf(stderr, "writing SAP-R file to left.sapr and right.sapr\n");
+
+    if (!write_sapr_header(outleft)) return -1;
+    if (!write_sapr_header(outright)) return -1;
 
     uint32_t scnt = 0, nframes = 0;
     double fcnt = 0;
@@ -420,8 +475,12 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
         while (fcnt >= framelen) {
             nframes++;
 
-            // sn_to_pokey(pokey, registers);
-            // fwrite(pokey, 1, 9, outfile);
+            sn_to_pokey(&sn, &pokeyL[0], 0, v);
+            sn_to_pokey(&sn, &pokeyL[4], 1, v);
+            sn_to_pokey(&sn, &pokeyR[0], 2, v);
+
+            fwrite(pokeyL, 1, 9, outleft);
+            fwrite(pokeyR, 1, 9, outright);
 
             fcnt -= framelen;
             for (int i = 0; i<16; i++) {
@@ -435,10 +494,15 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
 
     nframes++;
 
-    // sn_to_pokey(pokey, registers);
-    // fwrite(pokey, 1, 9, outfile);        // flush last registers or zero
+    sn_to_pokey(&sn, &pokeyL[0], 0, v);
+    sn_to_pokey(&sn, &pokeyL[4], 1, v);
+    sn_to_pokey(&sn, &pokeyR[0], 2, v);
 
-    fclose(outfile);
+    fwrite(pokeyL, 1, 9, outleft);
+    fwrite(pokeyR, 1, 9, outright);
+
+    fclose(outleft);
+    fclose(outright);
 
     return 0;
 }
