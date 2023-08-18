@@ -425,7 +425,7 @@ static int write_ym6(gzFile file, struct vgm_header *v, char *output) {
 
 static void usage(void) {
     fprintf(stderr,
-"usage: vgm2ym [-o output] file.vgm\n"
+"usage: vgm2ym [-options] file.vgm\n"
 "   -o output       write output to file [default: stdout]\n"
 "   -r rate         specify framerate (i.e. 50, 59.94, ...)\n"
 "   -d              show debug output to analyze bad conversions\n"
