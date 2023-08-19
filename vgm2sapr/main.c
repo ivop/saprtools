@@ -259,7 +259,6 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
         case SHIFT_1024:  noisef = 1024; break;
         case SHIFT_2048:  noisef = 2048; break;
         case SHIFT_TONE3:
-            pokey[0] = pokey[2] = pokey[3] = 0;
             noisef = snf;
             break;
         }
