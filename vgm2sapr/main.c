@@ -499,8 +499,26 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
         case 0x7f:
             wait = (c & 0xf) + 1;
             break;
-        case 0x80:
+        case 0x80:  // YM2612 write + wait, we only wait
+        case 0x81:
+        case 0x82:
+        case 0x83:
+        case 0x84:
+        case 0x85:
+        case 0x86:
+        case 0x87:
+        case 0x88:
+        case 0x89:
+        case 0x8a:
+        case 0x8b:
+        case 0x8c:
+        case 0x8d:
+        case 0x8e:
+        case 0x8f:
             wait = (c & 0xf);
+            break;
+        case 0xe0:
+            gzseek(file, 4, SEEK_CUR);
             break;
         default:
             fprintf(stderr, "unhandled data command %02x\n", c);
