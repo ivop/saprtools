@@ -23,5 +23,5 @@ clean:
 	rm -f vgm2sapr *~ */*~
 
 cleaner: clean
-	rm -f *.sapr *.xex
+	rm -f *.sapr *.xex *.lz16
 
