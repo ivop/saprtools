@@ -189,7 +189,7 @@ enum {
 
 static uint8_t voltab[16];  // note that 0 is the loudest, and 15 is silent
 
-#define DEFAULT_MAXPOKVOL 12
+#define DEFAULT_MAXPOKVOL 15
 unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
 
 #define debug_fprintf(stream, ...) \
@@ -570,7 +570,7 @@ static void usage(void) {
 "               try to reduce the number of bad writes by setting\n"
 "               the proper framerate or slightly below, or try -f\n"
 "   -f          force new frame on double write\n"
-"   -p volume   pokey maximum per channel volume [default: 12, softbass: 11]\n"
+"   -p volume   pokey maximum per channel volume [default: 15]\n"
 );
 
 }
