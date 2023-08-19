@@ -114,6 +114,46 @@ make compress
 make player60
 mv player.xex xex/gg-spider.xex
 
+# TANDY 1000
+
+./vgm2sapr -r 60 tandy/'Zeliard - 02 Departure.vgz'
+echo -n \
+    "Source: Tandy 1000                     " \
+    "Title : Zeliard - Departure            " \
+    "Author: Masakuni Mitsuhashi, H. Godai" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/tandy-zeliard.xex
+
+./vgm2sapr -r 60 tandy/'Wibarm - 01 Title.vgz'
+echo -n \
+    "Source: Tandy 1000                     " \
+    "Title : Wibarm - Title                 " \
+    "Author: Toshiya Yamanaka" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/tandy-wibarm.xex
+
+# IBM PCjr
+
+./vgm2sapr -r 60 ibmpcjr/'KK3 - 19 Finale.vgz'
+echo -n \
+    "Source: IBM PCjr                       " \
+    "Title : King's Quest III - Finale      " \
+    "Author: Margaret Lowe" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/ibmpcjr-kk3.xex
+
+./vgm2sapr -r 60 ibmpcjr/'Crossfire (floppy version).vgz'
+echo -n \
+    "Source: IBM PCjr                       " \
+    "Title : Crossfire (Floppy Version)     " \
+    "Author: Jay Sullivan" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/ibmpcjr-crossfire.xex
+
 #fi
 
 # clear for further tests
