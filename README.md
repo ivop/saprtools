@@ -14,6 +14,10 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 | MSX/MSX2 | AY8910 | .vgm | Use vgm2ym to convert to .ym, then use ym2sapr |
 | MSX/MSX2 | AY8910 | .kss | Use kss2vgm[^1], vgm2ym and finally ym2sapr |
 | Commodore 64 | SID | .sid | Use sid2sapr |
+| BBC Micro | SN76489 | .vgm | Use vgm2sapr |
+| SG-1000 | SN76489 | .vgm | Use vgm2sapr |
+| Sega Master System | SN76489 | .vgm | Use vgm2sapr |
+| Sega Game Gear | SN76489 | .vgm | Use vgm2sapr |
 
 ### Credits
 
