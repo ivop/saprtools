@@ -154,6 +154,17 @@ make compress
 make player60
 mv player.xex xex/ibmpcjr-crossfire.xex
 
+# SEGA PICO
+
+./vgm2sapr -r 60 sega/'Sonic Gameworld.vgz'
+echo -n \
+    "Source: SEGA Pico                      " \
+    "Title : Sonic The Hedgehog's Gameworld " \
+    "Author: Kojiro Mikusa" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pico-sonicgw.xex
+
 #fi
 
 # clear for further tests

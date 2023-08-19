@@ -18,6 +18,7 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 | SG-1000 | SN76489 | .vgm | vgm2sapr |
 | Sega Master System | SEGA PSG | .vgm | vgm2sapr |
 | Sega Game Gear | SEGA PSG | .vgm | vgm2sapr |
+| Sega Pico | SEGA PSG | .vgm | vgm2sapr |
 | Tandy 1000 | NCR8496 | .vgm | vgm2sapr |
 | IBM PCjr | SN76489 | .vgm | vgm2sapr |
 
