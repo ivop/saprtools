@@ -233,6 +233,10 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
                                                     struct vgm_header *v) {
     uint16_t snf = sn->r[channel<<1];
     uint16_t snv = sn->r[(channel<<1)+1];
+    uint16_t ctrl = sn->v.ctrl;
+    uint16_t attn = sn->v.attn;
+
+    if (snf == 0) snf++;            // avoid div by 0
 
     double f = v->sn76489_clock / (2 * snf * 16);
 
@@ -244,6 +248,44 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
     int volume = voltab[snv];
 
     pokey[3] = 0xa0 + volume;
+
+    if (channel == 2) {
+        double noisef;
+        int dist = 0xa0;
+        double extradiv = 1.0;
+
+        switch (ctrl & 3) {
+        case SHIFT_512:   noisef =  512; break;
+        case SHIFT_1024:  noisef = 1024; break;
+        case SHIFT_2048:  noisef = 2048; break;
+        case SHIFT_TONE3:
+            pokey[0] = pokey[2] = pokey[3] = 0;
+            noisef = snf;
+            break;
+        }
+
+        // note: periodic noise is played with generator A because we
+        // do not really have a generator to play that any way else.
+        // it should have a tone, so it has a tone.
+
+        if (ctrl & 4) {
+            dist = 0x80;
+        } else {
+            extradiv = v->sn76489_shift_width / 2;
+            if ((ctrl & 3) == SHIFT_TONE3)
+                extradiv *= 16;
+        }
+
+        f = v->sn76489_clock / (2 * noisef) / extradiv;
+
+        POK = round((ATARI_CLOCK / 2.0 / f) - 7);
+
+        volume = voltab[sn->v.attn];
+
+        pokey[4] = POK & 0xff;
+        pokey[6] = (POK >> 8) & 0xff;
+        pokey[7] = dist + volume;
+    }
 }
 
 /* ------------------------------------------------------------------------ */
@@ -316,7 +358,9 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
             gzseek(file, ss, SEEK_CUR);
             break;
         case 0x31:
-            break;      /* AY8910 stereo mask ignored */
+        case 0x4f:
+            gzseek(file, 1, SEEK_CUR);
+            break;      /* AY8910 / GG  stereo mask ignored */
         case 0x50: {
             uint8_t val = gzgetc(file);
             static uint8_t reg = 0;
@@ -347,11 +391,11 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
                     break;
                 }
             } else {
-                if (sn.r[reg] & (0x7f << 4) != (val & 0x7f))
+                if ((sn.r[reg] >> 4) != (val & 0x3f))
                     changed = true;
 
                 sn.r[reg] &= 0x000f;
-                sn.r[reg] |= (val & 0x7f) << 4;
+                sn.r[reg] |= (val & 0x3f) << 4;
 
                 if (changed)
                     reg += 8;
