@@ -270,9 +270,9 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
         if (ctrl & 4) {
             dist = 0x80;
         } else {
-            extradiv = v->sn76489_shift_width / 2;
+            extradiv = v->sn76489_shift_width;
             if ((ctrl & 3) == SHIFT_TONE3)
-                extradiv *= 16;
+                extradiv *= 8;
         }
 
         f = v->sn76489_clock / (2 * noisef) / extradiv;
