@@ -165,6 +165,18 @@ make compress
 make player60
 mv player.xex xex/pico-sonicgw.xex
 
+# ARCADE
+
+# completely different clock of 1536000Hz!
+./vgm2sapr -r 60 arcade/'Mr. Goemon - 08 Stage 2 BGM 3 ~ BGM 4.vgz'
+echo -n \
+    "Source: Arcade                         " \
+    "Title : Mr. Goemon - Stage 2+3 BGM     " \
+    "Author: Konami Kukeiha Club" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/arcade-mrgoemon.xex
+
 #fi
 
 # clear for further tests
