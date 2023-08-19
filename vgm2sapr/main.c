@@ -146,9 +146,9 @@ struct vgm_header {
     uint32_t reserved4;
 } vgm_header;
 
-double framerate;
-int debug;
-int force_new;
+static double framerate;
+static int debug;
+static int force_new;
 
 union sn76489 {
     struct {
@@ -190,7 +190,7 @@ enum {
 static uint8_t voltab[16];  // note that 0 is the loudest, and 15 is silent
 
 #define DEFAULT_MAXPOKVOL 15
-unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
+static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
 
 #define debug_fprintf(stream, ...) \
     if (debug) fprintf(stream, __VA_ARGS__);
