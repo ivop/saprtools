@@ -3,8 +3,8 @@ CC ?= gcc
 LIBS = -lm
 LZSS = ../lzss-sap/bin/lzss
 
-sid2sapr: main.c c64.c m6502.h c64.h
-		$(CC) $(CFLAGS) -o sid2sapr main.c c64.c $(LIBS)
+sid2sapr: main.c c64.c m6502.h c64.h md5.c md5.h
+		$(CC) $(CFLAGS) -o sid2sapr main.c c64.c md5.c $(LIBS)
 
 compress-mono: $(LZSS)
 	$(LZSS) -6 output.sapr output.lz16
