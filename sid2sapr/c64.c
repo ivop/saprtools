@@ -302,6 +302,8 @@ uint16_t c64_load_sid(char *filename,
         c = fgetc(f);
     }
 
+    fclose(f);
+
     if (!*playAddress) {
         fprintf(stderr, "play address not set, trying interrupt vector(s)\n");
         c64_cpu_jsr(*initAddress, 0);
