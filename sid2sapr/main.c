@@ -33,6 +33,7 @@
 #include <ctype.h>
 #include <math.h>
 #include "c64.h"
+#include "md5.h"
 
 #define C64_CLOCK        985248L
 #define ATARI_CLOCK     1773447L
@@ -351,6 +352,38 @@ static void adjust_for_cancellation(uint8_t *pokey) {
 
 /* ------------------------------------------------------------------------ */
 
+static char *calculate_md5(char *filename) {
+    unsigned char inBuf[1024];
+    int inLen;
+    unsigned char h[16];
+    static char md5[33];
+
+    FILE *f = fopen(filename, "rb");
+    if (!f) {
+        fprintf(stderr, "unable to open %s\n", filename);
+        return NULL;
+    }
+
+    MD5_CTX mdContext;
+    MD5Init(&mdContext);
+
+    while ((inLen = fread(inBuf, 1, sizeof(inBuf), f)) >= 1)
+        MD5Update(&mdContext, inBuf, inLen);
+
+    MD5Final(h, &mdContext);
+
+    fclose(f);
+
+    snprintf(md5, 33,
+            "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+            h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7],
+            h[8], h[9], h[10], h[11], h[12], h[13], h[14], h[15]);
+
+    return md5;
+}
+
+/* ------------------------------------------------------------------------ */
+
 static void usage(void) {
     fprintf(stderr, "usage: sid2sapr [options] sid-file\n\n"
 "   -h          display help\n"
@@ -463,6 +496,11 @@ int main(int argc, char *argv[]) {
         usage();
         return 1;
     }
+
+    char *md5 = calculate_md5(argv[optind]);
+    if (!md5) return 1;
+
+    fprintf(stderr, "md5: %s\n", md5);
 
     c64_init();
     c64_sid_init(44100);
