@@ -34,6 +34,7 @@
 #include <math.h>
 #include "c64.h"
 #include "md5.h"
+#include "songlengths.h"
 
 #define C64_CLOCK        985248L
 #define ATARI_CLOCK     1773447L
@@ -384,6 +385,43 @@ static char *calculate_md5(char *filename) {
 
 /* ------------------------------------------------------------------------ */
 
+static int find_songlength(const char *md5, int subtune) {
+    int i, max = sizeof(songinfo)/sizeof(struct songinfo);
+    for (i = 0; i<max; i++)
+         if (!strcmp(songinfo[i].hash, md5)) break;
+
+    if (i == max) goto errout;
+
+    char *p = songinfo[i].lengths;
+
+    subtune--;
+
+    while (p && subtune--) {
+        p = strchr(p, ' ');
+        if (p) p++;
+    }
+
+    if (!p ||  *p == 0) goto errout;
+
+    int minutes;
+    float seconds;
+
+    if (sscanf(p, "%d:%f", &minutes, &seconds) != 2) goto errout;
+
+    seconds += minutes * 60;
+
+    int nframes = seconds * 50;
+
+    fprintf(stderr, "known song, subtune length: %d frames\n", nframes);
+    return nframes;
+
+errout:
+    fprintf(stderr, "unknown song\n");
+    return 0;
+}
+
+/* ------------------------------------------------------------------------ */
+
 static void usage(void) {
     fprintf(stderr, "usage: sid2sapr [options] sid-file\n\n"
 "   -h          display help\n"
@@ -410,6 +448,7 @@ static void usage(void) {
 int main(int argc, char *argv[]) {
     char *outfile = "output.sapr";
     int nframes = 3000;
+    bool nframes_override = false;
     bool adjust = false;
     int subtune = 1;
     bool subtune_override = false;
@@ -451,6 +490,7 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "invalid number of frames (%d)\n", nframes);
                 return 1;
             }
+            nframes_override = true;
             break;
         case 'p':
             maxpokvol = atoi(optarg);
@@ -497,11 +537,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    char *md5 = calculate_md5(argv[optind]);
-    if (!md5) return 1;
-
-    fprintf(stderr, "md5: %s\n", md5);
-
     c64_init();
     c64_sid_init(44100);
 
@@ -526,6 +561,15 @@ int main(int argc, char *argv[]) {
     }
 
     fprintf(stderr, "converting subtune %d\n", subtune);
+
+    if (!nframes_override) {
+        char *md5 = calculate_md5(argv[optind]);
+        if (!md5) return 1;
+        fprintf(stderr, "md5: %s\n", md5);
+
+        int n = find_songlength(md5, subtune);
+        if (n) nframes = n;
+    }
 
     c64_cpu_jsr(initAddress, subtune-1);
 
