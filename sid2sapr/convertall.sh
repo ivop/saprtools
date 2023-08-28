@@ -16,7 +16,7 @@ fi
 
 # JEROEN TEL
 
-./sid2sapr -p 8 -n $(((6*60+47)*50)) -b $basstype sid/'Alloyrun.sid'
+./sid2sapr -p 8 -b $basstype sid/'Alloyrun.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Alloyrun                       " \
@@ -25,7 +25,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-alloy.xex
 
-./sid2sapr -d -n $(((2*60+35)*50)) -b $basstype sid/'Alternative_Fuel.sid'
+./sid2sapr -d -b $basstype sid/'Alternative_Fuel.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Alternative Fuel               " \
@@ -34,7 +34,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-fuel.xex
 
-./sid2sapr -a -n $(((6*60+40)*50)) -b $basstype sid/'Cybernoid.sid'
+./sid2sapr -a -b $basstype sid/'Cybernoid.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Cybernoid                      " \
@@ -43,7 +43,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-cybernoid.xex
 
-./sid2sapr -m both -n $(((5*60+46)*50)) -b $basstype sid/'Cybernoid_II.sid'
+./sid2sapr -m both -b $basstype sid/'Cybernoid_II.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Cybernoid II                   " \
@@ -52,7 +52,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-cybernoid2.xex
 
-./sid2sapr -m ringmod -n $(((6*60+25)*50)) -b $basstype sid/'Hawkeye.sid'
+./sid2sapr -m ringmod -b $basstype sid/'Hawkeye.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Hawkeye                        " \
@@ -61,7 +61,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-hawkeye.xex
 
-./sid2sapr -m both -n $(((5*60+46)*50)) -b $basstype sid/'Ice_Age.sid'
+./sid2sapr -m both -b $basstype sid/'Ice_Age.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Ice Age                        " \
@@ -70,7 +70,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-iceage.xex
 
-./sid2sapr -n $(((2*60+34)*50)) -b $basstype sid/'JT_42.sid'
+./sid2sapr -b $basstype sid/'JT_42.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : JT 42                          " \
@@ -79,7 +79,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/tel-jt42.xex
 
-./sid2sapr -n $(((2*60+38)*50)) -b $basstype sid/'Kinetix.sid'
+./sid2sapr -b $basstype sid/'Kinetix.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Kinetix                        " \
@@ -90,7 +90,7 @@ mv player.xex xex-$player/tel-kinetix.xex
 
 # LAXITY
 
-./sid2sapr -n $(((1*60+17)*50)) -b $basstype sid/'Freeze.sid'
+./sid2sapr -b $basstype sid/'Freeze.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Freeze                         " \
@@ -99,7 +99,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/laxity-freeze.xex
 
-./sid2sapr -n $(((2*60+22)*50)) -b $basstype sid/'Syncopated.sid'
+./sid2sapr -b $basstype sid/'Syncopated.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Syncopated                     " \
@@ -108,7 +108,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/laxity-syncopated.xex
 
-./sid2sapr -n $(((1*60+51)*50)) -b $basstype sid/'Wisdom.sid'
+./sid2sapr -b $basstype sid/'Wisdom.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Wisdom                         " \
@@ -119,7 +119,7 @@ mv player.xex xex-$player/laxity-wisdom.xex
 
 # ROB HUBBARD
 
-./sid2sapr -n $(((10*60+45)*50)) -b $basstype sid/'International_Karate.sid'
+./sid2sapr -b $basstype sid/'International_Karate.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : International Karate           " \
@@ -128,7 +128,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-ik.xex
 
-./sid2sapr -n $(((4*60+36)*50)) -b $basstype sid/'Crazy_Comets.sid'
+./sid2sapr -b $basstype sid/'Crazy_Comets.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Crazy Comets                   " \
@@ -137,7 +137,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-comets.xex
 
-./sid2sapr -n $(((1*60+17)*50)) -b $basstype sid/'Delta.sid'
+./sid2sapr -b $basstype sid/'Delta.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Delta                          " \
@@ -146,7 +146,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-delta.xex
 
-./sid2sapr -n $(((7*60+13)*50)) -b $basstype sid/'Lightforce.sid'
+./sid2sapr -b $basstype sid/'Lightforce.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Lightforce                     " \
@@ -155,7 +155,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-lightforce.xex
 
-./sid2sapr -n $(((5*60+50)*50)) -b $basstype sid/'Monty_on_the_Run.sid'
+./sid2sapr -b $basstype sid/'Monty_on_the_Run.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Monty on the Run               " \
@@ -164,7 +164,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-monty.xex
 
-./sid2sapr -n $(((5*60+41)*50)) -b $basstype sid/'Spellbound.sid'
+./sid2sapr -b $basstype sid/'Spellbound.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Spellbound                     " \
@@ -173,7 +173,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-spellbound.xex
 
-./sid2sapr -n $(((3*60+48)*50)) -b $basstype sid/'Thing_on_a_Spring.sid'
+./sid2sapr -b $basstype sid/'Thing_on_a_Spring.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Thing On A Spring              " \
@@ -182,7 +182,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/hubbard-toas.xex
 
-./sid2sapr -d -n $(((4*60+24)*50)) -b $basstype sid/'Warhawk.sid'
+./sid2sapr -d -b $basstype sid/'Warhawk.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Warhawk                        " \
@@ -193,7 +193,7 @@ mv player.xex xex-$player/hubbard-warhawk.xex
 
 # MITCH & DANE
 
-./sid2sapr -n $(((2*60+19)*50)) -b $basstype sid/'Dose_of_D.sid'
+./sid2sapr -b $basstype sid/'Dose_of_D.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Dose Of D                      " \
@@ -202,7 +202,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/md-dose.xex
 
-./sid2sapr -n $(((2*60+19)*50)) -b $basstype sid/'Jigsaw.sid'
+./sid2sapr -b $basstype sid/'Jigsaw.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Jigsaw                         " \
@@ -213,7 +213,7 @@ mv player.xex xex-$player/md-jigsaw.xex
 
 # CADAVER
 
-./sid2sapr -n $(((4*60+44)*50)) -b $basstype sid/'Aces_High.sid'
+./sid2sapr -b $basstype sid/'Aces_High.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Aces High                      " \
@@ -242,7 +242,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/cadaver-goatexample.xex
 
-./sid2sapr -n $(((1*60+53)*50)) -b $basstype sid/'Metal_Warrior_4.sid'
+./sid2sapr -b $basstype sid/'Metal_Warrior_4.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Metal Warrior 4                " \
@@ -251,7 +251,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/cadaver-mw4.xex
 
-./sid2sapr -n $(((1*60+57)*50)) -b $basstype sid/'Tarantula.sid'
+./sid2sapr -b $basstype sid/'Tarantula.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Tarantula                      " \
@@ -260,7 +260,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/cadaver-tarantula.xex
 
-./sid2sapr -n $(((1*60+57)*50)) -b $basstype sid/'Unleash_the_Fucking_Fury.sid'
+./sid2sapr -b $basstype sid/'Unleash_the_Fucking_Fury.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Unleash The Fucking Fury       " \
@@ -271,7 +271,7 @@ mv player.xex xex-$player/cadaver-unleash.xex
 
 # MARTIN GALWAY
 
-./sid2sapr -n $(((3*60+22)*50)) -b $basstype sid/'Ocean_Loader_1.sid'
+./sid2sapr -b $basstype sid/'Ocean_Loader_1.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Ocean Loader 1                 " \
@@ -280,7 +280,7 @@ make compress-$player
 make player-$player
 mv player.xex xex-$player/galway-ocean1.xex
 
-./sid2sapr -n $(((4*60+13)*50)) -b $basstype sid/'Ocean_Loader_2.sid'
+./sid2sapr -b $basstype sid/'Ocean_Loader_2.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Ocean Loader 2                 " \
@@ -291,7 +291,7 @@ mv player.xex xex-$player/galway-ocean2.xex
 
 # PETER CLARKE
 
-./sid2sapr -n $(((2*60+47)*50)) -b $basstype sid/'Ocean_Loader_3.sid'
+./sid2sapr -b $basstype sid/'Ocean_Loader_3.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Ocean Loader 3                 " \
@@ -302,7 +302,7 @@ mv player.xex xex-$player/clarke-ocean3.xex
 
 # CHRIS HUELSBECK
 
-./sid2sapr -n $(((2*60+11)*50)) -b $basstype sid/'R-Type.sid'
+./sid2sapr -b $basstype sid/'R-Type.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : R-Type                         " \
@@ -313,7 +313,7 @@ mv player.xex xex-$player/huelsbeck-rtype.xex
 
 # CHARLES DEENEN
 
-./sid2sapr -m both -n $(((5*60+13)*50)) -f -b $basstype sid/'Zamzara.sid'
+./sid2sapr -m both -f -b $basstype sid/'Zamzara.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Zamzara                        " \
