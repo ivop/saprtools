@@ -587,9 +587,9 @@ int main(int argc, char *argv[]) {
     c64_cpu_jsr(initAddress, subtune-1);
 
     if (stereo)
-        fprintf(stderr, "stereo pokey enabled");
+        fprintf(stderr, "stereo pokey enabled\n");
     else
-        fprintf(stderr, "mono pokey enabled");
+        fprintf(stderr, "mono pokey enabled\n");
 
     fprintf(stderr, "write output to %s\n", outfile);
 
