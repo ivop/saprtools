@@ -49,6 +49,7 @@ static char name[33], author[33], copyright[33];
 
 #define DEFAULT_MAXPOKVOL 10
 static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
+#define DEFAULT_STEREO_MAXPOKVOL 12
 
 static int basstype = 0;
 static char *bassstring;
@@ -441,6 +442,7 @@ static void usage(void) {
 "                   all (every combination)\n"
 "   -d          damp ringmod to half volume\n"
 "   -w value    let PWM influence the volume by factor [0.0-1.0]\n"
+"   -s          enable stereo pokey mode [default: mono pokey]\n"
 );
 }
 
@@ -448,15 +450,19 @@ static void usage(void) {
 
 int main(int argc, char *argv[]) {
     char *outfile = "output.sapr";
+    char *outfile2 = "right.sapr";
+    FILE *outf = NULL;
+    FILE *outf2 = NULL;
     int nframes = 3000;
     bool nframes_override = false;
     bool adjust = false;
     int subtune = 1;
     bool subtune_override = false;
+    bool stereo = false;
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:s")) != -1) {
         switch (option) {
         case 'a':
             adjust = true;
@@ -524,6 +530,12 @@ int main(int argc, char *argv[]) {
                 return 1;
             }
             break;
+        case 's':
+            stereo = true;
+            outfile = "left.sapr";
+            if (maxpokvol != DEFAULT_MAXPOKVOL)
+                maxpokvol = DEFAULT_STEREO_MAXPOKVOL;
+            break;
         case 'h':
         default:
             usage();
@@ -574,9 +586,14 @@ int main(int argc, char *argv[]) {
 
     c64_cpu_jsr(initAddress, subtune-1);
 
+    if (stereo)
+        fprintf(stderr, "stereo pokey enabled");
+    else
+        fprintf(stderr, "mono pokey enabled");
+
     fprintf(stderr, "write output to %s\n", outfile);
 
-    FILE *outf = fopen(outfile, "wb");
+    outf = fopen(outfile, "wb");
     if (!outf) {
         fprintf(stderr, "unable to open %s for writing\n", outfile);
         return 1;
@@ -584,12 +601,25 @@ int main(int argc, char *argv[]) {
     if (!write_sapr_header(outf))
         return 1;
 
+    if (stereo) {
+        fprintf(stderr, "write output to %s\n", outfile2);
+        outf2 = fopen(outfile2, "wb");
+        if (!outf2) {
+            fprintf(stderr, "unable to open %s for writing\n", outfile2);
+            return 1;
+        }
+        if (!write_sapr_header(outf2))
+            return 1;
+    }
+
     fprintf(stderr, "maximum pokey volume: %d\n", maxpokvol);
 
     init_voltab(maxpokvol);
 
-    fprintf(stderr, "bass type: %s\n", basstypes[basstype]);
-    fprintf(stderr, "bassfix: %s\n", bassfix ? "enabled" : "disabled");
+    if (!stereo) {
+        fprintf(stderr, "bass type: %s\n", basstypes[basstype]);
+        fprintf(stderr, "bassfix: %s\n", bassfix ? "enabled" : "disabled");
+    }
     fprintf(stderr, "note cancellation adjustment: %s\n", adjust ?
                                                "enabled" : "disabled");
     fprintf(stderr, "mute: %s\n", mutetypes[mute]);
@@ -601,20 +631,30 @@ int main(int argc, char *argv[]) {
     int counter = 0;
 
     while (counter != nframes) {
-        uint8_t pokey[9];
+        uint8_t pokey[9], pokey2[9];
         memset(pokey, 0, 9);
+
+        if (stereo) {
+            memset(pokey2, 0, 9);
+            pokey[8] = pokey2[8] = 0x78;
+        }
 
         c64_cpu_jsr(playAddress, 0);
         c64_handle_adsr(NSAMPLES/2);
 
-        sid2pokey(0, &pokey[0]);
-        sid2pokey(1, &pokey[2]);
-        sid2pokey(2, &pokey[6]);
+        if (stereo) {
+        } else {
+            sid2pokey(0, &pokey[0]);
+            sid2pokey(1, &pokey[2]);
+            sid2pokey(2, &pokey[6]);
+        }
 
         c64_handle_adsr(NSAMPLES/2);
 
         if (adjust) adjust_for_cancellation(pokey);
         if (!save_pokey(pokey, outf)) return 1;
+        if (stereo)
+            if (!save_pokey(pokey2, outf2)) return 1;
 
         counter++;
     }
