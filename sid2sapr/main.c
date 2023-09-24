@@ -228,6 +228,81 @@ static uint8_t find_closest_distc(const struct bass table[], double f) {
 
 /* ------------------------------------------------------------------------ */
 
+static void sid2pokey2(int voice, uint8_t *pokey) {
+    struct sid_voice     *p = &sid.v[voice];
+    struct sid_registers *r = &sid.r[voice];
+
+    uint8_t wave = sid.r[voice].wave;
+
+    double constant = pow(256.0, 3.0) / C64_CLOCK;
+
+    double f = sid.r[voice].freq / constant;
+
+    double POKreal = (ATARI_CLOCK / 2.0 / f) - 7;
+
+    int POK = round(POKreal);
+
+    int dist = 0xa0;
+
+    double volume = p->envval;
+
+    if (pulse_volume > 0.0) {
+        if (p->pul) {
+            int pulse = r->pulse;
+            if (pulse > 0x800)
+                pulse = 0x800 - (pulse - 0x800);
+            double delta = volume - (volume * ((double)pulse/0x800));
+            volume = volume - pulse_volume * delta;
+        }
+    }
+
+    int v = voltab[(int)round(volume)];
+
+    if (POK < 0)
+        POK = 0;
+
+    if (p->test || p->off) v = 0; 
+ 
+    if (p->ringmod && damp) v /= 2;
+
+    if (p->noise) {
+        POK = round(POKreal / 16.0); // divide by 16 (like I did w/ sid2gumby)
+        if (v) {
+            v >>= 1;
+            if (!v) v = 1;
+        }
+        dist = 0x80;
+    }
+
+    switch (mute) {
+    case MUTE_RINGMOD:
+        if (p->ringmod) v = 0;
+        break;
+    case MUTE_SYNC:
+        if (p->sync) v = 0;
+        break;
+    case MUTE_EITHER:
+        if ((p->sync && !p->ringmod) || (p->ringmod && !p->sync)) v = 0;
+        break;
+    case MUTE_BOTH:
+        if (p->ringmod && p->sync) v = 0;
+        break;
+    case MUTE_ALL:
+        if (p->ringmod || p->sync) v = 0;
+    case MUTE_NONE:
+    default:
+        if (wave & 6)
+            mute_detect[(wave>>1)&3]++;
+        break;
+    }
+
+    pokey[0] = POK & 0xff;
+    pokey[2] = (POK >> 8) & 0xff;
+    pokey[3] = dist + v;
+}
+
+/* ------------------------------------------------------------------------ */
+
 static void sid2pokey(int voice, uint8_t *pokey) {
     struct sid_voice     *p = &sid.v[voice];
     struct sid_registers *r = &sid.r[voice];
@@ -426,12 +501,12 @@ errout:
 static void usage(void) {
     fprintf(stderr, "usage: sid2sapr [options] sid-file\n\n"
 "   -h          display help\n"
-"   -b type     bass type (transpose [default], gritty, buzzy or softbass)\n"
+"   -b type     mono bass type (transpose [default], gritty, buzzy or softbass)\n"
 "   -o file     output sap-r data to file [default: output.sapr]\n"
 "   -p volume   pokey maximum per channel volume [default: 10, softbass: 9]\n"
 "   -n num      override the number of frames to process\n"
 "                                     [default: from hvsc database or 3000]\n"
-"   -a          adjust for note cancellation\n"
+"   -a          adjust for note cancellation (mono only)\n"
 "   -t num      select track/subtune [default: from file or 1]\n"
 "   -f          enable softbass off-by-one bassfix [default: off]\n"
 "   -m which    mute ringmod and/or sync [default: none]\n"
@@ -643,6 +718,9 @@ int main(int argc, char *argv[]) {
         c64_handle_adsr(NSAMPLES/2);
 
         if (stereo) {
+            sid2pokey2(0, &pokey[0]);
+            sid2pokey2(1, &pokey[4]);
+            sid2pokey2(2, &pokey2[0]);
         } else {
             sid2pokey(0, &pokey[0]);
             sid2pokey(1, &pokey[2]);
@@ -651,7 +729,7 @@ int main(int argc, char *argv[]) {
 
         c64_handle_adsr(NSAMPLES/2);
 
-        if (adjust) adjust_for_cancellation(pokey);
+        if (!stereo && adjust) adjust_for_cancellation(pokey);
         if (!save_pokey(pokey, outf)) return 1;
         if (stereo)
             if (!save_pokey(pokey2, outf2)) return 1;

@@ -46,7 +46,11 @@ SKCTL = $d20f
 .ifdef VGM2SAPR
     prints 0, "VGM2SAPR v1.0 (STEREO)"
 .else
-    prints 0, "YM2SAPR v1.9 (STEREO)"
+    .ifdef SID2SAPR
+        prints 0, "SID2SAPR v1.10 (STEREO)"
+    .else
+        prints 0, "YM2SAPR v1.9 (STEREO)"
+    .endif
 .endif
     prints 0, "Copyright (C) 2023 by Ivo van Poorten"
     prints 0, "LZSS routines (C) 2020 by DMSC"
