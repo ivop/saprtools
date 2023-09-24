@@ -336,3 +336,6 @@ done
 
 # clear for further tests
 echo -n " " > asm/songname.txt
+
+# remove one that's too big
+rm xex/hubbard-ik.xex
