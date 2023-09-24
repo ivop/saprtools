@@ -232,11 +232,11 @@ static void sid2pokey2(int voice, uint8_t *pokey) {
     struct sid_voice     *p = &sid.v[voice];
     struct sid_registers *r = &sid.r[voice];
 
-    uint8_t wave = sid.r[voice].wave;
+    uint8_t wave = r->wave;
 
     double constant = pow(256.0, 3.0) / C64_CLOCK;
 
-    double f = sid.r[voice].freq / constant;
+    double f = r->freq / constant;
 
     double POKreal = (ATARI_CLOCK / 2.0 / f) - 7;
 
@@ -307,11 +307,11 @@ static void sid2pokey(int voice, uint8_t *pokey) {
     struct sid_voice     *p = &sid.v[voice];
     struct sid_registers *r = &sid.r[voice];
 
-    uint8_t wave = sid.r[voice].wave;
+    uint8_t wave = r->wave;
 
     double constant = pow(256.0, 3.0) / C64_CLOCK;
 
-    double f = sid.r[voice].freq / constant;
+    double f = r->freq / constant;
 
     double POKreal = (ATARI_CLOCK / 28.0 / 2.0 / f) - 1;
 
@@ -518,6 +518,7 @@ static void usage(void) {
 "   -d          damp ringmod to half volume\n"
 "   -w value    let PWM influence the volume by factor [0.0-1.0]\n"
 "   -s          enable stereo pokey mode [default: mono pokey]\n"
+"   -x voice    extend one mono channel to 16-bits [default: none]\n"
 );
 }
 
@@ -534,10 +535,12 @@ int main(int argc, char *argv[]) {
     int subtune = 1;
     bool subtune_override = false;
     bool stereo = false;
+    int xorder[3] = { 0, 1, 2 };
+    bool xflag = false;
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:s")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:")) != -1) {
         switch (option) {
         case 'a':
             adjust = true;
@@ -610,6 +613,18 @@ int main(int argc, char *argv[]) {
             outfile = "left.sapr";
             if (maxpokvol != DEFAULT_MAXPOKVOL)
                 maxpokvol = DEFAULT_STEREO_MAXPOKVOL;
+            break;
+        case 'x':
+            switch (atoi(optarg)) {
+            case 0:
+                xorder[0] = 2; xorder[2] = 0; break;
+            case 1:
+                xorder[1] = 2; xorder[2] = 1; break;
+            case 2:
+            default:
+                break;
+            }
+            xflag = true;
             break;
         case 'h':
         default:
@@ -722,9 +737,16 @@ int main(int argc, char *argv[]) {
             sid2pokey2(1, &pokey[4]);
             sid2pokey2(2, &pokey2[0]);
         } else {
-            sid2pokey(0, &pokey[0]);
-            sid2pokey(1, &pokey[2]);
-            sid2pokey(2, &pokey[6]);
+            if (xflag) {
+                pokey[8] = 0x28;
+                sid2pokey(xorder[0], &pokey[0]);
+                sid2pokey(xorder[1], &pokey[2]);
+                sid2pokey2(xorder[2], &pokey[4]);
+            } else {
+                sid2pokey(0, &pokey[0]);
+                sid2pokey(1, &pokey[2]);
+                sid2pokey(2, &pokey[6]);
+            }
         }
 
         c64_handle_adsr(NSAMPLES/2);
