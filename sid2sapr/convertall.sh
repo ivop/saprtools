@@ -51,7 +51,7 @@ make compress$player
 make player$player
 mv player.xex xex$player/tel-cybernoid.xex
 
-./sid2sapr $stereo -m both -b $basstype sid/'Cybernoid_II.sid'
+./sid2sapr $stereo -x 1 -m both -b $basstype sid/'Cybernoid_II.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Cybernoid II                   " \
