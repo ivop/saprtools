@@ -23,6 +23,8 @@
 ; full SAP file this is 2304 bytes.
 ;
 
+LOWMEM = $1000
+
     icl 'cio.s'
 
 ROWCRS = 84
@@ -107,7 +109,7 @@ frames  .ds 1
 
 POKEY = $D200
 
-    org $2000
+    org LOWMEM
 buffers
     .ds 256 * 9
 
