@@ -69,7 +69,7 @@ make compress$player
 make player$player
 mv player.xex xex$player/tel-hawkeye.xex
 
-./sid2sapr $stereo -m both -b $basstype sid/'Ice_Age.sid'
+./sid2sapr $stereo -x 1 -m both -b $basstype sid/'Ice_Age.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Ice Age                        " \
