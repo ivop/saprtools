@@ -127,7 +127,7 @@ mv player.xex xex$player/laxity-wisdom.xex
 
 # ROB HUBBARD
 
-./sid2sapr $stereo -b $basstype sid/'International_Karate.sid'
+./sid2sapr $stereo -x 0 -b $basstype sid/'International_Karate.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : International Karate           " \
