@@ -24,7 +24,7 @@ fi
 
 # JEROEN TEL
 
-./sid2sapr $stereo -p 8 -b $basstype sid/'Alloyrun.sid'
+./sid2sapr $stereo -x 0 -b $basstype sid/'Alloyrun.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Alloyrun                       " \
@@ -42,7 +42,7 @@ make compress$player
 make player$player
 mv player.xex xex$player/tel-fuel.xex
 
-./sid2sapr $stereo -a -b $basstype sid/'Cybernoid.sid'
+./sid2sapr $stereo -x 2 -b $basstype sid/'Cybernoid.sid'
 echo -n \
     "Source: Commodore 64                   " \
     "Title : Cybernoid                      " \
