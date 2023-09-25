@@ -43,7 +43,7 @@ SKCTL = $d20f
     mva #0 82       ; left margin
     prints 0, " "
 .ifdef SID2SAPR
-    prints 0, "SID2SAPR v1.9 (MONO)"
+    prints 0, "SID2SAPR v1.10 (MONO)"
 .else
     prints 0, "YM2SAPR v1.9 (MONO)"
 .endif
