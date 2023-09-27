@@ -150,6 +150,11 @@ static double framerate;
 static int debug;
 static int force_new;
 
+enum chiptype {
+    CHIP_SN76489,
+    CHIP_GAMEBOY_DMG
+};
+
 union sn76489 {
     struct {
         uint16_t freq1;
@@ -186,6 +191,21 @@ enum {
     SHIFT_2048,
     SHIFT_TONE3
 };
+
+union gameboy_dmg {
+    struct {
+        uint8_t square1[5];
+        uint8_t square2[5];
+        uint8_t wave[5];
+        uint8_t noise[5];
+        uint8_t control[3];
+        uint8_t unused[9];
+        uint8_t wavetable[16];
+    } v;
+    uint8_t r[48];
+};
+
+#define LARGEST_CHIP (sizeof(union gameboy_dmg))
 
 static uint8_t voltab[16];  // note that 0 is the loudest, and 15 is silent
 
@@ -289,6 +309,12 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
 
 /* ------------------------------------------------------------------------ */
 
+static void dmg_to_pokey(union gameboy_dmg *dmg, uint8_t *pokey, int channel,
+                                                    struct vgm_header *v) {
+}
+
+/* ------------------------------------------------------------------------ */
+
 static bool write_sapr_header(FILE *file) {
     if (fprintf(file, "SAP\r\nAUTHOR \"\"\r\nNAME \"\"\r\nDATE \"\"\r\nTYPE R\r\n\r\n") < 0) {
         fprintf(stderr, "error writing to file\n");
@@ -299,7 +325,7 @@ static bool write_sapr_header(FILE *file) {
 
 /* ------------------------------------------------------------------------ */
 
-static int write_sapr(gzFile file, struct vgm_header *v) {
+static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
     uint8_t pokeyL[9], pokeyR[9];
     FILE *outleft, *outright;
 
@@ -332,11 +358,17 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
     int run = 1;
     int synced = 0;
 
+    /* only one of them is used at the same time. multi chip files are NOT
+     * supported, but we reuse the same timing/synchronization loop */
+
     union sn76489 sn;
-    uint8_t written[16];
+    union gameboy_dmg dmg;
+
+    uint8_t written[LARGEST_CHIP];
 
     memset(&sn, 0, sizeof(union sn76489));
-    memset(written, 0, 16);
+    memset(&dmg, 0, sizeof(union gameboy_dmg));
+    memset(written, 0, sizeof(written));
 
     while (run) {
         int wait = 0;
@@ -356,10 +388,12 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
             fprintf(stderr, "skipping data block type 0x%02x, size %08x\n", tt, ss);
             gzseek(file, ss, SEEK_CUR);
             break;
-        case 0x31:
-        case 0x4f:
+        case 0x31:      /* AY8910 */
+        case 0x4f:      /* GG PSG */
             gzseek(file, 1, SEEK_CUR);
-            break;      /* AY8910 / GG  stereo mask ignored */
+            break;      /* stereo mask ignored */
+
+            /* SN76489 -- 0x50 dd */
         case 0x50: {
             uint8_t val = gzgetc(file);
             static uint8_t reg = 0;
@@ -416,6 +450,35 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
 
             break;
             }
+
+            /* GAMEBOY DMG -- 0xb3 aa dd */
+        case 0xb3: {
+            uint8_t aa = gzgetc(file);
+            uint8_t dd = gzgetc(file);
+
+            if (aa >= 0x30) {
+                fprintf(stderr, "gameboy_dmg: aa=%02x out of range!\n", aa);
+                break;
+            }
+
+            if (dmg.r[aa] != dd) {
+                if (!written[aa]) {
+                    written[aa]++;
+                } else {
+                    if (force_new) {
+                        debug_fprintf(stderr, "*** new frame forced\n");
+                        gzseek(file, -3, SEEK_CUR);
+                        fcnt=framelen;              // force new frame
+                        break;
+                    }
+                    written[aa]++;
+                }
+                dmg.r[aa] = dd;
+            }
+            break;
+            }
+
+            /* UNSUPPORTED -- xx aa dd */
         case 0x51:
         case 0x52:
         case 0x53:
@@ -435,7 +498,6 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
         case 0xb0:
         case 0xb1:
         case 0xb2:
-        case 0xb3:
         case 0xb4:
         case 0xb5:
         case 0xb6:
@@ -454,6 +516,16 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
             }
             gzseek(file, 2, SEEK_CUR);
             break;
+
+            /* UNSUPPORTED -- xx + 3 bytes */
+        case 0xc0:
+        case 0xc1:
+        case 0xc2:
+        case 0xc3:
+        case 0xc4:
+        case 0xc5:
+        case 0xc6:
+        case 0xc7:
         case 0xd0:
         case 0xd1:
         case 0xd2:
@@ -467,6 +539,7 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
             }
             gzseek(file, 3, SEEK_CUR);
             break;
+
         case 0x61:
             wait = gzgetc(file);
             wait += gzgetc(file) << 8;
@@ -517,7 +590,10 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
         case 0x8f:
             wait = (c & 0xf);
             break;
+
+            /* UNSUPPORTED -- xx + 4 bytes */
         case 0xe0:
+        case 0xe1:
             gzseek(file, 4, SEEK_CUR);
             break;
         default:
@@ -536,9 +612,22 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
         while (fcnt >= framelen) {
             nframes++;
 
-            sn_to_pokey(&sn, &pokeyL[0], 0, v);
-            sn_to_pokey(&sn, &pokeyL[4], 1, v);
-            sn_to_pokey(&sn, &pokeyR[0], 2, v);
+            if (chip == CHIP_SN76489) {
+                sn_to_pokey(&sn, &pokeyL[0], 0, v);
+                sn_to_pokey(&sn, &pokeyL[4], 1, v);
+                sn_to_pokey(&sn, &pokeyR[0], 2, v);
+            } else if (chip == CHIP_GAMEBOY_DMG) {
+                int newwave = 0;
+                for (int x=0; x<16; x++)
+                    newwave += written[0x20+x];
+                if (newwave)
+                    fprintf(stderr, "new wave written to wavetable\n");
+
+                dmg_to_pokey(&dmg, &pokeyL[0], 0, v);
+                dmg_to_pokey(&dmg, &pokeyL[4], 1, v);
+                dmg_to_pokey(&dmg, &pokeyR[0], 2, v);
+                dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
+            }
 
             fwrite(pokeyL, 1, 9, outleft);
             fwrite(pokeyR, 1, 9, outright);
@@ -548,16 +637,23 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
                 if (synced && written[i]>1)
                     debug_fprintf(stderr, "[%d] reg 0x%02x written to %d times\n", scnt, i, written[i]);
             }
-            memset(written, 0, 16);
+            memset(written, 0, sizeof(written));
             synced = 1;
         }
     }
 
     nframes++;
 
-    sn_to_pokey(&sn, &pokeyL[0], 0, v);
-    sn_to_pokey(&sn, &pokeyL[4], 1, v);
-    sn_to_pokey(&sn, &pokeyR[0], 2, v);
+    if (chip == CHIP_SN76489) {
+        sn_to_pokey(&sn, &pokeyL[0], 0, v);
+        sn_to_pokey(&sn, &pokeyL[4], 1, v);
+        sn_to_pokey(&sn, &pokeyR[0], 2, v);
+    } else if (chip == CHIP_GAMEBOY_DMG) {
+        dmg_to_pokey(&dmg, &pokeyL[0], 0, v);
+        dmg_to_pokey(&dmg, &pokeyL[4], 1, v);
+        dmg_to_pokey(&dmg, &pokeyR[0], 2, v);
+        dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
+    }
 
     fwrite(pokeyL, 1, 9, outleft);
     fwrite(pokeyR, 1, 9, outright);
@@ -570,7 +666,7 @@ static int write_sapr(gzFile file, struct vgm_header *v) {
 
 /* ------------------------------------------------------------------------ */
 
-static void init_voltab(int maxvol) {
+static void init_voltab_sn(int maxvol) {
     // fifteen steps of -2dB (-2/20 = -0.1)
     for (int i=0; i<16; i++) {
         voltab[i] = maxvol * pow(10.0, -0.1 * i);
@@ -672,15 +768,19 @@ int main(int argc, char **argv) {
     fprintf(stderr, "song length: %.2f seconds\n", v->total_nsamples/44100.0);
     fprintf(stderr, "maximum pokey volume: %d\n", maxpokvol);
 
-    init_voltab(maxpokvol);
-
     if (v->sn76489_clock) {
+        init_voltab_sn(maxpokvol);
+
         fprintf(stderr, "detected SN76489\n");
         fprintf(stderr, "clock: %d Hz\n", v->sn76489_clock);
         if (v->version < 0x0110)
             v->sn76489_shift_width = 16;
         fprintf(stderr, "shift register width: %d bits\n", v->sn76489_shift_width);
-        write_sapr(file, v);
+        write_sapr(file, v, CHIP_SN76489);
+    } else if (v->version >= 0x0161 && v->gameboy_dmg_clock) {
+        fprintf(stderr, "detected GameBoy DMG\n");
+        fprintf(stderr, "clock: %d Hz\n", v->gameboy_dmg_clock);
+        write_sapr(file, v, CHIP_GAMEBOY_DMG);
     } else {
         fprintf(stderr, "no supported chip detected\n");
         return 1;
