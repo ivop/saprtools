@@ -410,6 +410,36 @@ static uint16_t dmg_sweep_calculation(struct square *s) {
     return newf;
 }
 
+/* we run the frame sequencery at 60Hz instead of 64Hz to ease emulation.
+ * The difference is hopefully small enough to mostly unnoticable.
+ * Clocks should be 64,128,256 instead of 60,120,240 */
+
+static void dmg_run_frame_sequencer(struct gameboy_dmg *dmg) {
+    struct frame_sequencer *f = &dmg->frame_sequencer;
+    switch (f->step) {
+    case 0:
+    case 4:
+        /* clock all length counters */
+        break;
+    case 2:
+    case 6:
+        /* clock all length counters */
+        /* clock all sweep counters */
+        break;
+    case 7:
+        /* clock all envelope counters */
+        break;
+    case 1:
+    case 3:
+    case 5:
+    default:
+        /* nothing */
+        break;
+    }
+    f->step++;
+    if (f->step > 7) f->step = 0;
+}
+
 static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
     struct square *s = &dmg->square1;
     struct wave   *w = &dmg->wave;
@@ -827,6 +857,8 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
                 dmg_to_pokey(&dmg, &pokeyL[4], 1, v);
                 dmg_to_pokey(&dmg, &pokeyR[0], 2, v);
                 dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
+
+                dmg_run_frame_sequencer(&dmg);
             }
 
             fwrite(pokeyL, 1, 9, outleft);
