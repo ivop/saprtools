@@ -402,6 +402,14 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
 
 /* ------------------------------------------------------------------------ */
 
+static uint16_t dmg_sweep_calculation(struct square *s) {
+    uint16_t newf = 0;
+    newf = s->sweep_shadow >> s->sweep_shift;
+    newf = s->sweep_negate ? s->sweep_shadow - newf : s->sweep_shadow + newf;
+    if (newf > 2047) s->enabled = false;
+    return newf;
+}
+
 static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
     struct square *s = &dmg->square1;
     struct wave   *w = &dmg->wave;
@@ -454,7 +462,7 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
                 /* XXX always true? */
             s->sweep_enable = s->sweep_period > 0 || s->sweep_shift > 0;
             if (s->sweep_shift > 0)
-                ;   /* sweep_calculation() */
+                dmg_sweep_calculation(s); // discard newf, only check overflow
         }
         break;
         /* wave */
