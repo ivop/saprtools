@@ -155,6 +155,8 @@ enum chiptype {
     CHIP_GAMEBOY_DMG
 };
 
+/* SN76489 */
+
 union sn76489 {
     struct {
         uint16_t freq1;
@@ -192,22 +194,93 @@ enum {
     SHIFT_TONE3
 };
 
-union gameboy_dmg {
-    struct {
-        uint8_t square1[5];
-        uint8_t square2[5];
-        uint8_t wave[5];
-        uint8_t noise[5];
-        uint8_t control[3];
-        uint8_t unused[9];
-        uint8_t wavetable[16];
-    } v;
-    uint8_t r[48];
+/* GAMEBOY DMG */
+
+struct gameboy_dmg {
+    struct square {
+        /* sweeps only for square1 */
+        bool     sweep_enable;
+        int      sweep_period;
+        uint8_t  sweep_period_load;
+        bool     sweep_negate;
+        uint8_t  sweep_shift;
+        uint16_t sweep_shadow;
+
+        /* square1 and square2 */
+        bool    length_enable;
+        uint8_t length_counter;
+        uint8_t length_load;
+
+        uint8_t volume;
+        uint8_t volume_load;
+
+        int     envelope_period;
+        uint8_t envelope_period_load;
+        bool    envelope_add_mode;
+        bool    envelope_running;
+
+        int      frequency;
+        uint16_t frequency_load;
+
+        bool    trigger;
+        bool    enabled;
+        bool    dac_enabled;
+    } square1;
+    struct square square2;
+
+    struct wave {
+        bool    length_enable;
+        uint8_t length_counter;
+        uint8_t length_load;
+
+        uint8_t volume_code;
+
+        int      frequency;
+        uint16_t frequency_load;
+
+        bool    trigger;
+        bool    enabled;
+        bool    dac_enabled;
+    } wave;
+
+    struct noise {
+        bool    length_enable;
+        uint8_t length_counter;
+        uint8_t length_load;
+
+        uint8_t volume;
+        uint8_t volume_load;
+
+        int     envelope_period;
+        uint8_t envelope_period_load;
+        bool    envelope_add_mode;
+        bool    envelope_running;
+
+        uint8_t clock_shift;
+        bool    width_mode;
+        uint8_t divisor_code;
+
+        bool    trigger;
+        bool    enabled;
+        bool    dac_enabled;
+    } noise;
+    struct control_status {
+        bool    vin_left_enable;
+        uint8_t left_volume;
+        bool    vin_right_enable;
+        uint8_t right_volume;
+        uint8_t left_enables;
+        uint8_t right_enables;
+        bool    power_control;
+    } control_status;
+    struct frame_sequencer {
+        uint8_t step;
+    } frame_sequencer;
 };
 
-#define LARGEST_CHIP (sizeof(union gameboy_dmg))
+#define LARGEST_CHIP (48)               // sizeof dmg register area 00-2f
 
-static uint8_t voltab[16];  // note that 0 is the loudest, and 15 is silent
+static uint8_t voltab[16];
 
 #define DEFAULT_MAXPOKVOL 15
 static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
@@ -309,8 +382,25 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
 
 /* ------------------------------------------------------------------------ */
 
-static void dmg_to_pokey(union gameboy_dmg *dmg, uint8_t *pokey, int channel,
+static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
                                                     struct vgm_header *v) {
+    switch (channel) {
+    case 0:     /* square1 */
+        break;
+    case 1:     /* square2 */
+        break;
+    case 2:     /* wave */
+        break;
+    case 3:     /* noise */
+        break;
+    default:    /* make the compiler happy */
+        break;
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
+static void write_dmg_register(struct gameboy_dmg *dmg, int aa, int dd) {
 }
 
 /* ------------------------------------------------------------------------ */
@@ -362,12 +452,12 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
      * supported, but we reuse the same timing/synchronization loop */
 
     union sn76489 sn;
-    union gameboy_dmg dmg;
-
-    uint8_t written[LARGEST_CHIP];
+    struct gameboy_dmg dmg;
 
     memset(&sn, 0, sizeof(union sn76489));
-    memset(&dmg, 0, sizeof(union gameboy_dmg));
+    memset(&dmg, 0, sizeof(struct gameboy_dmg));
+
+    uint8_t written[LARGEST_CHIP];
     memset(written, 0, sizeof(written));
 
     while (run) {
@@ -461,20 +551,20 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
                 break;
             }
 
-            if (dmg.r[aa] != dd) {
-                if (!written[aa]) {
-                    written[aa]++;
-                } else {
-                    if (force_new) {
-                        debug_fprintf(stderr, "*** new frame forced\n");
-                        gzseek(file, -3, SEEK_CUR);
-                        fcnt=framelen;              // force new frame
-                        break;
-                    }
-                    written[aa]++;
+//DEBUG            fprintf(stderr, "aa=%02x dd=%02x\n", aa, dd);
+
+            if (!written[aa]) {
+                written[aa]++;
+            } else {
+                if (force_new) {
+                    debug_fprintf(stderr, "*** new frame forced\n");
+                    gzseek(file, -3, SEEK_CUR);
+                    fcnt=framelen;              // force new frame
+                    break;
                 }
-                dmg.r[aa] = dd;
+                written[aa]++;
             }
+            write_dmg_register(&dmg, aa, dd);
             break;
             }
 
@@ -665,6 +755,8 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
 }
 
 /* ------------------------------------------------------------------------ */
+
+/* note that 0 is the loudest, and 15 is silent */
 
 static void init_voltab_sn(int maxvol) {
     // fifteen steps of -2dB (-2/20 = -0.1)
