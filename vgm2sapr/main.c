@@ -197,7 +197,7 @@ enum {
 /* GAMEBOY DMG */
 
 struct gameboy_dmg {
-    struct square {
+    struct dmg_square {
         /* sweeps only for square1 */
         bool     sweep_enable;
         int      sweep_period;
@@ -209,31 +209,33 @@ struct gameboy_dmg {
         /* square1 and square2 */
         uint8_t duty;
 
-        bool    length_enable;
-        uint8_t length_counter;
-        uint8_t length_load;
+        struct dmg_length {
+            bool    enable;
+            uint8_t counter;
+            uint8_t load;
+        } length;
 
-        uint8_t volume;
-        uint8_t volume_load;
+        struct dmg_volume {
+            uint8_t value;
+            uint8_t load;
 
-        int     envelope_period;
-        uint8_t envelope_period_load;
-        bool    envelope_add_mode;
-        bool    envelope_running;
+            int     envelope_period;
+            uint8_t envelope_period_load;
+            bool    envelope_add_mode;
+            bool    envelope_running;
+        } volume;
 
         int      frequency;
         uint16_t frequency_load;
 
         bool    trigger;
         bool    enabled;
-        bool    dac_enabled;
     } square1;
-    struct square square2;
 
-    struct wave {
-        bool    length_enable;
-        uint8_t length_counter;
-        uint8_t length_load;
+    struct dmg_square square2;
+
+    struct dmg_wave {
+        struct dmg_length length;
 
         uint8_t volume_code;
 
@@ -242,21 +244,11 @@ struct gameboy_dmg {
 
         bool    trigger;
         bool    enabled;
-        bool    dac_enabled;
     } wave;
 
-    struct noise {
-        bool    length_enable;
-        uint8_t length_counter;
-        uint8_t length_load;
-
-        uint8_t volume;
-        uint8_t volume_load;
-
-        int     envelope_period;
-        uint8_t envelope_period_load;
-        bool    envelope_add_mode;
-        bool    envelope_running;
+    struct dmg_noise {
+        struct dmg_length length;
+        struct dmg_volume volume;
 
         uint8_t clock_shift;
         bool    width_mode;
@@ -264,9 +256,9 @@ struct gameboy_dmg {
 
         bool    trigger;
         bool    enabled;
-        bool    dac_enabled;
     } noise;
-    struct ctrl {
+
+    struct dmg_ctrl {
         bool    vin_left_enable;
         uint8_t left_volume;
         bool    vin_right_enable;
@@ -275,7 +267,8 @@ struct gameboy_dmg {
         uint8_t right_enables;
         bool    power_control;
     } ctrl;
-    struct frame_sequencer {
+
+    struct dmg_frame_sequencer {
         uint8_t step;
     } frame_sequencer;
 };
@@ -402,7 +395,7 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
 
 /* ------------------------------------------------------------------------ */
 
-static uint16_t dmg_sweep_calculation(struct square *s) {
+static uint16_t dmg_sweep_calculation(struct dmg_square *s) {
     uint16_t newf = 0;
     newf = s->sweep_shadow >> s->sweep_shift;
     newf = s->sweep_negate ? s->sweep_shadow - newf : s->sweep_shadow + newf;
@@ -415,7 +408,7 @@ static uint16_t dmg_sweep_calculation(struct square *s) {
  * Clocks should be 64,128,256 instead of 60,120,240 */
 
 static void dmg_run_frame_sequencer(struct gameboy_dmg *dmg) {
-    struct frame_sequencer *f = &dmg->frame_sequencer;
+    struct dmg_frame_sequencer *f = &dmg->frame_sequencer;
     switch (f->step) {
     case 0:
     case 4:
@@ -441,10 +434,10 @@ static void dmg_run_frame_sequencer(struct gameboy_dmg *dmg) {
 }
 
 static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
-    struct square *s = &dmg->square1;
-    struct wave   *w = &dmg->wave;
-    struct noise  *n = &dmg->noise;
-    struct ctrl   *c = &dmg->ctrl;
+    struct dmg_square *s = &dmg->square1;
+    struct dmg_wave   *w = &dmg->wave;
+    struct dmg_noise  *n = &dmg->noise;
+    struct dmg_ctrl   *c = &dmg->ctrl;
 
     if (a >= 0x30) return;
 
@@ -460,16 +453,15 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
         break;
     case 0x01:
     case 0x06:
-        s->length_load = d & 0x3f;
-        s->length_counter = 64 - s->length_load;
+        s->length.load = d & 0x3f;
+        s->length.counter = 64 - s->length.load;
         s->duty = (d>>6) & 3;
         break;
     case 0x02:
     case 0x07:
-        s->dac_enabled = (d & 0xf8) != 0;
-        s->volume = s->volume_load = (d>>4) & 15;
-        s->envelope_add_mode = d & 8;
-        s->envelope_period = s->envelope_period_load = d & 7;
+        s->volume.value = s->volume.load = (d>>4) & 15;
+        s->volume.envelope_add_mode = d & 8;
+        s->volume.envelope_period = s->volume.envelope_period_load = d & 7;
         break;
     case 0x03:
     case 0x08:
@@ -478,18 +470,18 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
     case 0x04:
     case 0x09:
         s->frequency_load = (s->frequency_load & 0x0ff) | ((d & 7) << 8);
-        s->length_enable = d & 0x40;
+        s->length.enable = d & 0x40;
         s->trigger = d & 0x80;
         if (s->trigger) {
             s->enabled = true;
-            if (!s->length_counter) s->length_counter = 64;
+            if (!s->length.counter) s->length.counter = 64;
             s->frequency = (2048 - s->frequency_load) * 4;
-            s->envelope_running = true;
-            s->envelope_period = s->envelope_period_load;
-            s->volume = s->volume_load;
+            s->volume.envelope_running = true;
+            s->volume.envelope_period = s->volume.envelope_period_load;
+            s->volume.value = s->volume.load;
             s->sweep_shadow = s->frequency_load;
             s->sweep_period = s->sweep_period_load ? s->sweep_period_load : 8;
-                /* XXX always true? */
+                /* XXX sweep_period>0 always true */
             s->sweep_enable = s->sweep_period > 0 || s->sweep_shift > 0;
             if (s->sweep_shift > 0)
                 dmg_sweep_calculation(s); // discard newf, only check overflow
