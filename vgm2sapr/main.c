@@ -207,6 +207,8 @@ struct gameboy_dmg {
         uint16_t sweep_shadow;
 
         /* square1 and square2 */
+        uint8_t duty;
+
         bool    length_enable;
         uint8_t length_counter;
         uint8_t length_load;
@@ -264,7 +266,7 @@ struct gameboy_dmg {
         bool    enabled;
         bool    dac_enabled;
     } noise;
-    struct control_status {
+    struct ctrl {
         bool    vin_left_enable;
         uint8_t left_volume;
         bool    vin_right_enable;
@@ -272,7 +274,7 @@ struct gameboy_dmg {
         uint8_t left_enables;
         uint8_t right_enables;
         bool    power_control;
-    } control_status;
+    } ctrl;
     struct frame_sequencer {
         uint8_t step;
     } frame_sequencer;
@@ -400,7 +402,107 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
 
 /* ------------------------------------------------------------------------ */
 
-static void write_dmg_register(struct gameboy_dmg *dmg, int aa, int dd) {
+static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
+    struct square *s = &dmg->square1;
+    struct wave   *w = &dmg->wave;
+    struct noise  *n = &dmg->noise;
+    struct ctrl   *c = &dmg->ctrl;
+
+    if (a >= 0x30) return;
+
+    if (a >= 5 && a <= 9) s = &dmg->square2;
+
+    switch(a) {
+        /* squares */
+    case 0x00:
+    case 0x05:
+        s->sweep_shift  = d & 7;
+        s->sweep_negate = d & 8;
+        s->sweep_period_load = (d>>4) & 7;
+        break;
+    case 0x01:
+    case 0x06:
+        s->length_load = d & 0x3f;
+        s->length_counter = 64 - s->length_load;
+        s->duty = (d>>6) & 3;
+        break;
+    case 0x02:
+    case 0x07:
+        s->dac_enabled = (d & 0xf8) != 0;
+        s->volume = s->volume_load = (d>>4) & 15;
+        s->envelope_add_mode = d & 8;
+        s->envelope_period = s->envelope_period_load = d & 7;
+        break;
+    case 0x03:
+    case 0x08:
+        s->frequency_load = (s->frequency_load & 0x700) | d;
+        break;
+    case 0x04:
+    case 0x09:
+        s->frequency_load = (s->frequency_load & 0x0ff) | ((d & 7) << 8);
+        s->length_enable = d & 0x40;
+        s->trigger = d & 0x80;
+        if (s->trigger) {
+            s->enabled = true;
+            if (!s->length_counter) s->length_counter = 64;
+            s->frequency = (2048 - s->frequency_load) * 4;
+            s->envelope_running = true;
+            s->envelope_period = s->envelope_period_load;
+            s->volume = s->volume_load;
+            s->sweep_shadow = s->frequency_load;
+            s->sweep_period = s->sweep_period_load ? s->sweep_period_load : 8;
+                /* XXX always true? */
+            s->sweep_enable = s->sweep_period > 0 || s->sweep_shift > 0;
+            if (s->sweep_shift > 0)
+                ;   /* sweep_calculation() */
+        }
+        break;
+        /* wave */
+    case 0x0a:
+        break;
+    case 0x0b:
+        break;
+    case 0x0c:
+        break;
+    case 0x0d:
+        break;
+    case 0x0e:
+        break;
+        /* noise */
+    case 0x0f:
+        break;
+    case 0x10:
+        break;
+    case 0x11:
+        break;
+    case 0x12:
+        break;
+    case 0x13:
+        break;
+        /* control/status */
+    case 0x14:
+        break;
+    case 0x15:
+        break;
+    case 0x16:
+        break;
+
+        /* unused */
+    case 0x17:
+    case 0x18:
+    case 0x19:
+    case 0x1a:
+    case 0x1b:
+    case 0x1c:
+    case 0x1d:
+    case 0x1e:
+    case 0x1f:
+        break;
+
+        /* wave table */
+    default:
+        break;
+    }
 }
 
 /* ------------------------------------------------------------------------ */
