@@ -270,10 +270,6 @@ struct gameboy_dmg {
         uint8_t right_enables;
         bool    power_control;
     } ctrl;
-
-    struct dmg_frame_sequencer {
-        uint8_t step;
-    } frame_sequencer;
 };
 
 static const unsigned int dmg_divisors[8] = { 8, 16, 32, 48, 64, 80, 96, 112 };
@@ -419,7 +415,7 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
             f = v->gameboy_dmg_clock;
         if (n->enabled)
             vol = n->volume.value;
-        vol = 0;
+        dist = 0x80;
         break;
     default:    /* make the compiler happy */
         break;
@@ -446,10 +442,14 @@ static uint16_t dmg_sweep_calculation(struct dmg_square *s) {
 }
 
 static void dmg_length_clock(struct dmg_length *length, bool *enabled) {
-    if (length->counter > 0 && length->enable) {
-        length->counter--;
-        if (!length->counter)
+    if (length->enable) {
+        if (length->counter > 0) {
+            length->counter--;
+            if (!length->counter)
+                *enabled = false;
+        } else {
             *enabled = false;
+        }
     }
 }
 
@@ -491,8 +491,8 @@ static void dmg_envelope_cock(struct dmg_volume *v) {
  * Clocks are now 60Hz, 120Hz, and 240Hz instead of 64Hz, 128Hz, and 256Hz */
 
 static void dmg_run_frame_sequencer(struct gameboy_dmg *dmg) {
-    struct dmg_frame_sequencer *f = &dmg->frame_sequencer;
-    switch (f->step) {
+    for (int i=0; i<8; i++) {
+    switch (i) {
     case 0:
     case 4:
         /* clock all length counters */
@@ -524,8 +524,7 @@ static void dmg_run_frame_sequencer(struct gameboy_dmg *dmg) {
         /* nothing */
         break;
     }
-    f->step++;
-    if (f->step > 7) f->step = 0;
+    }
 }
 
 static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
@@ -1031,7 +1030,7 @@ static void init_voltab_sn(int maxvol) {
 
 static void init_voltab_dmg(int maxvol) {
     for (int i=0; i<16; i++) {
-        voltab[i] = round(i / 15.0 * maxvol);
+        voltab[i] = round(i*maxvol/15.0);
     }
 }
 
