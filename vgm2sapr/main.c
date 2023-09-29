@@ -1025,7 +1025,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
 static void init_voltab_sn(int maxvol) {
     // fifteen steps of -2dB (-2/20 = -0.1)
     for (int i=0; i<16; i++) {
-        voltab[i] = maxvol * pow(10.0, -0.1 * i);
+        voltab[i] = round(maxvol * pow(10.0, -0.1 * i));
     }
 }
 
