@@ -403,9 +403,50 @@ static uint16_t dmg_sweep_calculation(struct dmg_square *s) {
     return newf;
 }
 
+static void dmg_length_clock(struct dmg_length *length, bool *enabled) {
+    if (length->counter > 0 && length->enable) {
+        length->counter--;
+        if (!length->counter)
+            *enabled = false;
+    }
+}
+
+static void dmg_sweep_clock(struct dmg_square *s) {
+    if (--s->sweep_period <= 0) {
+        s->sweep_period = s->sweep_period_load;
+        if (!s->sweep_period)
+            s->sweep_period = 8;
+        if (s->sweep_enable && s->sweep_period_load > 0) {
+            uint16_t newf = dmg_sweep_calculation(s);
+            if (newf <= 2047 && s->sweep_shift > 0) {
+                s->sweep_shadow = newf;
+                s->frequency_load = newf;
+                dmg_sweep_calculation(s);   // not needed?
+            }
+            dmg_sweep_calculation(s);
+        }
+    }
+}
+
+static void dmg_envelope_cock(struct dmg_volume *v) {
+    if (--v->envelope_period <= 0) {
+        v->envelope_period = v->envelope_period_load;
+        if (!v->envelope_period)
+            v->envelope_period = 8;
+        if (v->envelope_running && v->envelope_period_load > 0) {
+            if (v->envelope_add_mode && v->value < 15)
+                v->value++;
+            else if (!v->envelope_add_mode && v->value > 0)
+                v->value--;
+        }
+        if (v->value == 0 || v->value == 15)
+            v->envelope_running = false;
+    }
+}
+
 /* we run the frame sequencery at 60Hz instead of 64Hz to ease emulation.
- * The difference is hopefully small enough to mostly unnoticable.
- * Clocks should be 64,128,256 instead of 60,120,240 */
+ * The difference is hopefully small enough to be mostly unnoticable.
+ * Clocks are now 60Hz, 120Hz, and 240Hz instead of 64Hz, 128Hz, and 256Hz */
 
 static void dmg_run_frame_sequencer(struct gameboy_dmg *dmg) {
     struct dmg_frame_sequencer *f = &dmg->frame_sequencer;
@@ -413,14 +454,26 @@ static void dmg_run_frame_sequencer(struct gameboy_dmg *dmg) {
     case 0:
     case 4:
         /* clock all length counters */
+        dmg_length_clock(&dmg->square1.length, &dmg->square1.enabled);
+        dmg_length_clock(&dmg->square2.length, &dmg->square2.enabled);
+        dmg_length_clock(&dmg->wave.length,    &dmg->wave.enabled);
+        dmg_length_clock(&dmg->noise.length,   &dmg->noise.enabled);
         break;
     case 2:
     case 6:
         /* clock all length counters */
-        /* clock all sweep counters */
+        dmg_length_clock(&dmg->square1.length, &dmg->square1.enabled);
+        dmg_length_clock(&dmg->square2.length, &dmg->square2.enabled);
+        dmg_length_clock(&dmg->wave.length,    &dmg->wave.enabled);
+        dmg_length_clock(&dmg->noise.length,   &dmg->noise.enabled);
+        /* clock sweep counter */
+        dmg_sweep_clock(&dmg->square1);
         break;
     case 7:
         /* clock all envelope counters */
+        dmg_envelope_cock(&dmg->square1.volume);
+        dmg_envelope_cock(&dmg->square2.volume);
+        dmg_envelope_cock(&dmg->noise.volume);
         break;
     case 1:
     case 3:
