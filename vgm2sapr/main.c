@@ -331,7 +331,7 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
 
     if (snf == 0) snf++;            // avoid div by 0
 
-    double f = v->sn76489_clock / (2 * snf * 16);
+    double f = v->sn76489_clock / (2.0 * snf * 16);
 
     int POK = round((ATARI_CLOCK / 2.0 / f) - 7);
 
