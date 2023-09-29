@@ -411,7 +411,7 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
         break;
     case 3:     /* noise */
         if (n->frequency)
-            f = v->gameboy_dmg_clock / (n->frequency * 4.0);
+            f = v->gameboy_dmg_clock / (n->frequency * (n->width_mode?3.5:7.5));
         else
             f = v->gameboy_dmg_clock;
         if (n->enabled)
