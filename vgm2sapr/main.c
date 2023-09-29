@@ -211,7 +211,7 @@ struct gameboy_dmg {
 
         struct dmg_length {
             bool    enable;
-            uint8_t counter;
+            int     counter;
             uint8_t load;
         } length;
 
@@ -235,6 +235,8 @@ struct gameboy_dmg {
     struct dmg_square square2;
 
     struct dmg_wave {
+        bool dac_power;
+
         struct dmg_length length;
 
         uint8_t volume_code;
@@ -542,14 +544,28 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
         break;
         /* wave */
     case 0x0a:
+        w->dac_power = d & 0x80;
         break;
     case 0x0b:
+        w->length.load = d;
+        w->length.counter = 256 - d;
         break;
     case 0x0c:
+        w->volume_code = (d>>5) & 3;
         break;
     case 0x0d:
+        w->frequency_load = (w->frequency_load & 0x700) | d;
         break;
     case 0x0e:
+        w->frequency_load = (w->frequency_load & 0x0ff) | ((d & 7) << 8);
+        w->length.enable = d & 0x40;
+        w->trigger = d & 0x80;
+        if (w->trigger) {
+            w->enabled = true;
+            if (!w->length.counter)
+                w->length.counter = 256;
+            w->frequency = (2048 - w->frequency_load) * 2;
+        }
         break;
         /* noise */
     case 0x0f:
