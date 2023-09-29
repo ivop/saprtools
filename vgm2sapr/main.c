@@ -384,18 +384,55 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
 
 static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
                                                     struct vgm_header *v) {
+    struct dmg_square *s = channel ? &dmg->square2 : &dmg->square1;
+    struct dmg_wave   *w = &dmg->wave;
+    struct dmg_noise  *n = &dmg->noise;
+
+    int volcodes[4] = { 0, 15, 8, 4 };
+
+    double f = 1.0;
+    int vol = 0;
+    int dist = 0xa0;
+
     switch (channel) {
     case 0:     /* square1 */
-        break;
     case 1:     /* square2 */
+        if (s->frequency)
+            f = v->gameboy_dmg_clock / (s->frequency * 8.0);
+        else
+            f = v->gameboy_dmg_clock;
+        if (s->enabled)
+            vol = s->volume.value;
         break;
     case 2:     /* wave */
+        if (w->frequency)
+            f = v->gameboy_dmg_clock / (w->frequency * 8.0 * 4.0);
+        else
+            f = v->gameboy_dmg_clock;
+        if (w->enabled)
+            vol = volcodes[w->volume_code];
         break;
     case 3:     /* noise */
+        if (n->frequency)
+            f = v->gameboy_dmg_clock / (n->frequency * 8.0);
+        else
+            f = v->gameboy_dmg_clock;
+        if (n->enabled)
+            vol = n->volume.value;
+        vol = 0;
         break;
     default:    /* make the compiler happy */
         break;
     }
+
+    if (f < 1.0) f = 1.0;       /* avoid divide by zero */
+
+    int POK = round((ATARI_CLOCK / 2.0 / f) - 7);
+
+    pokey[0] = POK & 0xff;
+    pokey[2] = (POK >> 8) & 0xff;
+
+    pokey[3] = dist + voltab[vol];
 }
 
 /* ------------------------------------------------------------------------ */
@@ -992,6 +1029,12 @@ static void init_voltab_sn(int maxvol) {
     }
 }
 
+static void init_voltab_dmg(int maxvol) {
+    for (int i=0; i<16; i++) {
+        voltab[i] = round(i / 15.0 * maxvol);
+    }
+}
+
 /* ------------------------------------------------------------------------ */
 
 static void usage(void) {
@@ -1097,6 +1140,8 @@ int main(int argc, char **argv) {
         fprintf(stderr, "shift register width: %d bits\n", v->sn76489_shift_width);
         write_sapr(file, v, CHIP_SN76489);
     } else if (v->version >= 0x0161 && v->gameboy_dmg_clock) {
+        init_voltab_dmg(maxpokvol);
+
         fprintf(stderr, "detected GameBoy DMG\n");
         fprintf(stderr, "clock: %d Hz\n", v->gameboy_dmg_clock);
         write_sapr(file, v, CHIP_GAMEBOY_DMG);
