@@ -384,7 +384,7 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
     struct dmg_wave   *w = &dmg->wave;
     struct dmg_noise  *n = &dmg->noise;
 
-    int volcodes[4] = { 0, 15, 8, 4 };
+    int volcodes[4] = { 0, 12, 6, 3 };
 
     double f = 1.0;
     int vol = 0;
@@ -492,38 +492,38 @@ static void dmg_envelope_cock(struct dmg_volume *v) {
 
 static void dmg_run_frame_sequencer(struct gameboy_dmg *dmg) {
     for (int i=0; i<8; i++) {
-    switch (i) {
-    case 0:
-    case 4:
-        /* clock all length counters */
-        dmg_length_clock(&dmg->square1.length, &dmg->square1.enabled);
-        dmg_length_clock(&dmg->square2.length, &dmg->square2.enabled);
-        dmg_length_clock(&dmg->wave.length,    &dmg->wave.enabled);
-        dmg_length_clock(&dmg->noise.length,   &dmg->noise.enabled);
-        break;
-    case 2:
-    case 6:
-        /* clock all length counters */
-        dmg_length_clock(&dmg->square1.length, &dmg->square1.enabled);
-        dmg_length_clock(&dmg->square2.length, &dmg->square2.enabled);
-        dmg_length_clock(&dmg->wave.length,    &dmg->wave.enabled);
-        dmg_length_clock(&dmg->noise.length,   &dmg->noise.enabled);
-        /* clock sweep counter */
-        dmg_sweep_clock(&dmg->square1);
-        break;
-    case 7:
-        /* clock all envelope counters */
-        dmg_envelope_cock(&dmg->square1.volume);
-        dmg_envelope_cock(&dmg->square2.volume);
-        dmg_envelope_cock(&dmg->noise.volume);
-        break;
-    case 1:
-    case 3:
-    case 5:
-    default:
-        /* nothing */
-        break;
-    }
+        switch (i) {
+        case 0:
+        case 4:
+            /* clock all length counters */
+            dmg_length_clock(&dmg->square1.length, &dmg->square1.enabled);
+            dmg_length_clock(&dmg->square2.length, &dmg->square2.enabled);
+            dmg_length_clock(&dmg->wave.length,    &dmg->wave.enabled);
+            dmg_length_clock(&dmg->noise.length,   &dmg->noise.enabled);
+            break;
+        case 2:
+        case 6:
+            /* clock all length counters */
+            dmg_length_clock(&dmg->square1.length, &dmg->square1.enabled);
+            dmg_length_clock(&dmg->square2.length, &dmg->square2.enabled);
+            dmg_length_clock(&dmg->wave.length,    &dmg->wave.enabled);
+            dmg_length_clock(&dmg->noise.length,   &dmg->noise.enabled);
+            /* clock sweep counter */
+            dmg_sweep_clock(&dmg->square1);
+            break;
+        case 7:
+            /* clock all envelope counters */
+            dmg_envelope_cock(&dmg->square1.volume);
+            dmg_envelope_cock(&dmg->square2.volume);
+            dmg_envelope_cock(&dmg->noise.volume);
+            break;
+        case 1:
+        case 3:
+        case 5:
+        default:
+            /* nothing */
+            break;
+        }
     }
 }
 
