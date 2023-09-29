@@ -252,6 +252,7 @@ struct gameboy_dmg {
         struct dmg_length length;
         struct dmg_volume volume;
 
+        int     frequency;
         uint8_t clock_shift;
         bool    width_mode;
         uint8_t divisor_code;
@@ -274,6 +275,8 @@ struct gameboy_dmg {
         uint8_t step;
     } frame_sequencer;
 };
+
+static const unsigned int dmg_divisors[8] = { 8, 16, 32, 48, 64, 80, 96, 112 };
 
 #define LARGEST_CHIP (48)               // sizeof dmg register area 00-2f
 
@@ -569,14 +572,35 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
         break;
         /* noise */
     case 0x0f:
+        /* unused */
         break;
     case 0x10:
+        n->length.load = d & 0x3f;
+        n->length.counter = 64 - n->length.load;
         break;
     case 0x11:
+        n->volume.load = (d>>4) & 15;
+        n->volume.envelope_add_mode = d & 8;
+        n->volume.envelope_period = n->volume.envelope_period_load = d & 7;
+        n->volume.value = n->volume.load;
         break;
     case 0x12:
+        n->divisor_code = d & 7;
+        n->width_mode = d & 8;
+        n->clock_shift = (d>>4) & 15;
         break;
     case 0x13:
+        n->length.enable = d & 0x40;
+        n->trigger = d & 0x80;
+        if (n->trigger) {
+            n->enabled = true;
+            if (!n->length.counter)
+                n->length.counter = 64;
+            n->frequency = dmg_divisors[n->divisor_code] << n->clock_shift;
+            n->volume.envelope_period = n->volume.envelope_period_load;
+            n->volume.envelope_running = true;
+            n->volume.value = n->volume.load;
+        }
         break;
         /* control/status */
     case 0x14:
