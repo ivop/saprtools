@@ -266,8 +266,8 @@ struct gameboy_dmg {
         uint8_t left_volume;
         bool    vin_right_enable;
         uint8_t right_volume;
-        uint8_t left_enables;
-        uint8_t right_enables;
+        bool    left_enables[4];
+        bool    right_enables[4];
         bool    power_control;
     } ctrl;
 };
@@ -383,6 +383,7 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
     struct dmg_square *s = channel ? &dmg->square2 : &dmg->square1;
     struct dmg_wave   *w = &dmg->wave;
     struct dmg_noise  *n = &dmg->noise;
+    struct dmg_ctrl   *c = &dmg->ctrl;
 
     int volcodes[4] = { 0, 12, 6, 3 };
 
@@ -410,7 +411,7 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
         break;
     case 3:     /* noise */
         if (n->frequency)
-            f = v->gameboy_dmg_clock / (n->frequency * 8.0);
+            f = v->gameboy_dmg_clock / (n->frequency * 4.0);
         else
             f = v->gameboy_dmg_clock;
         if (n->enabled)
@@ -420,6 +421,13 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
     default:    /* make the compiler happy */
         break;
     }
+
+    switch (c->left_enables[channel] + c->right_enables[channel]) {
+    case 0: vol = 0; break;
+    case 1: vol *= 0.7; break;
+    case 2: break;
+    }
+
 
     if (f < 1.0) f = 1.0;       /* avoid divide by zero */
 
@@ -568,7 +576,8 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
         s->trigger = d & 0x80;
         if (s->trigger) {
             s->enabled = true;
-            if (!s->length.counter) s->length.counter = 64;
+            if (!s->length.counter)
+                s->length.counter = 64 - s->length.load;
             s->frequency = (2048 - s->frequency_load) * 4;
             s->volume.envelope_running = true;
             s->volume.envelope_period = s->volume.envelope_period_load;
@@ -602,7 +611,7 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
         if (w->trigger) {
             w->enabled = true;
             if (!w->length.counter)
-                w->length.counter = 256;
+                w->length.counter = 256 - w->length.load;
             w->frequency = (2048 - w->frequency_load) * 2;
         }
         break;
@@ -631,7 +640,7 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
         if (n->trigger) {
             n->enabled = true;
             if (!n->length.counter)
-                n->length.counter = 64;
+                n->length.counter = 64 - n->length.load;
             n->frequency = dmg_divisors[n->divisor_code] << n->clock_shift;
             n->volume.envelope_period = n->volume.envelope_period_load;
             n->volume.envelope_running = true;
@@ -640,8 +649,16 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
         break;
         /* control/status */
     case 0x14:
+        c->right_volume = d & 7;
+        c->vin_right_enable = d & 8;
+        c->left_volume = (d>>4) & 7;
+        c->vin_left_enable = d & 0x80;
         break;
     case 0x15:
+        for (int i=0; i<4; i++) {
+            c->right_enables[i] = (d>>i) & 1;
+            c->left_enables[i] = (d>>(i+4)) & 1;
+        }
         break;
     case 0x16:
         break;
