@@ -21,6 +21,8 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 | Sega Pico | SEGA PSG | .vgm | vgm2sapr |
 | Tandy 1000 | NCR8496 | .vgm | vgm2sapr |
 | IBM PCjr | SN76489 | .vgm | vgm2sapr |
+| Nintendo Game Boy | Game Boy DMG | .vgm | vgm2sapr |
+| Nintendo Game Boy Color | Game Boy DMG | .vgm | vgm2sapr |
 
 ### Notes
 
