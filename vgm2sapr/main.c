@@ -24,6 +24,15 @@
  *
  */
 
+/* SN76489:
+ *      https://map.grauw.nl/resources/sound/texas_instruments_sn76489an.pdf
+ */
+
+/* DMG docs
+ *      https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware
+ *      https://nightshade256.github.io/2021/03/27/gb-sound-emulation.html
+ */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
