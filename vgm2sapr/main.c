@@ -577,10 +577,12 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
     case 0x03:
     case 0x08:
         s->frequency_load = (s->frequency_load & 0x700) | d;
+        s->frequency = (2048 - s->frequency_load) * 4;
         break;
     case 0x04:
     case 0x09:
         s->frequency_load = (s->frequency_load & 0x0ff) | ((d & 7) << 8);
+        s->frequency = (2048 - s->frequency_load) * 4;
         s->length.enable = d & 0x40;
         s->trigger = d & 0x80;
         if (s->trigger) {
@@ -615,6 +617,7 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
         break;
     case 0x0e:
         w->frequency_load = (w->frequency_load & 0x0ff) | ((d & 7) << 8);
+        w->frequency = (2048 - w->frequency_load) * 2;
         w->length.enable = d & 0x40;
         w->trigger = d & 0x80;
         if (w->trigger) {
