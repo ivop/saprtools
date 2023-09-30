@@ -23,6 +23,8 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 | IBM PCjr | SN76489 | .vgm | vgm2sapr |
 | Nintendo Game Boy | Game Boy DMG | .vgm | vgm2sapr |
 | Nintendo Game Boy Color | Game Boy DMG | .vgm | vgm2sapr |
+| Nintendo Game Boy | Game Boy DMG | .gbs | gbsplay[^2], vgm2sapr |
+| Nintendo Game Boy Color | Game Boy DMG | .gbs | gbsplay[^2], vgm2sapr |
 
 ### Notes
 
@@ -42,3 +44,4 @@ lzss-sap is Copyright © 2020 by Daniel Serpell. MIT license. See LICENSE for de
 libpsgplay is Copyright © 2019 by Fredrik Noring, GPL-2 license. M68k emulator is Copyright © 1998-2001 by Karl Stenerud, MIT license. See license directory for details.  
 
 [^1]:https://github.com/digital-sound-antiques/kss2vgm  
+[^2]:https://github.com/mmitch/gbsplay
