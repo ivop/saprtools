@@ -4,7 +4,7 @@ set -e
 
 make
 
-#if false; then
+if false; then
 
 # BBC MICRO
 
@@ -206,6 +206,60 @@ make compress
 make player60
 mv player.xex xex/gb-sml2.xex
 
+./vgm2sapr -r 60 gb/'Batman Animated Series - Batman Theme.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : Batman Animated Series - Theme " \
+    "Author: Yoshiyuki Hagiwara, D. Elfman" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-batman-theme.xex
+
+./vgm2sapr -r 60 gb/'Batman - Title.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : Batman - Title                 " \
+    "Author: Nobuyuki Hara" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-batman-title.xex
+
+./vgm2sapr -r 60 gb/'Blaster Master Boy - Ending.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : Blaster Master Boy - Ending    " \
+    "Author: Takeaki Kunimoto, Shinichi Seya" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-blaster-master.xex
+
+./vgm2sapr -r 60 gb/'Mega Man IV - Title.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : Mega Man IV - Title            " \
+    "Author: Kouji Murata" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-megaman4-title.xex
+
+./vgm2sapr -r 60 gb/'Spirou - Mountain.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : Spirou - Mountain              " \
+    "Author: Alberto Jose Gonzalez" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-spirou-mountain.xex
+
+./vgm2sapr -r 60 gb/'Turok - Title Screen.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : Turok - Title Screen           " \
+    "Author: Alberto Jose Gonzalez" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-turok-title.xex
+
 # GAME BOY COLOR
 
 ./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - GR Island.vgz'
@@ -244,7 +298,7 @@ make compress
 make player60
 mv player.xex xex/gbc-pokemon-title.xex
 
-#fi
+fi
 
 # clear for further tests
 echo -n " " > asm/songname.txt
