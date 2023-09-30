@@ -177,6 +177,73 @@ make compress
 make player60
 mv player.xex xex/arcade-mrgoemon.xex
 
+# GAME BOY
+
+./vgm2sapr -r 60 gb/'Ninja Gaiden Shadow - Stage 5.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : Ninja Gaiden Shadow - Stage 5  " \
+    "Author: Hiroyuki Iwatsuki" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-ninjagaiden.xex
+
+./vgm2sapr -r 60 gb/'Super Mario Land - Staff Roll.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : Super Mario Land - Staff Roll  " \
+    "Author: Hirokazu Tanaka" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-sml.xex
+
+./vgm2sapr -r 60 gb/'Super Mario Land 2 - Athletic Theme.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : Super Mario Land 2 - Athletic  " \
+    "Author: Kazumi Totaka" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-sml2.xex
+
+# GAME BOY COLOR
+
+./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - GR Island.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Pokemon Card - GR Island       " \
+    "Author: Ichiro Shimakura" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-pokemon-island.xex
+
+./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - Imakunis Theme.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Pokemon Card - Ikaminu's Theme " \
+    "Author: Ichiro Shimakura" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-pokemon-ikamunis.xex
+
+./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - Staff Roll.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Pokemon Card - Staff Roll      " \
+    "Author: Ichiro Shimakura" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-pokemon-roll.xex
+
+./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - Title Screen.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Pokemon Card - Title Screen    " \
+    "Author: Ichiro Shimakura" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-pokemon-title.xex
+
 #fi
 
 # clear for further tests
