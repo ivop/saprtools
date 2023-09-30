@@ -4,7 +4,7 @@ set -e
 
 make
 
-if false; then
+#if false; then
 
 # BBC MICRO
 
@@ -298,7 +298,52 @@ make compress
 make player60
 mv player.xex xex/gbc-pokemon-title.xex
 
-fi
+./vgm2sapr -r 60 gbc/'Action Man - Moon Base 2.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Action Man - Moon Base 2       " \
+    "Author: Iku Mizutani" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-actionman-moonbase2.xex
+
+./vgm2sapr -r 60 gbc/'Beatmania - Hunting For You.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Beatmania - Hunting For You    " \
+    "Author: Hiroyuki Togo" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-beatmania-hunting.xex
+
+./vgm2sapr -r 60 gbc/'Pokemon Trading Card Game - Title.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Pokemon Trading Card Game Title" \
+    "Author: Ichiro Shimakura" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-pokemon-trading.xex
+
+./vgm2sapr -r 60 gbc/'Robocop - Robocop Theme.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Robocop - Robocop Theme        " \
+    "Author: B.Poledouris, K.Wierzynkiewicz" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-robocop-theme.xex
+
+./vgm2sapr -r 60 gbc/'Turok 2 - Base.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Turok 2 - Base                 " \
+    "Author: Alberto Jose Gonzalez" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-turok2-base.xex
+
+#fi
 
 # clear for further tests
 echo -n " " > asm/songname.txt
