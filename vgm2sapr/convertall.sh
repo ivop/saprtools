@@ -260,6 +260,24 @@ make compress
 make player60
 mv player.xex xex/gb-turok-title.xex
 
+./vgm2sapr -r 60 gb/'Final Fantasy Adventure - Rising Sun.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : Final Fantasy Adv. - Rising Sun" \
+    "Author: Kenji Ito" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-ffa-rising-sun.xex
+
+./vgm2sapr -r 60 gb/'Final Fantasy Legend II - The Legend Begins.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : FF Legend 2 - The Legend Begins" \
+    "Author: Nobuo Uematsu" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-ffl2-legend-begins.xex
+
 # GAME BOY COLOR
 
 ./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - GR Island.vgz'
@@ -342,6 +360,15 @@ echo -n \
 make compress
 make player60
 mv player.xex xex/gbc-turok2-base.xex
+
+./vgm2sapr -r 60 gbc/'Lufia - The Legend Returns - Prologue.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Lufia Legend Returns - Prologue" \
+    "Author: Yasunori Shiono, et al." > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-lufia-prologue.xex
 
 #fi
 
