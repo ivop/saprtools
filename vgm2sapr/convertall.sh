@@ -278,6 +278,15 @@ make compress
 make player60
 mv player.xex xex/gb-ffl2-legend-begins.xex
 
+./vgm2sapr -r 60 gb/'The Smurfs - Title Screen.vgz'
+echo -n \
+    "Source: Game Boy                       " \
+    "Title : The Smurfs - Title Screen      " \
+    "Author: Alberto Jose Gonzalez" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gb-ffl2-legend-begins.xex
+
 # GAME BOY COLOR
 
 ./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - GR Island.vgz'
@@ -369,6 +378,15 @@ echo -n \
 make compress
 make player60
 mv player.xex xex/gbc-lufia-prologue.xex
+
+./vgm2sapr -r 60 gbc/'Super Mario Bros. Deluxe - Running About.vgz'
+echo -n \
+    "Source: Game Boy Color                 " \
+    "Title : Super Mario BD - Running About " \
+    "Author: Koji Kondo" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/gbc-smbd-running-about.xex
 
 #fi
 
