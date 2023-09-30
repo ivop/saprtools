@@ -614,6 +614,7 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
         break;
     case 0x0d:
         w->frequency_load = (w->frequency_load & 0x700) | d;
+        w->frequency = (2048 - w->frequency_load) * 2;
         break;
     case 0x0e:
         w->frequency_load = (w->frequency_load & 0x0ff) | ((d & 7) << 8);
