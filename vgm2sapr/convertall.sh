@@ -285,7 +285,7 @@ echo -n \
     "Author: Alberto Jose Gonzalez" > asm/songname.txt
 make compress
 make player60
-mv player.xex xex/gb-ffl2-legend-begins.xex
+mv player.xex xex/gb-smurfs-title.xex
 
 # GAME BOY COLOR
 
