@@ -588,7 +588,7 @@ static void huc_to_pokey(struct huc6280 *huc, uint8_t *pokey, int channel,
     if (c->noise_enable) {
         dist = 0x80;
         if (c->noise_frequency)
-            f = fmaster / (2.0 * 32.0 * 2.0 * c->noise_frequency);
+            f = fmaster / (2.0 * 32.0 * 0.5 * c->noise_frequency);
         else
             f = 1.0;
     } else {
@@ -607,6 +607,11 @@ static void huc_to_pokey(struct huc6280 *huc, uint8_t *pokey, int channel,
     }
 
     int volume = voltab[c->amplitude_level>>1];
+
+    volume *= (c->left_amplitude_level + c->right_amplitude_level) / 30.0;
+
+    if (c->noise_enable)
+        volume *= 0.7;
 
     if (c->dda)
         volume = 0;
