@@ -161,7 +161,8 @@ static int force_new;
 
 enum chiptype {
     CHIP_SN76489,
-    CHIP_GAMEBOY_DMG
+    CHIP_GAMEBOY_DMG,
+    CHIP_HUC6280
 };
 
 /* SN76489 */
@@ -283,7 +284,31 @@ struct gameboy_dmg {
 
 static const unsigned int dmg_divisors[8] = { 8, 16, 32, 48, 64, 80, 96, 112 };
 
-#define LARGEST_CHIP (48)               // sizeof dmg register area 00-2f
+struct huc6280 {
+    uint8_t channel_select;
+    uint8_t left_main_amplitude_level;
+    uint8_t right_main_amplitude_level;
+    struct huc_channel {
+        uint16_t frequency;
+        bool on;
+        bool dda;
+        uint8_t amplitude_level;
+        uint8_t left_amplitude_level;
+        uint8_t right_amplitude_level;
+        uint8_t wave_data;
+        bool noise_enable;                  // only channel 5-6
+        uint8_t noise_frequency;            // idem
+    } channels[6];
+    uint8_t lfo_frq;
+    bool lf_trg;
+    uint8_t lf_ctl;
+};
+
+#define SIZE_REGS_SN76489   16
+#define SIZE_REGS_DMG       48
+#define SIZE_REGS_HUC       (10*6)
+
+#define LARGEST_CHIP (60)
 
 static uint8_t voltab[16];
 
@@ -446,6 +471,12 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
     pokey[2] = (POK >> 8) & 0xff;
 
     pokey[3] = dist + voltab[vol];
+}
+
+/* ------------------------------------------------------------------------ */
+
+static void huc_to_pokey(struct huc6280 *dmg, uint8_t *pokey, int channel,
+                                                    struct vgm_header *v) {
 }
 
 /* ------------------------------------------------------------------------ */
@@ -712,7 +743,8 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
 
     memset(pokeyL, 0, 9);
     memset(pokeyR, 0, 9);
-    pokeyL[8] = pokeyR[8] = 0x78;
+    if (chip != CHIP_HUC6280)
+        pokeyL[8] = pokeyR[8] = 0x78;
 
     outleft = fopen("left.sapr", "wb");
     if (!outleft) {
@@ -744,9 +776,11 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
 
     union sn76489 sn;
     struct gameboy_dmg dmg;
+    struct huc6280 huc;
 
     memset(&sn, 0, sizeof(union sn76489));
     memset(&dmg, 0, sizeof(struct gameboy_dmg));
+    memset(&huc, 0, sizeof(struct huc6280));
 
     uint8_t written[LARGEST_CHIP];
     memset(written, 0, sizeof(written));
@@ -858,7 +892,77 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             write_dmg_register(&dmg, aa, dd);
             break;
             }
+            /* HuC6280 */
+        case 0xb9: {
+            uint8_t aa = gzgetc(file);
+            uint8_t dd = gzgetc(file);
 
+            if (aa > 9) {
+                fprintf(stderr, "huc6280: aa=%02x out of range!\n", aa);
+                break;
+            }
+
+            if (aa == 0) {
+                huc.channel_select = dd;
+                break;
+            }
+
+            int channel = huc.channel_select;
+            struct huc_channel *c = &huc.channels[channel];
+
+            switch (aa) {
+            case 0:
+                break;
+            case 1:
+                huc.left_main_amplitude_level  = dd >> 4;
+                huc.right_main_amplitude_level = dd & 15;
+                break;
+            case 2:
+                c->frequency = (c->frequency & 0xf00) | dd;
+                break;
+            case 3:
+                c->frequency = (c->frequency & 0x0ff) | ((dd & 0x0f) << 8);
+                break;
+            case 4:
+                c->on  = dd & 0x80;
+                c->dda = dd & 0x40;
+                c->amplitude_level = dd & 0x1f;
+                break;
+            case 5:
+                c->left_amplitude_level  = dd >> 4;
+                c->right_amplitude_level = dd & 15;
+                break;
+            case 6:
+                /* we do not store wave data written here */
+                break;
+            case 7:
+                c->noise_enable    = dd & 0x80;
+                c->noise_frequency = dd & 0x1f;
+                break;
+            case 8:
+                huc.lfo_frq = dd;
+                break;
+            case 9:
+                huc.lf_trg = dd & 0x80;
+                huc.lf_ctl = dd & 3;
+                break;
+            }
+
+            int bb = channel * 10 + aa;
+            if (!written[bb]) {
+                if (aa != 7)            // do not count wave data writes
+                    written[bb]++;
+            } else {
+                if (force_new) {
+                    debug_fprintf(stderr, "*** new frame forced\n");
+                    gzseek(file, -3, SEEK_CUR);
+                    fcnt=framelen;              // force new frame
+                    break;
+                }
+                written[bb]++;
+            }
+            break;
+            }
             /* UNSUPPORTED -- xx aa dd */
         case 0x51:
         case 0x52:
@@ -884,7 +988,6 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
         case 0xb6:
         case 0xb7:
         case 0xb8:
-        case 0xb9:
         case 0xba:
         case 0xbb:
         case 0xbc:
@@ -1010,6 +1113,13 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
                 dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
 
                 dmg_run_frame_sequencer(&dmg);
+            } else if (chip == CHIP_HUC6280) {
+                huc_to_pokey(&huc, &pokeyL[0], 0, v);
+                huc_to_pokey(&huc, &pokeyL[2], 1, v);
+                huc_to_pokey(&huc, &pokeyL[4], 2, v);
+                huc_to_pokey(&huc, &pokeyR[0], 3, v);
+                huc_to_pokey(&huc, &pokeyR[2], 4, v);
+                huc_to_pokey(&huc, &pokeyR[4], 5, v);
             }
 
             fwrite(pokeyL, 1, 9, outleft);
@@ -1036,6 +1146,13 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
         dmg_to_pokey(&dmg, &pokeyL[4], 1, v);
         dmg_to_pokey(&dmg, &pokeyR[0], 2, v);
         dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
+    } else if (chip == CHIP_HUC6280) {
+        huc_to_pokey(&huc, &pokeyL[0], 0, v);
+        huc_to_pokey(&huc, &pokeyL[2], 1, v);
+        huc_to_pokey(&huc, &pokeyL[4], 2, v);
+        huc_to_pokey(&huc, &pokeyR[0], 3, v);
+        huc_to_pokey(&huc, &pokeyR[2], 4, v);
+        huc_to_pokey(&huc, &pokeyR[4], 5, v);
     }
 
     fwrite(pokeyL, 1, 9, outleft);
@@ -1061,6 +1178,15 @@ static void init_voltab_sn(int maxvol) {
 static void init_voltab_dmg(int maxvol) {
     for (int i=0; i<16; i++) {
         voltab[i] = round(i*maxvol/15.0);
+    }
+}
+
+static void init_voltab_huc(int maxvol) {
+    double level = maxvol;
+    double step = 48.0 / 32.0;          // xxx should be 48dB in 16 steps
+    for (int i=0; i<16; i++) {
+        voltab[15-i] = round(level);    // xxx check order
+        level /= pow(10.0, step/20.0);
     }
 }
 
@@ -1174,6 +1300,12 @@ int main(int argc, char **argv) {
         fprintf(stderr, "detected GameBoy DMG\n");
         fprintf(stderr, "clock: %d Hz\n", v->gameboy_dmg_clock);
         write_sapr(file, v, CHIP_GAMEBOY_DMG);
+    } else if (v->version >= 0x0161 && v->huc6280_clock) {
+        init_voltab_huc(maxpokvol);
+
+        fprintf(stderr, "detected HuC6280\n");
+        fprintf(stderr, "clock: %d Hz\n", v->huc6280_clock);
+        write_sapr(file, v, CHIP_HUC6280);
     } else {
         fprintf(stderr, "no supported chip detected\n");
         return 1;
