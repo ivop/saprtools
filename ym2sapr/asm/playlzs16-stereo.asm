@@ -46,7 +46,7 @@ SKCTL = $d20f
     mva #0 82       ; left margin
     prints 0, " "
 .ifdef VGM2SAPR
-    prints 0, "VGM2SAPR v1.2 (STEREO)"
+    prints 0, "VGM2SAPR v1.3 (STEREO)"
 .else
     .ifdef SID2SAPR
         prints 0, "SID2SAPR v1.10 (STEREO)"
