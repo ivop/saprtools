@@ -22,9 +22,10 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 | Tandy 1000 | NCR8496 | .vgm | vgm2sapr |
 | IBM PCjr | SN76489 | .vgm | vgm2sapr |
 | Nintendo Game Boy | Game Boy DMG | .vgm | vgm2sapr |
-| Nintendo Game Boy Color | Game Boy DMG | .vgm | vgm2sapr |
 | Nintendo Game Boy | Game Boy DMG | .gbs | gbsplay[^2], vgm2sapr |
+| Nintendo Game Boy Color | Game Boy DMG | .vgm | vgm2sapr |
 | Nintendo Game Boy Color | Game Boy DMG | .gbs | gbsplay[^2], vgm2sapr |
+| TurboGrafx-16 / PC Engine | HuC6280 | .vgm | vgm2sapr |
 
 ### Notes
 
