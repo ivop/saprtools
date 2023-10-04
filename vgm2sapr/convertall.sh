@@ -4,7 +4,7 @@ set -e
 
 make
 
-#if false; then
+if false; then
 
 # BBC MICRO
 
@@ -462,7 +462,79 @@ make compress
 make player60
 mv player.xex xex/pce-ys-recollection.xex
 
-#fi
+./vgm2sapr -r 60 pcengine/'After Burner II - After Burner.vgz'
+echo -n \
+    "Source: TurboGrafx-16 / PC Engine      " \
+    "Title : After Burner II - After Burner " \
+    "Author: Hiroshi Kawaguchi" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-after-burner2.xex
+
+./vgm2sapr -r 60 pcengine/'Cratermaze - Booby Samba.vgz'
+echo -n \
+    "Source: TurboGrafx-16 / PC Engine      " \
+    "Title : Cratermaze - Booby Samba       " \
+    "Author: Kenji Yoshida, et al." > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-cratermaze-booby-samba.xex
+
+./vgm2sapr -r 60 pcengine/'Terra Cresta II - Ending.vgz'
+echo -n \
+    "Source: TurboGrafx-16 / PC Engine      " \
+    "Title : Terra Cresta II - Ending       " \
+    "Author: Akihiro Akamatsu, Sachiko Oita" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-terra-cresta2-ending.xex
+
+fi
+
+./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'07 Great Merchant.vgz'
+echo -n \
+    "Source: PC Engine Super CD-ROM2        " \
+    "Title : Tengai Makyou - Great Merchant " \
+    "Author: Kohei Tanaka" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-tmfk-great-merchant.xex
+
+./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'13 Sign of the Demon King.vgz'
+echo -n \
+    "Source: PC Engine Super CD-ROM2        " \
+    "Title : TM:FK - Sign Of The Demon King " \
+    "Author: Kohei Tanaka" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-tmfk-sign-demon-king.xex
+
+./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'24 Secret Maneuvering.vgz'
+echo -n \
+    "Source: PC Engine Super CD-ROM2        " \
+    "Title : Tengai Mak.  Secret Maneuvering" \
+    "Author: Kohei Tanaka" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-tmfk-secret-maneuvering.xex
+
+./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'40 Fujiyama.vgz'
+echo -n \
+    "Source: PC Engine Super CD-ROM2        " \
+    "Title : Tengai Makyou - Fujiyama       " \
+    "Author: Kohei Tanaka" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-tmfk-fujiyama.xex
+
+./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'57 London Tower.vgz'
+echo -n \
+    "Source: PC Engine Super CD-ROM2        " \
+    "Title : Tengai Makyou - London Tower   " \
+    "Author: Kohei Tanaka" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-tmfk-london-tower.xex
 
 # clear for further tests
 echo -n " " > asm/songname.txt
