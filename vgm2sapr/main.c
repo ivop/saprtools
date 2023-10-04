@@ -318,6 +318,8 @@ static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
 #define debug_fprintf(stream, ...) \
     if (debug) fprintf(stream, __VA_ARGS__);
 
+static int mute_high = 0;
+
 /* ------------------------------------------------------------------------ */
 
 struct bass {
@@ -472,6 +474,9 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
 
     int volume = voltab[snv];
 
+    if (POK < mute_high)
+        volume = 0;
+
     pokey[3] = 0xa0 + volume;
 
     if (channel == 2) {
@@ -505,6 +510,9 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
         POK = round((ATARI_CLOCK / 2.0 / f) - 7);
 
         volume = voltab[sn->v.attn];
+
+        if (dist == 0xa0 && POK < mute_high)
+            volume = 0;
 
         pokey[4] = POK & 0xff;
         pokey[6] = (POK >> 8) & 0xff;
@@ -569,6 +577,9 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
 
     int POK = round((ATARI_CLOCK / 2.0 / f) - 7);
 
+    if (dist == 0xa0 && POK < mute_high)
+        vol = 0;
+
     pokey[0] = POK & 0xff;
     pokey[2] = (POK >> 8) & 0xff;
 
@@ -615,6 +626,9 @@ static void huc_to_pokey(struct huc6280 *huc, uint8_t *pokey, int channel,
         volume *= 0.7;
 
     if (c->dda || !c->on)
+        volume = 0;
+
+    if (dist == 0xa0 && POK < mute_high)
         volume = 0;
 
     pokey[0] = POK;
@@ -1344,6 +1358,7 @@ static void usage(void) {
 "               the proper framerate or slightly below, or try -f\n"
 "   -f          force new frame on double write\n"
 "   -p volume   pokey maximum per channel volume [default: 15]\n"
+"   -m div      mute high up to pokey divisor div [default: 0]\n"
 );
 
 }
@@ -1355,7 +1370,7 @@ int main(int argc, char **argv) {
 
     framerate = 0;
 
-    while ((option = getopt(argc, argv, "dfhr:p:")) != -1) {
+    while ((option = getopt(argc, argv, "dfhr:p:m:")) != -1) {
         switch (option) {
         case 'r':
             framerate = strtod(optarg, NULL);
@@ -1372,6 +1387,13 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "invalid maximum pokey volume\n");
                 return 1;
             }
+            break;
+        case 'm':
+            mute_high = atoi(optarg);
+            if (mute_high < 0)
+                mute_high = 0;
+            if (mute_high > 255)
+                mute_high = 255;
             break;
         case 'h':
         default:
@@ -1426,6 +1448,8 @@ int main(int argc, char **argv) {
     fprintf(stderr, "samples per frame: %.2f\n", 44100.0/framerate);
     fprintf(stderr, "song length: %.2f seconds\n", v->total_nsamples/44100.0);
     fprintf(stderr, "maximum pokey volume: %d\n", maxpokvol);
+    if (mute_high)
+        fprintf(stderr, "mute clear pokey div up to: %d\n", mute_high);
 
     if (v->sn76489_clock) {
         init_voltab_sn(maxpokvol);
