@@ -5,27 +5,27 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 
 #### Conversion from other platforms
 
-| Platform | Soundchip | Filetype | Convert with...|
-| --- | --- | --- | --- |
-| Atari ST | YM2149 | .ym | ym2sapr |
-| Atari ST | YM2149 | .sndh | sndh2ym, ym2sapr |
-| ZX Spectrum | AY8910 | .ay | aylet -y, ym2sapr |
-| Amstrad CPC | AY8910 | .ay | aylet -y, ym2sapr |
-| MSX/MSX2 | AY8910 | .vgm | vgm2ym, ym2sapr |
-| MSX/MSX2 | AY8910 | .kss | kss2vgm[^1], vgm2ym, ym2sapr |
-| Commodore 64 | SID | .sid | sid2sapr |
-| BBC Micro | SN76489 | .vgm | vgm2sapr |
-| SG-1000 | SN76489 | .vgm | vgm2sapr |
-| Sega Master System | SEGA PSG | .vgm | vgm2sapr |
-| Sega Game Gear | SEGA PSG | .vgm | vgm2sapr |
-| Sega Pico | SEGA PSG | .vgm | vgm2sapr |
-| Tandy 1000 | NCR8496 | .vgm | vgm2sapr |
-| IBM PCjr | SN76489 | .vgm | vgm2sapr |
-| Nintendo Game Boy | Game Boy DMG | .vgm | vgm2sapr |
-| Nintendo Game Boy | Game Boy DMG | .gbs | gbsplay[^2], vgm2sapr |
-| Nintendo Game Boy Color | Game Boy DMG | .vgm | vgm2sapr |
-| Nintendo Game Boy Color | Game Boy DMG | .gbs | gbsplay[^2], vgm2sapr |
-| TurboGrafx-16 / PC Engine | HuC6280 | .vgm | vgm2sapr |
+| | Platform | Soundchip | Filetype | Convert with...|
+| --- | --- | --- | --- | --- |
+| 1. | Atari ST | YM2149 | .ym | ym2sapr |
+| | Atari ST | YM2149 | .sndh | sndh2ym, ym2sapr |
+| 2. | ZX Spectrum | AY8910 | .ay | aylet -y, ym2sapr |
+| 3. | Amstrad CPC | AY8910 | .ay | aylet -y, ym2sapr |
+| 4. | MSX/MSX2 | AY8910 | .vgm | vgm2ym, ym2sapr |
+| | MSX/MSX2 | AY8910 | .kss | kss2vgm[^1], vgm2ym, ym2sapr |
+| 5. | Commodore 64 | SID | .sid | sid2sapr |
+| 6. | BBC Micro | SN76489 | .vgm | vgm2sapr |
+| 7. | SG-1000 | SN76489 | .vgm | vgm2sapr |
+| 8. | Sega Master System | SEGA PSG | .vgm | vgm2sapr |
+| 9. | Sega Game Gear | SEGA PSG | .vgm | vgm2sapr |
+| 10. | Sega Pico | SEGA PSG | .vgm | vgm2sapr |
+| 11. | Tandy 1000 | NCR8496 | .vgm | vgm2sapr |
+| 12. | IBM PCjr | SN76489 | .vgm | vgm2sapr |
+| 13. | Nintendo Game Boy | Game Boy DMG | .vgm | vgm2sapr |
+| | Nintendo Game Boy | Game Boy DMG | .gbs | gbsplay[^2], vgm2sapr |
+| 14. | Nintendo Game Boy Color | Game Boy DMG | .vgm | vgm2sapr |
+| | Nintendo Game Boy Color | Game Boy DMG | .gbs | gbsplay[^2], vgm2sapr |
+| 15. | TurboGrafx-16 / PC Engine | HuC6280 | .vgm | vgm2sapr |
 
 ### Notes
 
