@@ -614,7 +614,7 @@ static void huc_to_pokey(struct huc6280 *huc, uint8_t *pokey, int channel,
     if (c->noise_enable)
         volume *= 0.7;
 
-    if (c->dda)
+    if (c->dda || !c->on)
         volume = 0;
 
     pokey[0] = POK;
@@ -1325,9 +1325,9 @@ static void init_voltab_dmg(int maxvol) {
 
 static void init_voltab_huc(int maxvol) {
     double level = maxvol;
-    double step = 48.0 / 32.0;          // xxx should be 48dB in 16 steps
+    double step = 48.0 / 16.0;          // 48dB in sixteen steps
     for (int i=0; i<16; i++) {
-        voltab[15-i] = round(level);    // xxx check order
+        voltab[15-i] = round(level);
         level /= pow(10.0, step/20.0);
     }
 }
