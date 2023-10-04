@@ -161,7 +161,8 @@ static int force_new;
 
 enum chiptype {
     CHIP_SN76489,
-    CHIP_GAMEBOY_DMG
+    CHIP_GAMEBOY_DMG,
+    CHIP_HUC6280
 };
 
 /* SN76489 */
@@ -283,7 +284,31 @@ struct gameboy_dmg {
 
 static const unsigned int dmg_divisors[8] = { 8, 16, 32, 48, 64, 80, 96, 112 };
 
-#define LARGEST_CHIP (48)               // sizeof dmg register area 00-2f
+struct huc6280 {
+    uint8_t channel_select;
+    uint8_t left_main_amplitude_level;
+    uint8_t right_main_amplitude_level;
+    struct huc_channel {
+        uint16_t frequency;
+        bool on;
+        bool dda;
+        uint8_t amplitude_level;
+        uint8_t left_amplitude_level;
+        uint8_t right_amplitude_level;
+        uint8_t wave_data;
+        bool noise_enable;                  // only channel 5-6
+        uint8_t noise_frequency;            // idem
+    } channels[6];
+    uint8_t lfo_frq;
+    bool lf_trg;
+    uint8_t lf_ctl;
+};
+
+#define SIZE_REGS_SN76489   16
+#define SIZE_REGS_DMG       48
+#define SIZE_REGS_HUC       (10*6)
+
+#define LARGEST_CHIP (60)
 
 static uint8_t voltab[16];
 
@@ -292,6 +317,110 @@ static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
 
 #define debug_fprintf(stream, ...) \
     if (debug) fprintf(stream, __VA_ARGS__);
+
+static int mute_high = 0;
+
+/* ------------------------------------------------------------------------ */
+
+struct bass {
+    double tet12f;          // 12-TET frequency, A=440Hz
+    uint8_t distc;          // closest dist C divider
+    double realf;           // real frequency of distc divider
+};
+
+static const struct bass gritty[36] = {
+    /* C-0 */ { 16.35159783, 0xff, 16.49411272 },
+    /* C#0 */ { 17.32391444, 0xf3, 17.30529859 },
+    /* D-0 */ { 18.35404799, 0xe4, 18.43883344 },
+    /* D#0 */ { 19.44543648, 0xd8, 19.45849243 },
+    /* E-0 */ { 20.60172231, 0xcd, 20.49753814 },
+    /* F-0 */ { 21.82676446, 0xc0, 21.87820133 },
+    /* F#0 */ { 23.12465142, 0xb5, 23.20051020 },
+    /* G-0 */ { 24.49971475, 0xab, 24.54937708 },
+    /* G#0 */ { 25.95654360, 0xa2, 25.90486415 },
+    /* A-0 */ { 27.50000000, 0x99, 27.41878479 },
+    /* A#0 */ { 29.13523509, 0x91, 28.92118395 },
+    /* B-0 */ { 30.86770633, 0x88, 30.82111575 },
+    /* C-1 */ { 32.70319566, 0x7f, 32.98822545 },
+    /* C#1 */ { 34.64782887, 0x79, 34.61059719 },
+    /* D-1 */ { 36.70809599, 0x73, 36.40080049 },
+    /* D#1 */ { 38.89087297, 0x6c, 38.73846658 },
+    /* E-1 */ { 41.20344461, 0x66, 40.99507628 },
+    /* F-1 */ { 43.65352893, 0x60, 43.53085420 },
+    /* F#1 */ { 46.24930284, 0x5a, 46.40102041 },
+    /* G-1 */ { 48.99942950, 0x55, 49.09875415 },
+    /* G#1 */ { 51.91308720, 0x51, 51.49381533 },
+    /* A-1 */ { 55.00000000, 0x4c, 54.83756957 },
+    /* A#1 */ { 58.27047019, 0x48, 57.84236791 },
+    /* B-1 */ { 61.73541266, 0x43, 62.09548319 },
+    /* C-2 */ { 65.40639133, 0x3f, 65.97645089 },
+    /* C#2 */ { 69.29565774, 0x3c, 69.22119438 },
+    /* D-2 */ { 73.41619198, 0x39, 72.80160099 },
+    /* D#2 */ { 77.78174593, 0x34, 79.66967655 },
+    /* E-2 */ { 82.40688923, 0x33, 81.20178571 },
+    /* F-2 */ { 87.30705786, 0x30, 86.17332362 },
+    /* F#2 */ { 92.49860568, 0x2d, 91.79332298 },
+    /* G-2 */ { 97.99885900, 0x2a, 98.19750831 },
+    /* G#2 */ { 103.82617439, 0x28, 102.98763066 },
+    /* A-2 */ { 110.00000000, 0x25, 111.11823308 },
+    /* A#2 */ { 116.54094038, 0x24, 114.12142857 },
+    /* B-2 */ { 123.47082531, 0x21, 124.19096639 },
+};
+
+static const struct bass buzzy[36] = {
+    /* C-0 */ { 16.35159783, 0xff, 16.49411272 }, /* very low is still gritty */
+    /* C#0 */ { 17.32391444, 0xf3, 17.30529859 },
+    /* D-0 */ { 18.35404799, 0xe4, 18.43883344 },
+    /* D#0 */ { 19.44543648, 0xd8, 19.45849243 },
+    /* E-0 */ { 20.60172231, 0xcd, 20.49753814 },
+    /* F-0 */ { 21.82676446, 0xc0, 21.87820133 },
+    /* F#0 */ { 23.12465142, 0xb5, 23.20051020 },
+    /* G-0 */ { 24.49971475, 0xab, 24.54937708 },
+    /* G#0 */ { 25.95654360, 0xa2, 25.90486415 },
+    /* A-0 */ { 27.50000000, 0x99, 27.41878479 },
+    /* A#0 */ { 29.13523509, 0x91, 28.92118395 },
+    /* B-0 */ { 30.86770633, 0x88, 30.82111575 },
+    /* C-1 */ { 32.70319566, 0x7f, 32.98822545 },
+    /* C#1 */ { 34.64782887, 0x79, 34.61059719 },
+    /* D-1 */ { 36.70809599, 0x73, 36.40080049 },
+    /* D#1 */ { 38.89087297, 0x6c, 38.73846658 },
+    /* E-1 */ { 41.20344461, 0x66, 40.99507628 },
+    /* F-1 */ { 43.65352893, 0x60, 43.53085420 },
+    /* F#1 */ { 46.24930284, 0x5a, 46.40102041 },
+    /* G-1 */ { 48.99942950, 0x55, 49.09875415 },
+    /* G#1 */ { 51.91308720, 0xf2, 52.12954145 }, /* buzzy from here */
+    /* A-1 */ { 55.00000000, 0xe6, 54.83756957 },
+    /* A#1 */ { 58.27047019, 0xd7, 58.64573413 },
+    /* B-1 */ { 61.73541266, 0xcb, 62.09548319 },
+    /* C-2 */ { 65.40639133, 0xbf, 65.97645089 },
+    /* C#2 */ { 69.29565774, 0xb6, 69.22119438 },
+    /* D-2 */ { 73.41619198, 0xad, 72.80160099 },
+    /* D#2 */ { 77.78174593, 0xa1, 78.19431217 },
+    /* E-2 */ { 82.40688923, 0x98, 82.79397759 },
+    /* F-2 */ { 87.30705786, 0x8f, 87.96860119 },
+    /* F#2 */ { 92.49860568, 0x89, 91.79332298 },
+    /* G-2 */ { 97.99885900, 0x80, 98.19750831 },
+    /* G#2 */ { 103.82617439, 0x7a, 102.98763066 },
+    /* A-2 */ { 110.00000000, 0x71, 111.11823308 },
+    /* A#2 */ { 116.54094038, 0x6b, 117.29146825 },
+    /* B-2 */ { 123.47082531, 0x65, 124.19096639 },
+};
+
+/* ------------------------------------------------------------------------ */
+
+static uint8_t find_closest_distc(const struct bass table[], double f) {
+    double delta = 1000.0;  // big number
+    int found = 0;
+
+    for (int i=0; i<36; i++) {
+        double newd = abs(table[i].realf - f);
+        if (newd < delta) {
+            delta = newd;
+            found = i;
+        }
+    }
+    return table[found].distc;
+}
 
 /* ------------------------------------------------------------------------ */
 
@@ -345,6 +474,9 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
 
     int volume = voltab[snv];
 
+    if (POK < mute_high)
+        volume = 0;
+
     pokey[3] = 0xa0 + volume;
 
     if (channel == 2) {
@@ -378,6 +510,9 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
         POK = round((ATARI_CLOCK / 2.0 / f) - 7);
 
         volume = voltab[sn->v.attn];
+
+        if (dist == 0xa0 && POK < mute_high)
+            volume = 0;
 
         pokey[4] = POK & 0xff;
         pokey[6] = (POK >> 8) & 0xff;
@@ -442,10 +577,62 @@ static void dmg_to_pokey(struct gameboy_dmg *dmg, uint8_t *pokey, int channel,
 
     int POK = round((ATARI_CLOCK / 2.0 / f) - 7);
 
+    if (dist == 0xa0 && POK < mute_high)
+        vol = 0;
+
     pokey[0] = POK & 0xff;
     pokey[2] = (POK >> 8) & 0xff;
 
     pokey[3] = dist + voltab[vol];
+}
+
+/* ------------------------------------------------------------------------ */
+
+static void huc_to_pokey(struct huc6280 *huc, uint8_t *pokey, int channel,
+                                                    struct vgm_header *v) {
+    struct huc_channel *c = &huc->channels[channel];
+    double f, fmaster;
+    int dist = 0xa0;
+
+    fmaster = v->huc6280_clock * 2.0;
+
+    if (c->noise_enable) {
+        dist = 0x80;
+        if (c->noise_frequency)
+            f = fmaster / (2.0 * 32.0 * 0.5 * c->noise_frequency);
+        else
+            f = 1.0;
+    } else {
+        f = fmaster / (2.0 * 32.0 * c->frequency);
+    }
+
+    if (f < 1.0) f = 1.0;
+
+    double POKreal = (ATARI_CLOCK / 28.0 / 2.0 / f) - 1;
+
+    int POK = round(POKreal);
+
+    if (POK > 255) {
+        POK = find_closest_distc(buzzy, f);
+        dist = 0xc0;
+    }
+
+    double amplitude = c->amplitude_level / 2;
+    amplitude *= (c->left_amplitude_level + c->right_amplitude_level) / 30.0;
+
+    int volume = voltab[(int)round(amplitude)];
+
+    if (c->noise_enable)
+        volume *= 0.7;
+
+    if (c->dda || !c->on)
+        volume = 0;
+
+    if (dist == 0xa0 && POK < mute_high)
+        volume = 0;
+
+    pokey[0] = POK;
+    pokey[1] = dist + volume;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -712,7 +899,8 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
 
     memset(pokeyL, 0, 9);
     memset(pokeyR, 0, 9);
-    pokeyL[8] = pokeyR[8] = 0x78;
+    if (chip != CHIP_HUC6280)
+        pokeyL[8] = pokeyR[8] = 0x78;
 
     outleft = fopen("left.sapr", "wb");
     if (!outleft) {
@@ -744,9 +932,11 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
 
     union sn76489 sn;
     struct gameboy_dmg dmg;
+    struct huc6280 huc;
 
     memset(&sn, 0, sizeof(union sn76489));
     memset(&dmg, 0, sizeof(struct gameboy_dmg));
+    memset(&huc, 0, sizeof(struct huc6280));
 
     uint8_t written[LARGEST_CHIP];
     memset(written, 0, sizeof(written));
@@ -858,7 +1048,77 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             write_dmg_register(&dmg, aa, dd);
             break;
             }
+            /* HuC6280 */
+        case 0xb9: {
+            uint8_t aa = gzgetc(file);
+            uint8_t dd = gzgetc(file);
 
+            if (aa > 9) {
+                fprintf(stderr, "huc6280: aa=%02x out of range!\n", aa);
+                break;
+            }
+
+            if (aa == 0) {
+                huc.channel_select = dd;
+                break;
+            }
+
+            int channel = huc.channel_select;
+            struct huc_channel *c = &huc.channels[channel];
+
+            switch (aa) {
+            case 0:
+                break;
+            case 1:
+                huc.left_main_amplitude_level  = dd >> 4;
+                huc.right_main_amplitude_level = dd & 15;
+                break;
+            case 2:
+                c->frequency = (c->frequency & 0xf00) | dd;
+                break;
+            case 3:
+                c->frequency = (c->frequency & 0x0ff) | ((dd & 0x0f) << 8);
+                break;
+            case 4:
+                c->on  = dd & 0x80;
+                c->dda = dd & 0x40;
+                c->amplitude_level = dd & 0x1f;
+                break;
+            case 5:
+                c->left_amplitude_level  = dd >> 4;
+                c->right_amplitude_level = dd & 15;
+                break;
+            case 6:
+                /* we do not store wave data written here */
+                break;
+            case 7:
+                c->noise_enable    = dd & 0x80;
+                c->noise_frequency = dd & 0x1f;
+                break;
+            case 8:
+                huc.lfo_frq = dd;
+                break;
+            case 9:
+                huc.lf_trg = dd & 0x80;
+                huc.lf_ctl = dd & 3;
+                break;
+            }
+
+            int bb = channel * 10 + aa;
+            if (!written[bb]) {
+                if (aa != 7)            // do not count wave data writes
+                    written[bb]++;
+            } else {
+                if (force_new) {
+                    debug_fprintf(stderr, "*** new frame forced\n");
+                    gzseek(file, -3, SEEK_CUR);
+                    fcnt=framelen;              // force new frame
+                    break;
+                }
+                written[bb]++;
+            }
+            break;
+            }
             /* UNSUPPORTED -- xx aa dd */
         case 0x51:
         case 0x52:
@@ -884,7 +1144,6 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
         case 0xb6:
         case 0xb7:
         case 0xb8:
-        case 0xb9:
         case 0xba:
         case 0xbb:
         case 0xbc:
@@ -1010,6 +1269,13 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
                 dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
 
                 dmg_run_frame_sequencer(&dmg);
+            } else if (chip == CHIP_HUC6280) {
+                huc_to_pokey(&huc, &pokeyL[0], 0, v);
+                huc_to_pokey(&huc, &pokeyL[2], 1, v);
+                huc_to_pokey(&huc, &pokeyL[4], 2, v);
+                huc_to_pokey(&huc, &pokeyR[0], 3, v);
+                huc_to_pokey(&huc, &pokeyR[2], 4, v);
+                huc_to_pokey(&huc, &pokeyR[4], 5, v);
             }
 
             fwrite(pokeyL, 1, 9, outleft);
@@ -1036,6 +1302,13 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
         dmg_to_pokey(&dmg, &pokeyL[4], 1, v);
         dmg_to_pokey(&dmg, &pokeyR[0], 2, v);
         dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
+    } else if (chip == CHIP_HUC6280) {
+        huc_to_pokey(&huc, &pokeyL[0], 0, v);
+        huc_to_pokey(&huc, &pokeyL[2], 1, v);
+        huc_to_pokey(&huc, &pokeyL[4], 2, v);
+        huc_to_pokey(&huc, &pokeyR[0], 3, v);
+        huc_to_pokey(&huc, &pokeyR[2], 4, v);
+        huc_to_pokey(&huc, &pokeyR[4], 5, v);
     }
 
     fwrite(pokeyL, 1, 9, outleft);
@@ -1064,6 +1337,15 @@ static void init_voltab_dmg(int maxvol) {
     }
 }
 
+static void init_voltab_huc(int maxvol) {
+    double level = maxvol;
+    double step = 48.0 / 16.0;          // 48dB in sixteen steps
+    for (int i=0; i<16; i++) {
+        voltab[15-i] = round(level);
+        level /= pow(10.0, step/20.0);
+    }
+}
+
 /* ------------------------------------------------------------------------ */
 
 static void usage(void) {
@@ -1076,6 +1358,7 @@ static void usage(void) {
 "               the proper framerate or slightly below, or try -f\n"
 "   -f          force new frame on double write\n"
 "   -p volume   pokey maximum per channel volume [default: 15]\n"
+"   -m div      mute high up to pokey divisor div [default: 0]\n"
 );
 
 }
@@ -1087,7 +1370,7 @@ int main(int argc, char **argv) {
 
     framerate = 0;
 
-    while ((option = getopt(argc, argv, "dfhr:p:")) != -1) {
+    while ((option = getopt(argc, argv, "dfhr:p:m:")) != -1) {
         switch (option) {
         case 'r':
             framerate = strtod(optarg, NULL);
@@ -1104,6 +1387,13 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "invalid maximum pokey volume\n");
                 return 1;
             }
+            break;
+        case 'm':
+            mute_high = atoi(optarg);
+            if (mute_high < 0)
+                mute_high = 0;
+            if (mute_high > 255)
+                mute_high = 255;
             break;
         case 'h':
         default:
@@ -1158,6 +1448,8 @@ int main(int argc, char **argv) {
     fprintf(stderr, "samples per frame: %.2f\n", 44100.0/framerate);
     fprintf(stderr, "song length: %.2f seconds\n", v->total_nsamples/44100.0);
     fprintf(stderr, "maximum pokey volume: %d\n", maxpokvol);
+    if (mute_high)
+        fprintf(stderr, "mute clear pokey div up to: %d\n", mute_high);
 
     if (v->sn76489_clock) {
         init_voltab_sn(maxpokvol);
@@ -1174,6 +1466,12 @@ int main(int argc, char **argv) {
         fprintf(stderr, "detected GameBoy DMG\n");
         fprintf(stderr, "clock: %d Hz\n", v->gameboy_dmg_clock);
         write_sapr(file, v, CHIP_GAMEBOY_DMG);
+    } else if (v->version >= 0x0161 && v->huc6280_clock) {
+        init_voltab_huc(maxpokvol);
+
+        fprintf(stderr, "detected HuC6280\n");
+        fprintf(stderr, "clock: %d Hz\n", v->huc6280_clock);
+        write_sapr(file, v, CHIP_HUC6280);
     } else {
         fprintf(stderr, "no supported chip detected\n");
         return 1;

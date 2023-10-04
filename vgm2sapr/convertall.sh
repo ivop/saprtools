@@ -388,6 +388,80 @@ make compress
 make player60
 mv player.xex xex/gbc-smbd-running-about.xex
 
+# TURBOGRAFX-16 / PC ENGINE
+
+./vgm2sapr -m 16 -r 60 pcengine/'Bomberman 94 - Jammin Jungle.vgz'
+echo -n \
+    "Source: TurboGrafx-16 / PC Engine      " \
+    "Title : Bomberman '94 - Jammin Jungle  " \
+    "Author: Jun Chikuma, Hajime Kowara" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-bomberman94.xex
+
+./vgm2sapr -r 60 pcengine/'Dragon'\''s Cruse - Take It Easy (Sunken Ship).vgz'
+echo -n \
+    "Source: TurboGrafx-16 / PC Engine      " \
+    "Title : Dragon's Curse - Take It Easy  " \
+    "Author: Shinichi Sakamoto" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-dragons-curse.xex
+
+./vgm2sapr -r 60 pcengine/'Magical Chase - Ending.vgz'
+echo -n \
+    "Source: TurboGrafx-16 / PC Engine      " \
+    "Title : Magical Chase - Ending         " \
+    "Author: Hitoshi Sakimoto" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-magical-chase-ending.xex
+
+./vgm2sapr -r 60 pcengine/"Magical Chase - You're Restless.vgz"
+echo -n \
+    "Source: TurboGrafx-16 / PC Engine      " \
+    "Title : Magical Chase - You're Restless" \
+    "Author: Masaharu Iwata" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-magical-chase-restless.xex
+
+./vgm2sapr -r 60 pcengine/'Snatcher - Cold Sleep.vgz'
+echo -n \
+    "Source: TurboGrafx-16 PC Engine CD-ROM " \
+    "Title : Snatcher - Cold Sleep          " \
+    "Author: Konami Kukeiha Club" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-snatcher-cold-sleep.xex
+
+./vgm2sapr -r 60 pcengine/'Soldier Blade - Opening.vgz'
+echo -n \
+    "Source: TurboGrafx-16 / PC Engine      " \
+    "Title : Soldier Blade - Opening        " \
+    "Author: Keita Hoshi, Makiko Tanifuji" > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-soldier-blade-opening.xex
+
+./vgm2sapr -r 60 pcengine/'The Legend Of Xanadu II - Underground Water Course.vgz'
+echo -n \
+    "Source: NEC PC Engine CD               " \
+    "Title : Xanadu II - Underground Water C" \
+    "Author: Atsushi Shirakawa, et al." > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-xanadu2-water-course.xex
+
+./vgm2sapr -r 60 pcengine/'Ys IV: The Dawn Of Ys - On The Other Side Of The Recollection.vgz'
+echo -n \
+    "Source: TurboGrafx-16 / PC Engine      " \
+    "Title : Ys IV: Other Side of the Recol." \
+    "Author: Falcom Sound Team J.D.K." > asm/songname.txt
+make compress
+make player60
+mv player.xex xex/pce-ys-recollection.xex
+
 #fi
 
 # clear for further tests
