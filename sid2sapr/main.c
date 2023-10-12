@@ -35,6 +35,7 @@
 #include "c64.h"
 #include "md5.h"
 #include "songlengths.h"
+#include "saw.h"
 
 #define C64_CLOCK        985248L
 #define ATARI_CLOCK     1773447L
@@ -303,7 +304,21 @@ static void sid2pokey2(int voice, uint8_t *pokey) {
 
 /* ------------------------------------------------------------------------ */
 
-static void sid2pokey(int voice, uint8_t *pokey) {
+static int find_closes_sawtooth(double f) {
+    double delta = 100000.0;
+    int idx = 0;
+    for (int i=0; i<sawtabsize; i++) {
+        if (fabs(sawtab[i].freq - f) < delta) {
+            delta = fabs(sawtab[i].freq - f);
+            idx = i;
+        }
+    }
+    return idx;
+}
+
+/* ------------------------------------------------------------------------ */
+
+static void sid2pokey(int voice, uint8_t *pokey, bool sawtooth) {
     struct sid_voice     *p = &sid.v[voice];
     struct sid_registers *r = &sid.r[voice];
 
@@ -388,6 +403,19 @@ static void sid2pokey(int voice, uint8_t *pokey) {
         dist = 0x80;
     }
 
+    int POK2 = 0;
+    if (sawtooth) {
+        if (f < 20000.0) {
+            int index = find_closes_sawtooth(f);
+            POK  = sawtab[index].div1;
+            POK2 = sawtab[index].div3;
+        } else {
+            POK = POK2 = 0;
+            v = 0;
+        }
+//        if (p->noise) v=0;
+    }
+
     switch (mute) {
     case MUTE_RINGMOD:
         if (p->ringmod) v = 0;
@@ -410,8 +438,17 @@ static void sid2pokey(int voice, uint8_t *pokey) {
         break;
     }
 
-    pokey[0] = POK;
-    pokey[1] = dist + v;
+    if (sawtooth) {
+        pokey[0] = POK;
+        pokey[1] = 0xa0 + v;
+        if (p->noise)
+            pokey[1] = 0x80 + v;
+        pokey[4] = POK2;
+        pokey[5] = 0;
+    } else {
+        pokey[0] = POK;
+        pokey[1] = dist + v;
+    }
 }
 
 /* ------------------------------------------------------------------------ */
@@ -519,6 +556,16 @@ static void usage(void) {
 "   -w value    let PWM influence the volume by factor [0.0-1.0]\n"
 "   -s          enable stereo pokey mode [default: mono pokey]\n"
 "   -x voice    extend one mono channel to 16-bits [default: none]\n"
+"\n"
+"               [HIGHLY EXPERIMENTAL]\n"
+"   -e type     extend one mono channel to sawtooth\n"
+"               must be used in combination with -x\n"
+"               vibrato and glissando distorts!\n"
+"               use make player-softbass-sawtooth for faster stores\n"
+"               type: 1 - full table\n"
+"                     2 - 12-TET only\n"
+"   -E factor   change non-sawtooth volume [0.0-1.0, default: 1.0]\n"
+"               sometimes use -p to raise overall volume first\n"
 );
 }
 
@@ -537,10 +584,12 @@ int main(int argc, char *argv[]) {
     bool stereo = false;
     int xorder[3] = { 0, 1, 2 };
     bool xflag = false;
+    int sawtooth = 0;
+    double nonsawf = 1.0;
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:e:E:")) != -1) {
         switch (option) {
         case 'a':
             adjust = true;
@@ -625,6 +674,20 @@ int main(int argc, char *argv[]) {
                 break;
             }
             xflag = true;
+            break;
+        case 'e':
+            sawtooth = atoi(optarg);
+            if (sawtooth < 1 || sawtooth > 2) {
+                fprintf(stderr, "invalid sawtooth type\n");
+                return 1;
+            };
+            break;
+        case 'E':
+            nonsawf = strtod(optarg, NULL);
+            if (nonsawf < 0.0 || nonsawf > 1.0) {
+                fprintf(stderr, "invalid non-sawtooth volume factor\n");
+                return 1;
+            }
             break;
         case 'h':
         default:
@@ -716,6 +779,10 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "damp ringmod: %s\n", damp ? "enabled" : "disabled");
     fprintf(stderr, "PWM controls volume by %d%%\n",
                                             (int)round(pulse_volume*100));
+    if (xflag) {
+        fprintf(stderr, "extend 8-bit channel %d to 16-bit\n", xorder[2]);
+    }
+
     fprintf(stderr, "dumping %d frames\n", nframes);
 
     int counter = 0;
@@ -738,14 +805,35 @@ int main(int argc, char *argv[]) {
             sid2pokey2(2, &pokey2[0]);
         } else {
             if (xflag) {
-                pokey[8] = 0x28;
-                sid2pokey(xorder[0], &pokey[0]);
-                sid2pokey(xorder[1], &pokey[2]);
-                sid2pokey2(xorder[2], &pokey[4]);
+                if (!sawtooth) {
+                    pokey[8] = 0x28;    // join 3+4, 3 @ high clock
+                    sid2pokey(xorder[0], &pokey[0], false);
+                    sid2pokey(xorder[1], &pokey[2], false);
+                    sid2pokey2(xorder[2], &pokey[4]);
+                } else {
+                    pokey[8] = 0x64;    // filter 1+3, both @ high clock
+                    sid2pokey(xorder[0], &pokey[2], false);
+                    sid2pokey(xorder[1], &pokey[6], false);
+                    sid2pokey(xorder[2], &pokey[0], true);  // <<-- saw!
+                    // adjust non-sawtooth volume
+                    if (pokey[3] & 0x0f) {
+                       int v = pokey[3]&0x0f;
+                       v = round(v * nonsawf);
+                       pokey[3] &= 0xf0;
+                       pokey[3] |= v;
+                    }
+                    if (pokey[7] & 0x0f) {
+                       int v = pokey[7]&0x0f;
+                       v = round(v * nonsawf);
+                       pokey[7] &= 0xf0;
+                       pokey[7] |= v;
+                    }
+
+                }
             } else {
-                sid2pokey(0, &pokey[0]);
-                sid2pokey(1, &pokey[2]);
-                sid2pokey(2, &pokey[6]);
+                sid2pokey(0, &pokey[0], false);
+                sid2pokey(1, &pokey[2], false);
+                sid2pokey(2, &pokey[6], false);
             }
         }
 

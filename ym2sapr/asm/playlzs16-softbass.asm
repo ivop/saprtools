@@ -402,8 +402,18 @@ IRQ
 ;
 .proc copy_shadow_registers
     mva SAUDCTL AUDCTL
+
+.ifdef SAWTOOTH
+    mva SAUDC1  AUDC1
+    mva SAUDC3  AUDC3
+    lda SAUDF1
+    ldy SAUDF3
+    sta AUDF1
+    sty AUDF3
+.else
     mva SAUDC3  AUDC3
     mva SAUDF3  AUDF3
+.endif
 
 handle_channel .macro num
     lda SAUDC:num
@@ -440,7 +450,10 @@ done
     mva SAUDF:num AUDF:num
     .endm
 
+.ifdef SAWTOOTH
+.else
     handle_channel 1
+.endif
     handle_channel 2
     handle_channel 4
 
