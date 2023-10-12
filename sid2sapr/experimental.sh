@@ -1,9 +1,5 @@
 #! /bin/sh
 
-./sid2sapr -p 12 -x 0 -e 1 -E 1.0 -b softbass sid/Crazy_Comets.sid
-make compress-softbass player-softbass-sawtooth
-mv player.xex experimental/exp-comets.xex
-
 ./sid2sapr -p 12 -x 1 -e 1 -E 1.0 -b softbass sid/Syncopated.sid
 make compress-softbass player-softbass-sawtooth
 mv player.xex experimental/exp-syncopated.xex
