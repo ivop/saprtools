@@ -562,8 +562,8 @@ static void usage(void) {
 "               must be used in combination with -x\n"
 "               vibrato and glissando distorts!\n"
 "               use make player-softbass-sawtooth for faster stores\n"
-"               type: 1 - full table\n"
-"                     2 - 12-TET only\n"
+"               type: 1 - fully merged table\n"
+"                     2 - single table (distance of 1 only)\n"
 "   -E factor   change non-sawtooth volume [0.0-1.0, default: 1.0]\n"
 "               sometimes use -p to raise overall volume first\n"
 );
@@ -681,6 +681,10 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "invalid sawtooth type\n");
                 return 1;
             };
+            if (sawtooth == 2) {
+                sawtab = sawtab_single;
+                sawtabsize = sawtab_single_size;
+            }
             break;
         case 'E':
             nonsawf = strtod(optarg, NULL);
