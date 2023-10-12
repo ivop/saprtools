@@ -780,7 +780,12 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "PWM controls volume by %d%%\n",
                                             (int)round(pulse_volume*100));
     if (xflag) {
-        fprintf(stderr, "extend 8-bit channel %d to 16-bit\n", xorder[2]);
+        fprintf(stderr, "experimental: ");
+        if (sawtooth) {
+            fprintf(stderr, "extend 8-bit channel %d to double channel sawtooth\n", xorder[2]);
+        } else {
+            fprintf(stderr, "extend 8-bit channel %d to 16-bit\n", xorder[2]);
+        }
     }
 
     fprintf(stderr, "dumping %d frames\n", nframes);

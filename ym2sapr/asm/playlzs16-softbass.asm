@@ -74,7 +74,11 @@ SKCTL  = $d20f
     mva #0 82       ; left margin
     prints 0, " "
 .ifdef SID2SAPR
-    prints 0, "SID2SAPR v1.10 (MONO) [SOFTBASS]"
+    .ifdef SAWTOOTH
+        prints 0, "SID2SAPR v1.10 (MONO) [SOFTBASS] [SAW]"
+    .else
+        prints 0, "SID2SAPR v1.10 (MONO) [SOFTBASS]"
+    .endif
 .else
     prints 0, "YM2SAPR v1.9 (MONO) [SOFTBASS]"
 .endif
