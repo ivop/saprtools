@@ -405,6 +405,8 @@ static void sid2pokey(int voice, uint8_t *pokey, bool sawtooth) {
 
     int POK2 = 0;
     if (sawtooth) {
+        if (v)
+            v = voltab[(int)p->envval];      // ignore -w
         if (f < 20000.0) {
             int index = find_closes_sawtooth(f);
             POK  = sawtab[index].div1;
