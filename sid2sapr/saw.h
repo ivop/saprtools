@@ -3,10 +3,11 @@
 #pragma once
 
 struct tabitem {
-    int freq;
+    double freq;
     int div1;
     int div3;
 } sawtab_full[] = {
+    {    56.00,    0,    0 },           // <-- added manually
     {    56.93, 0xac, 0xad },
     {    57.58, 0xab, 0xac },
     {    58.24, 0xaa, 0xab },
@@ -610,9 +611,11 @@ struct tabitem {
     { 19704.97, 0x05, 0x06 },
     { 19704.97, 0x0b, 0x0e },
     { 19704.97, 0x1a, 0x29 },
+    { 20000.00,    0,    0 },           // <-- added manually
 };
 
 struct tabitem sawtab_single[] = {
+    {    56.00,    0,    0 },           // <-- added manually
     {    56.93, 0xac, 0xad },
     {    57.58, 0xab, 0xac },
     {    58.24, 0xaa, 0xab },
@@ -781,13 +784,157 @@ struct tabitem sawtab_single[] = {
     { 13435.20, 0x07, 0x08 },
     { 16122.25, 0x06, 0x07 },
     { 19704.97, 0x05, 0x06 },
+    { 20000.00,    0,    0 },           // <-- added manually
 };
 int sawtab_single_size = sizeof(sawtab_single)/sizeof(struct tabitem);
+
+struct tabitem sawtab_full_12tet[] = {
+    {    56.00,    0,    0 },           // <-- added manually
+    {    58.24, 0xaa, 0xab },
+    {    61.73, 0xa5, 0xa6 },
+    {    65.54, 0xa0, 0xa1 },
+    {    69.71, 0x9b, 0x9c },
+    {    73.34, 0x97, 0x98 },
+    {    77.27, 0x93, 0x94 },
+    {    82.63, 0x8e, 0x8f },
+    {    87.34, 0x8a, 0x8b },
+    {    92.45, 0x86, 0x87 },
+    {    98.03, 0x82, 0x83 },
+    {   104.14, 0x7e, 0x7f },
+    {   110.83, 0x7a, 0x7b },
+    {   116.28, 0x77, 0x78 },
+    {   124.19, 0x73, 0x74 },
+    {   130.67, 0x70, 0x71 },
+    {   138.56, 0x9b, 0x9d },
+    {   147.64, 0x96, 0x98 },
+    {   155.57, 0x92, 0x94 },
+    {   164.15, 0x8e, 0x90 },
+    {   175.59, 0x60, 0x61 },
+    {   185.20, 0xa4, 0xa7 },
+    {   194.63, 0x82, 0x84 },
+    {   207.28, 0x58, 0x59 },
+    {   219.92, 0x7a, 0x7c },
+    {   234.33, 0xa8, 0xac },
+    {   246.33, 0x73, 0x75 },
+    {   262.03, 0x89, 0x8c },
+    {   277.80, 0x6c, 0x6e },
+    {   293.16, 0x69, 0x6b },
+    {   311.13, 0x47, 0x48 },
+    {   328.29, 0x45, 0x46 },
+    {   347.73, 0x60, 0x62 },
+    {   369.35, 0x5d, 0x5f },
+    {   390.97, 0x9e, 0xa4 },
+    {   413.39, 0x3d, 0x3e },
+    {   439.84, 0x3b, 0x3c },
+    {   468.67, 0x52, 0x54 },
+    {   492.62, 0x8c, 0x92 },
+    {   526.87, 0x5f, 0x62 },
+    {   554.29, 0x4b, 0x4d },
+    {   586.46, 0x68, 0x6c },
+    {   619.65, 0x31, 0x32 },
+    {   665.71, 0x44, 0x46 },
+    {   700.97, 0x6a, 0x6f },
+    {   740.79, 0x7a, 0x81 },
+    {   781.94, 0x4d, 0x50 },
+    {   827.94, 0x73, 0x7a },
+    {   876.21, 0x54, 0x58 },
+    {   931.43, 0x6c, 0x73 },
+    {   985.52, 0x37, 0x39 },
+    {  1054.68, 0x35, 0x37 },
+    {  1119.60, 0x80, 0x8c },
+    {  1172.91, 0x32, 0x34 },
+    {  1240.17, 0x7e, 0x8b },
+    {  1313.66, 0x83, 0x92 },
+    {  1392.03, 0x57, 0x5e },
+    {  1477.87, 0x2c, 0x2e },
+    {  1555.66, 0x35, 0x38 },
+    {  1677.02, 0x29, 0x2b },
+    {  1759.37, 0x6c, 0x7a },
+    {  1847.34, 0x38, 0x3c },
+    {  1970.50, 0x56, 0x60 },
+    {  2111.25, 0x24, 0x26 },
+    {  2218.20, 0x23, 0x25 },
+    {  2345.83, 0x17, 0x18 },
+    {  2463.12, 0x29, 0x2c },
+    {  2639.06, 0x50, 0x5c },
+    {  2815.00, 0x26, 0x29 },
+    {  2955.74, 0x14, 0x15 },
+    {  3166.87, 0x42, 0x4c },
+    {  3358.80, 0x28, 0x2c },
+    {  3518.74, 0x34, 0x3b },
+    {  3694.68, 0x1a, 0x1c },
+    {  3945.38, 0x19, 0x1b },
+    {  4222.49, 0x10, 0x11 },
+    {  4478.40, 0x1d, 0x20 },
+    {  4691.66, 0x32, 0x3b },
+    {  4926.24, 0x20, 0x24 },
+    {  5278.12, 0x26, 0x2c },
+    {  5684.12, 0x14, 0x16 },
+    {  5911.49, 0x2e, 0x38 },
+    {  6333.74, 0x1f, 0x24 },
+    {  6717.60, 0x12, 0x14 },
+    {  7037.49, 0x20, 0x26 },
+    {  7389.36, 0x0b, 0x0c },
+    {  7917.17, 0x18, 0x1c },
+    {  8444.99, 0x0a, 0x0b },
+    {  8867.24, 0x24, 0x2e },
+    {  9744.21, 0x09, 0x0a },
+    {  9852.48, 0x0e, 0x10 },
+    { 10556.23, 0x11, 0x14 },
+    { 11084.04, 0x1c, 0x24 },
+    { 11822.98, 0x15, 0x1a },
+    { 12667.48, 0x18, 0x1f },
+    { 13435.20, 0x07, 0x08 },
+    { 14074.98, 0x0e, 0x11 },
+    { 14778.73, 0x10, 0x14 },
+    { 15834.35, 0x0a, 0x0c },
+    { 17000.00,    0,    0 },           // <-- added manually
+};
+int sawtab_full_12tet_size = sizeof(sawtab_full_12tet)/sizeof(struct tabitem);
 
 struct tabitem *sawtab = sawtab_full;
 int sawtabsize = sizeof(sawtab_full)/sizeof(struct tabitem);
 
 #else
+
+    #ifdef GEN12TET
+
+        // gcc -DGENERATE -DGEN12TET -o saw saw.c
+        // ./saw | sort -n | sed 's/^\(.*\)$/    {\1 },/' | uniq > foo.bar
+
+#undef GENERATE
+#include "saw.h"
+#include <stdio.h>
+#include <math.h>
+
+static int find_closest_sawtooth(double f) {
+    double delta = 100000.0;
+    int idx = 0;
+    for (int i=0; i<sawtabsize; i++) {
+        if (fabs(sawtab[i].freq - f) < delta) {
+            delta = fabs(sawtab[i].freq - f);
+            idx = i;
+        }
+    }
+    return idx;
+}
+
+int main(int argc, char **argv) {
+    double cents100 = pow(2.0, 1.0/12.0);
+    double A4 = 440.0;                          // offset 0, C1 = -45
+
+    for (int x = 0; x < 108; x++) {            // C1-B9
+        int offset = x - 45;
+
+        double f = A4 * pow(cents100, offset);
+
+        int i = find_closest_sawtooth(f);
+
+        printf("%9.2lf, 0x%02x, 0x%02x\n", sawtab[i].freq, sawtab[i].div1, sawtab[i].div3);
+    }
+}
+
+    #else
 
 // gcc -DGENERATE -o saw saw.c
 // ./saw | sort -n | sed 's/^\(.*\)$/    {\1 },/' | uniq > foo.bar
@@ -882,4 +1029,6 @@ int main(int argc, char **argv) {
         }
     }
 }
+    #endif
+
 #endif
