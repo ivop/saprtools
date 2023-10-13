@@ -304,7 +304,7 @@ static void sid2pokey2(int voice, uint8_t *pokey) {
 
 /* ------------------------------------------------------------------------ */
 
-static int find_closes_sawtooth(double f) {
+static int find_closest_sawtooth(double f) {
     double delta = 100000.0;
     int idx = 0;
     for (int i=0; i<sawtabsize; i++) {
@@ -408,7 +408,7 @@ static void sid2pokey(int voice, uint8_t *pokey, bool sawtooth) {
         if (v)
             v = voltab[(int)p->envval];      // ignore -w
         if (f < 20000.0) {
-            int index = find_closes_sawtooth(f);
+            int index = find_closest_sawtooth(f);
             POK  = sawtab[index].div1;
             POK2 = sawtab[index].div3;
         } else {
