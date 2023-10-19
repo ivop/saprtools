@@ -1,0 +1,183 @@
+HOW TO BUILD A LINUX DEB PACKAGE FOR GENERAL RELEASE
+====================================================
+
+INSTALL PACKAGE DEVELOPMENT TOOLS
+=================================
+Ensure that you have the necessary tools installed:
+
+    sudo apt-get install build-essential
+    sudo apt-get install fakeroot
+    sudo apt-get install devscripts
+
+OBTAIN SOURCE CODE
+==================
+Download the latest release of the source code from the Github Releases Area
+(https://github.com/atari800/atari800/releases).  Look for a file with a name
+like 'atari800-4.2.0-src.tgz', where 4.2.0 denotes the version.
+
+Unzip the source code.  The contents will go into a directory called
+'atari800-4.2.0' or similar, which will be referred to in these notes as the
+'atari800' directory.
+
+Do not obtain the source code by cloning the current atari800 repository
+because this may have been modified since the last release, and may contain
+partially developed and untested code.
+
+COMPILE WITHOUT ERROR
+=====================
+Unzip the code and compile it on the target machine.  Follow the instructions
+in the following file:
+
+    DOC/BUILD.linux
+
+Confirm that the compilation completes without error.  Warnings can usually be
+ignored.
+
+UPDATE DEBIAN CHANGELOG
+=======================
+Update file 'atari800/debian/changelog'.  You can simply edit this manually,
+but the system is fussy about the exact format, location of spaces etc., so it
+is handy to use the debchange command as follows.
+
+Open a terminal on the atari800 directory.
+
+    debchange
+
+Select an editor from the presented menu.  Debchange guesses a new version
+number and other details and enters some new lines into the log for you.  The
+top of the file should look something like this:
+
+    atari800 (4.2.0-1ubuntu1) UNRELEASED; urgency=medium
+
+      *
+
+     -- Cliff <cliff@Inspiron>  Sat, 04 Jul 2020 10:06:18 +0100
+
+Edit these lines as appropriate.  For example:
+
+    atari800 (4.2.0-1) unstable; urgency=low
+
+      * New upstream version 4.2.0
+
+    -- Antonin Kral <A.Kral@sh.cvut.cz>  Sat, 04 Jul 2020 10:06:18 +0100
+
+The version number '4.2.0-1' will be used as part of the name of the package
+you are going to build.
+
+Label the release 'unstable'.  This does not mean it is actually unstable, just
+that no tests have been performed at this stage to prove otherwise.
+
+You may add additional comments if you wish, on lines beginning with two spaces
+and a '*'.
+
+Set urgency to 'low', or 'medium' for major updates.
+
+You should replace your default user information with the name and email
+address of the current package maintainer, as identified in
+debian/README.debian.
+
+ADJUST CONFIGURATION OPTIONS IN THE DEBIAN RULES FILE
+=====================================================
+The debian rules file 'atari800/debian/rules' contains the following command
+(split over two lines):
+
+	./configure \
+		 --with-video=sdl --with-sound=sdl
+
+You don't need to change this if your are building the stock SDL version.
+Otherwise edit the second line to choose your options
+
+BUILD THE PACKAGE
+=================
+
+    dpkg-buildpackage -B -uc
+
+Even though you started with a version of the source code that compiles without
+error, it is possible that warnings and errors may be reported at this stage.
+Warnings can usually be ignored, but you will have to investigate and correct
+any errors.
+
+The above command creates three files and places them in the parent of the
+atari800 directory.  They will have names like these:
+
+    atari800_4.2.0-1_amd64.buildinfo - Checksums and a list of dependencies
+                                       in the .deb file.
+    atari800_4.2.0-1_amd64.changes   - Changelog update and checksums for
+                                       the .deb and .buildinfo files.
+    atari800_4.2.0-1_amd64.deb       - The .deb package file for release.
+
+'amd64' indicates the architecture of the machine that the build was done on.
+
+INSTALL
+=======
+<Double Left Click> on the .deb file to install it.
+
+or
+
+<Right Click> and select the appropriate menu item, <Package Install> or
+<Open with GDebi Package Installer> etc..
+
+or use the command:
+
+    sudo dpkg -i atari800_4.1.0-1_amd64.deb
+
+TEST
+====
+Check that the atari800 command runs the emulator successfully:
+
+    atari800
+
+The command should also work with options, for example:
+
+    atari800 -v
+    atari800 -help
+    man atari800
+
+UNINSTALL
+=========
+You can unistall the package if desired with:
+
+    sudo dpkg --remove atari800
+
+This removes the command and documentation, but leaves the configuration file
+.atari.cfg in place.
+
+ISSUE A PULL REQUEST TO UPDATE THE DEBIAN CHANGELOG
+===================================================
+Enter the new lines you created in atari800/debian/changelog into the master
+of this file on Git, to keep the record intact.
+
+DISTRIBUTION VIA THE GITHUB RELEASES AREA
+=========================================
+Send the three files created (.buildinfo, .changes and .deb) to the owner of
+the Git repository (https://github.com/atari800/atari800).
+
+The owner will post the .deb file to the releases area
+(https://github.com/atari800/atari800/releases) for download by users.
+
+This is a shortcut method.  It is quicker than distribution via the Debian
+Project.
+
+When a new release is announced on the Atari800 mailing list, anyone in the
+community can follow the procedure described in this document and make it
+available to users without delay.
+
+DISTRIBUTION VIA THE DEBIAN PROJECT
+===================================
+Formal distribution via the Debian Project can only be performed by the
+package maintainer, a listed Debian member.  The procedure is rigourous in
+order to ensure the quality of the software.  Depending on how much free
+time the maintainer has it may take many months to complete.
+
+Packages distributed in this manner become available in official repositories.
+Users may download and install them using the apt-get command or a software
+manager.
+
+
+
+
+
+
+
+
+

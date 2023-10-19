@@ -1,0 +1,16 @@
+SYSTEM SPECIFICATION
+====================
+Atari800 v5 and later runs on the following systems:
+
+    Pi Zero 2 W, 2, 3, 4 and 400, running Pi OS Full Bullseye or later.
+
+At the time of writing (September 2023) it does not run properly on Pi OS Lite.
+It is not known whether this is a temporary situaton that will be corrected by
+further development, or if new software such as the KMS video driver that atari800
+depends upon to run at full speed have been deliberately omitted from the Lite version.
+
+The Pi 1 and and the single core Zero are not supported.  They can run atari800 in
+tiny windows, but nothing approaching full screen.  Larger images overload their
+processors, resulting in choppy sound and video.
+
+
