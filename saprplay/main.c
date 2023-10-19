@@ -4,10 +4,10 @@
 #include "libatari800.h"
 
 static char *argv_pal[]  = { "-config", "atari800-pal.cfg",  NULL };
-static char *argv_ntsc[] = { "-config", "atari800-ntsc.cfg", NULL };
+//static char *argv_ntsc[] = { "-config", "atari800-ntsc.cfg", NULL };
 
 static char *sapr, *endsapr;
-static char *bufpos;
+static unsigned char *bufpos;
 static int bufleft;
 static bool play = true;
 
