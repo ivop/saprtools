@@ -13,7 +13,7 @@ saprplay: main.c libatari800/src/libatari800.a
 	$(CC) -o saprplay main.c $(CFLAGS) $(LIBS)
 
 libatari800/src/libatari800.a:
-	libatari800/build-libatari800.sh
+	./build-libatari800.sh
 
 clean:
 	rm -f *~ saprplay
