@@ -60,6 +60,13 @@ Single Pokey with distortion C bass. These are hit or miss. No vibrato, so some 
 https://github.com/ivop/saprtools/tree/main/ym2sapr/xex-mono  
 https://github.com/ivop/saprtools/tree/main/sid2sapr/xex-mono  
 
+### Build Instructions
+
+Enter the directory of the converter you want to build, and type make.
+Needed are a C and C++ compiler like CLang or GCC, and to assemble the Atari 8-bit players you need Mad Assembler[^3] (mads) available in your path.
+All tools were tested on a recent Linux distribution, but should also work with WSL2 on Windows.
+Native Windows with cygwin or MSYS2 has not been tested yet, but some known portability issues were taken into consideration during development, like using "rb" with fopen() to open in binary mode.
+
 ### Credits
 
 ym2sapr, vgm2ym, sid2sapr, sndh2ym, and vgm2sapr are Copyright © 2023 by Ivo van Poorten. Licensed under the terms of the BSD-2 license. See LICENSE for details.
@@ -72,3 +79,4 @@ libpsgplay is Copyright © 2019 by Fredrik Noring, GPL-2 license. M68k emulator 
 
 [^1]:https://github.com/digital-sound-antiques/kss2vgm  
 [^2]:https://github.com/mmitch/gbsplay
+[^3]:https://github.com/tebe6502/Mad-Assembler
