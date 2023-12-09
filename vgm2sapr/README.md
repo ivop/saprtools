@@ -1,6 +1,6 @@
 # VGM2SAPR
 
-Convert SN76489, Game Boy DMG, and HuC6280 .vgm files to Atari XL/XE stereo SAP-R
+Convert SN76489, SEGA PSG, NCR8496, Game Boy DMG, and HuC6280 .vgm files to Atari XL/XE stereo SAP-R
 
 ### Instructions
 
