@@ -1,5 +1,12 @@
 # saprtools
+
 Tools for creating or manipulating Atari 8-bit SAP-R files.
+
+1. [Creating SAP-R Files](#creating-sap-r-files)
+2. [Notes](#notes)
+3. [Sample Conversions](#sample-conversions)
+4. [Build Instructions](#build-instructions)
+5. [Credits](#credits)
 
 ### Creating SAP-R Files
 
