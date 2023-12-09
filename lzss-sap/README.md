@@ -1,3 +1,7 @@
+saprtools version. Leaves volume only AUDC values alone, which are used to signal IRQ based SOFTBASS to the player(s).
+
+Original README.md:
+
 Atari SAP Type R File Compressor and Player
 ===========================================
 
