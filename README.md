@@ -34,6 +34,32 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 * Some conversions are just there for completeness but sound horrible. For example, some Hippel conversions with dist C bass sound bad because Hippel used a lot of vibrato in his bass lines which is not possible with dist C's fixed bass frequencies. The softbass and stereo versions sound much better.
 * When doing your own conversions keep in mind that the converters and the Pokey players have limitations. The main goal was low CPU overhead in the Pokey players, no high CPU usage for emulation loops. So basically everything that would need lots of CPU time (if possible at all) is not converted. That includes ultra high speed ADSR envelopes to simulate sawtooths, anything done with timer interrupts outside of the sound chip, SID voice on the Atari ST, digi drums, and more. Some can, with some options tweaking, be converted to plain dist A notes (e.g. sawtooth bass on YM/AY chip), others will just not work.
 
+### Sample Conversions
+
+##### Stereo
+
+Two Pokeys. Either four 16-bit channels, or eight 8-bit channels (six used by PC Engine conversions).
+
+https://github.com/ivop/saprtools/tree/main/ym2sapr/xex  
+https://github.com/ivop/saprtools/tree/main/sid2sapr/xex  
+https://github.com/ivop/saprtools/tree/main/vgm2sapr/xex  
+
+##### Mono with SOFTBASS
+
+Single Pokey with up to three channels and low-CPU IRQ-based SOFTBASS for two extra octaves of distortion A on the low end.
+On emulation, you can turn on Altirra's sound monitor and see when channels switch to V (volume only) for the low basses.
+Some SID conversions use two 8-bit channels and one 16-bit channels, but not all are adjusted yet.
+
+https://github.com/ivop/saprtools/tree/main/ym2sapr/xex-softbass  
+https://github.com/ivop/saprtools/tree/main/sid2sapr/xex-softbass  
+
+##### Mono with distortion C bass
+
+Single Pokey with distortion C bass. These are hit or miss. No vibrato, so some sound bad. But it's the Pokey bass sound ;)
+
+https://github.com/ivop/saprtools/tree/main/ym2sapr/xex-mono  
+https://github.com/ivop/saprtools/tree/main/sid2sapr/xex-mono  
+
 ### Credits
 
 ym2sapr, vgm2ym, sid2sapr, sndh2ym, and vgm2sapr are Copyright © 2023 by Ivo van Poorten. Licensed under the terms of the BSD-2 license. See LICENSE for details.
