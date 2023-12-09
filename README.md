@@ -73,6 +73,7 @@ Enter the directory of the converter you want to build, and type make.
 Needed are a C and C++ compiler like CLang or GCC, and to assemble the Atari 8-bit players you need Mad Assembler[^3] (mads) available in your path.
 All tools were tested on a recent Linux distribution, but should also work with WSL2 on Windows.
 Native Windows with cygwin or MSYS2 has not been tested yet, but some known portability issues were taken into consideration during development, like using "rb" with fopen() to open in binary mode.
+Each directory contains its own README.md with sometimes more detailed instructions, a short usage example, and the help output listing all of its options.
 
 ### Credits
 
