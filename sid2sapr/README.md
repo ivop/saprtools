@@ -1,6 +1,6 @@
 # SID2SAPR
 
-Convert Commodore C64 .ym files to Atari XL/XE SAP-R
+Convert Commodore C64 .sid files to Atari XL/XE SAP-R
 
 ### Instructions
 
