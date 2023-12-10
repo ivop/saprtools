@@ -2,6 +2,8 @@
 
 Tools for creating or manipulating Atari 8-bit SAP-R files.
 
+### Contents
+
 1. [Creating SAP-R Files](#creating-sap-r-files)
 2. [Notes](#notes)
 3. [Sample Conversions](#sample-conversions)
