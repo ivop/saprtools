@@ -16,28 +16,28 @@ compress-mono: $(LZSS)
 compress-softbass: compress-mono
 
 player:
-	mads -d:SID2SAPR -o:player.xex asm/playlzs16-stereo.asm
+	mads -d:SID2SAPR $(PLAYER_LOWMEM) -o:player.xex asm/playlzs16-stereo.asm
 
 player60:
-	mads -d:SID2SAPR -d:HZ60 -o:player.xex asm/playlzs16-stereo.asm
+	mads -d:SID2SAPR $(PLAYER_LOWMEM) -d:HZ60 -o:player.xex asm/playlzs16-stereo.asm
 
 player-mono:
-	mads -d:SID2SAPR -o:player.xex asm/playlzs16-mono.asm
+	mads -d:SID2SAPR $(PLAYER_LOWMEM) -o:player.xex asm/playlzs16-mono.asm
 
 player60-mono:
-	mads -d:SID2SAPR -d:HZ60 -o:player.xex asm/playlzs16-mono.asm
+	mads -d:SID2SAPR -d:HZ60 $(PLAYER_LOWMEM) -o:player.xex asm/playlzs16-mono.asm
 
 player-softbass:
-	mads -d:SID2SAPR -o:player.xex asm/playlzs16-softbass.asm
+	mads -d:SID2SAPR $(PLAYER_LOWMEM) -o:player.xex asm/playlzs16-softbass.asm
 
 player60-softbass:
-	mads -d:SID2SAPR -d:HZ60 -o:player.xex asm/playlzs16-softbass.asm
+	mads -d:SID2SAPR -d:HZ60 $(PLAYER_LOWMEM) -o:player.xex asm/playlzs16-softbass.asm
 
 player-softbass-sawtooth:
-	mads -d:SAWTOOTH -d:SID2SAPR -o:player.xex asm/playlzs16-softbass.asm
+	mads -d:SAWTOOTH -d:SID2SAPR $(PLAYER_LOWMEM) -o:player.xex asm/playlzs16-softbass.asm
 
 player60-softbass-sawtooth:
-	mads -d:SAWTOOTH -d:SID2SAPR -d:HZ60 -o:player.xex asm/playlzs16-softbass.asm
+	mads -d:SAWTOOTH -d:SID2SAPR $(PLAYER_LOWMEM) -d:HZ60 -o:player.xex asm/playlzs16-softbass.asm
 
 $(LZSS):
 	+make -C ../lzss-sap

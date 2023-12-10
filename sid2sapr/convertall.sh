@@ -133,7 +133,7 @@ echo -n \
     "Title : International Karate           " \
     "Author: Rob Hubbard" > asm/songname.txt
 make compress$player
-make player$player
+make player$player PLAYER_LOWMEM=-d:LOWMEM=0x1800
 mv player.xex xex$player/hubbard-ik.xex
 
 ./sid2sapr $stereo -b $basstype sid/'Crazy_Comets.sid'
