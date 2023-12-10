@@ -55,7 +55,7 @@ https://github.com/ivop/saprtools/tree/main/vgm2sapr/xex
 
 ##### Mono with SOFTBASS
 
-Single Pokey with up to three channels with low-CPU IRQ-based SOFTBASS for two extra octaves of distortion A on the low end.
+Single Pokey. Four 8-bit channels, with up to three channels with low-CPU IRQ-based SOFTBASS for two extra octaves of distortion A on the low end.
 On emulation, you can turn on Altirra's sound monitor and see when channels switch to V (volume only) for the low basses.
 Some SID conversions use two 8-bit channels and one 16-bit channels, but not all are adjusted to use that yet.
 
