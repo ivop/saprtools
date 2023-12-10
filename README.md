@@ -53,16 +53,17 @@ https://github.com/ivop/saprtools/tree/main/vgm2sapr/xex
 
 ##### Mono with SOFTBASS
 
-Single Pokey with up to three channels and low-CPU IRQ-based SOFTBASS for two extra octaves of distortion A on the low end.
+Single Pokey with up to three channels with low-CPU IRQ-based SOFTBASS for two extra octaves of distortion A on the low end.
 On emulation, you can turn on Altirra's sound monitor and see when channels switch to V (volume only) for the low basses.
-Some SID conversions use two 8-bit channels and one 16-bit channels, but not all are adjusted yet.
+Some SID conversions use two 8-bit channels and one 16-bit channels, but not all are adjusted to use that yet.
 
 https://github.com/ivop/saprtools/tree/main/ym2sapr/xex-softbass  
 https://github.com/ivop/saprtools/tree/main/sid2sapr/xex-softbass  
 
 ##### Mono with distortion C bass
 
-Single Pokey with distortion C bass. These are hit or miss. No vibrato, so some sound bad. But it's the Pokey bass sound ;)
+Single Pokey with distortion C bass. These are hit or miss. No bass vibrato, so some sound bad. But it's the Pokey bass sound ;)
+All were done with the "buzzy" type, which only becomes "gritty" when it goes lower than the range "buzzy" bass provides.
 
 https://github.com/ivop/saprtools/tree/main/ym2sapr/xex-mono  
 https://github.com/ivop/saprtools/tree/main/sid2sapr/xex-mono  
