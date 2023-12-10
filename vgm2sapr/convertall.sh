@@ -4,7 +4,7 @@ set -e
 
 make
 
-if false; then
+#if false; then
 
 # BBC MICRO
 
@@ -489,7 +489,7 @@ make compress
 make player60
 mv player.xex xex/pce-terra-cresta2-ending.xex
 
-fi
+#fi
 
 ./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'07 Great Merchant.vgz'
 echo -n \

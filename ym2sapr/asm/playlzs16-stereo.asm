@@ -24,7 +24,9 @@
 ; full SAP file this is 2304 bytes.
 ;
 
-LOWMEM = $1000
+.ifndef LOWMEM
+LOWMEM = $2000
+.endif
 
     icl 'cio.s'
 
