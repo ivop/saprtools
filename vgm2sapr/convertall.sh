@@ -453,7 +453,7 @@ make compress
 make player60
 mv player.xex xex/pce-xanadu2-water-course.xex
 
-./vgm2sapr -r 60 pcengine/'Ys IV: The Dawn Of Ys - On The Other Side Of The Recollection.vgz'
+./vgm2sapr -r 60 pcengine/'Ys IV The Dawn Of Ys - On The Other Side Of The Recollection.vgz'
 echo -n \
     "Source: TurboGrafx-16 / PC Engine      " \
     "Title : Ys IV: Other Side of the Recol." \
