@@ -20,7 +20,7 @@ fi
 
 # -b basstype and -a are ignored in stereo mode
 
-if false; then
+#if false; then
 
 # JEROEN TEL
 
@@ -330,8 +330,6 @@ make compress$player
 make player$player
 mv player.xex xex$player/deenen-zamzara.xex
 
-fi
-
 # NTSC VBI 60HZ TEST
 
 ./sid2sapr $stereo -m all -b $basstype sid/'Snowflake.sid'
@@ -341,6 +339,8 @@ echo -n \
     "Author: Anthony Butch Davis (Deathlok)" > asm/songname.txt
 make compress$player player60$player
 mv player.xex xex$player/deathlok-snowflake.xex
+
+#fi
 
 done
 
