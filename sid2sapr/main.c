@@ -46,7 +46,7 @@
 
 static int c64_clock = C64_PAL_CLOCK;
 static int nsamples = 44100 / 50;
-static float fps = 50;
+static float rate = 50;
 
 static uint16_t initAddress, playAddress, songs, startSong;
 static uint32_t speed;
@@ -747,8 +747,8 @@ int main(int argc, char *argv[]) {
 
     if (ntsc) {
         c64_clock = C64_NTSC_CLOCK;
-        fps = 60;
-        nsamples = 44100 / fps;
+        rate = 60;
+        nsamples = 44100 / rate;
     }
 
     fprintf(stderr, "tuning: %s\n", ntsc ? "NTSC" : "PAL");
@@ -757,7 +757,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "warning: CIA timer not supported yet\n");
     }
 
-    fprintf(stderr, "song speed: %.2f Hz\n", fps);
+    fprintf(stderr, "song speed: %.2f Hz\n", rate);
 
     if (!nframes_override) {
         char *md5 = calculate_md5(argv[optind]);
@@ -765,7 +765,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "md5: %s\n", md5);
 
         float f = find_songlength(md5, subtune);
-        int n = f * fps;
+        int n = f * rate;
         if (n) nframes = n;
     }
 
