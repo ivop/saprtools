@@ -191,13 +191,13 @@ static void sid_write(int reg, unsigned char val) {
 
 /* ------------------------------------------------------------------------- */
 
-static uint8_t memory_read(uint16_t addr) {
+uint8_t memory_read(uint16_t addr) {
     if (addr == 0xdd0d)
         memory[addr] = 0;
     return memory[addr];
 }
 
-static void memory_write(uint16_t addr, uint8_t value) {
+void memory_write(uint16_t addr, uint8_t value) {
     memory[addr] = value;
     if ((addr & 0xfc00) == 0xd400) {
         sid_write(addr & 0x1f, value);

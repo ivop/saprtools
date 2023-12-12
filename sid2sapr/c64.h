@@ -46,15 +46,18 @@ struct sid {
 
 extern struct sid sid;
 
-extern void c64_init(void);
-extern int  c64_cpu_jsr(uint16_t npc, uint8_t na);
-extern void c64_sid_init(uint32_t mixfrq);
-extern void c64_handle_adsr (uint32_t len);
+void c64_init(void);
+int  c64_cpu_jsr(uint16_t npc, uint8_t na);
+void c64_sid_init(uint32_t mixfrq);
+void c64_handle_adsr (uint32_t len);
 
-extern uint16_t c64_load_sid(char *filename,
-                    uint16_t *initAddress, uint16_t *playAddress,
-                    uint16_t *songs, uint16_t *startSong,
-                    uint32_t *speed, char *name, char *author,
-                    char *copyright, uint8_t *ntsc);
+uint16_t c64_load_sid(char *filename,
+             uint16_t *initAddress, uint16_t *playAddress,
+             uint16_t *songs, uint16_t *startSong,
+             uint32_t *speed, char *name, char *author,
+             char *copyright, uint8_t *ntsc);
+
+uint8_t memory_read(uint16_t addr);
+void memory_write(uint16_t addr, uint8_t value);
 
 #endif

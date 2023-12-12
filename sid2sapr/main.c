@@ -748,16 +748,40 @@ int main(int argc, char *argv[]) {
     if (ntsc) {
         c64_clock = C64_NTSC_CLOCK;
         rate = 60;
-        nsamples = 44100 / rate;
     }
 
     fprintf(stderr, "tuning: %s\n", ntsc ? "NTSC" : "PAL");
 
-    if (speed) {
-        fprintf(stderr, "warning: CIA timer not supported yet\n");
+    bool CIA = speed & (1 << (subtune-1));
+
+    if (CIA) {
+        uint16_t cia_timer = memory_read(0xdc04) | (memory_read(0xdc05) << 8);
+        if (!cia_timer) {
+            fprintf(stderr, "CIA timer not initialized, default to %.2f Hz\n", rate);
+        } else {
+            int scanlines = 312, cycles = 63, fps = 50;
+            if (ntsc) {
+                scanlines = 263;
+                cycles = 65;
+                fps = 60;
+            }
+
+            fprintf(stderr, "CIA timer set by init: %04x (%d)\n", cia_timer, cia_timer);
+
+            rate = (float) scanlines * cycles * fps / (cia_timer + 1);
+
+            fprintf(stderr, "often used faulty calculation ");
+            fprintf(stderr, "(%d*%d*%d/(%d+1)) = %.2f\n", scanlines, cycles, fps, cia_timer, rate);
+
+            rate = (float) c64_clock / (cia_timer+1);
+            fprintf(stderr, "proper calculation (%d/(%d+1)) = %.2f\n",
+                    c64_clock, cia_timer, rate);
+        }
     }
 
-    fprintf(stderr, "song speed: %.2f Hz\n", rate);
+    nsamples = 44100 / rate;
+
+    fprintf(stderr, "song speed: %s %.2f Hz\n", CIA ? "CIA" : "VBI", rate);
 
     if (!nframes_override) {
         char *md5 = calculate_md5(argv[optind]);
