@@ -37,16 +37,21 @@
 #include "songlengths.h"
 #include "saw.h"
 
-#define C64_CLOCK        985248L
+#define C64_PAL_CLOCK        985248L
+#define C64_NTSC_CLOCK      1022727L
+
 #define ATARI_CLOCK     1773447L
 
-#define NSAMPLES 882                    // 44100/50 = 882
-
 /* ------------------------------------------------------------------------ */
+
+static int c64_clock = C64_PAL_CLOCK;
+static int nsamples = 44100 / 50;
+static float fps = 50;
 
 static uint16_t initAddress, playAddress, songs, startSong;
 static uint32_t speed;
 static char name[33], author[33], copyright[33];
+static uint8_t ntsc;
 
 #define DEFAULT_MAXPOKVOL 10
 static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
@@ -235,7 +240,7 @@ static void sid2pokey2(int voice, uint8_t *pokey) {
 
     uint8_t wave = r->wave;
 
-    double constant = pow(256.0, 3.0) / C64_CLOCK;
+    double constant = pow(256.0, 3.0) / c64_clock;
 
     double f = r->freq / constant;
 
@@ -324,7 +329,7 @@ static void sid2pokey(int voice, uint8_t *pokey, bool sawtooth) {
 
     uint8_t wave = r->wave;
 
-    double constant = pow(256.0, 3.0) / C64_CLOCK;
+    double constant = pow(256.0, 3.0) / c64_clock;
 
     double f = r->freq / constant;
 
@@ -500,7 +505,9 @@ static char *calculate_md5(char *filename) {
 
 /* ------------------------------------------------------------------------ */
 
-static int find_songlength(const char *md5, int subtune) {
+// returns seconds
+//
+static float find_songlength(const char *md5, int subtune) {
     int i, max = sizeof(songinfo)/sizeof(struct songinfo);
     for (i = 0; i<max; i++)
          if (!strcmp(songinfo[i].hash, md5)) break;
@@ -525,10 +532,8 @@ static int find_songlength(const char *md5, int subtune) {
 
     seconds += minutes * 60;
 
-    int nframes = seconds * 50;
-
-    fprintf(stderr, "known song, subtune length: %d frames\n", nframes);
-    return nframes;
+    fprintf(stderr, "known song, subtune length: %.2f seconds\n", seconds);
+    return seconds;
 
 errout:
     fprintf(stderr, "unknown song\n");
@@ -717,7 +722,7 @@ int main(int argc, char *argv[]) {
     c64_sid_init(44100);
 
     if (!c64_load_sid(argv[optind], &initAddress, &playAddress, &songs,
-                &startSong, &speed, name, author, copyright)) {
+                &startSong, &speed, name, author, copyright, &ntsc)) {
         fprintf(stderr, "Failed to load %s\n", argv[optind]);
         return 1;
     }
@@ -738,16 +743,31 @@ int main(int argc, char *argv[]) {
 
     fprintf(stderr, "converting subtune %d\n", subtune);
 
+    c64_cpu_jsr(initAddress, subtune-1);
+
+    if (ntsc) {
+        c64_clock = C64_NTSC_CLOCK;
+        fps = 60;
+        nsamples = 44100 / fps;
+    }
+
+    fprintf(stderr, "tuning: %s\n", ntsc ? "NTSC" : "PAL");
+
+    if (speed) {
+        fprintf(stderr, "warning: CIA timer not supported yet\n");
+    }
+
+    fprintf(stderr, "song speed: %.2f Hz\n", fps);
+
     if (!nframes_override) {
         char *md5 = calculate_md5(argv[optind]);
         if (!md5) return 1;
         fprintf(stderr, "md5: %s\n", md5);
 
-        int n = find_songlength(md5, subtune);
+        float f = find_songlength(md5, subtune);
+        int n = f * fps;
         if (n) nframes = n;
     }
-
-    c64_cpu_jsr(initAddress, subtune-1);
 
     if (stereo)
         fprintf(stderr, "stereo pokey enabled\n");
@@ -812,7 +832,7 @@ int main(int argc, char *argv[]) {
         }
 
         c64_cpu_jsr(playAddress, 0);
-        c64_handle_adsr(NSAMPLES/2);
+        c64_handle_adsr(nsamples/2);
 
         if (stereo) {
             sid2pokey2(0, &pokey[0]);
@@ -852,7 +872,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        c64_handle_adsr(NSAMPLES/2);
+        c64_handle_adsr(nsamples/2);
 
         if (!stereo && adjust) adjust_for_cancellation(pokey);
         if (!save_pokey(pokey, outf)) return 1;

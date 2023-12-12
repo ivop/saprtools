@@ -55,6 +55,6 @@ extern uint16_t c64_load_sid(char *filename,
                     uint16_t *initAddress, uint16_t *playAddress,
                     uint16_t *songs, uint16_t *startSong,
                     uint32_t *speed, char *name, char *author,
-                    char *copyright);
+                    char *copyright, uint8_t *ntsc);
 
 #endif

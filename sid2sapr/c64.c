@@ -256,7 +256,7 @@ uint16_t c64_load_sid(char *filename,
                     uint16_t *initAddress, uint16_t *playAddress,
                     uint16_t *songs, uint16_t *startSong,
                     uint32_t *speed, char *name, char *author,
-                    char *copyright) {
+                    char *copyright, uint8_t *ntsc) {
     char magic[4];
     uint16_t version, dataOffset, loadAddress;
 
@@ -287,6 +287,11 @@ uint16_t c64_load_sid(char *filename,
     if (fread(name, 32, 1, f) < 1) return 0;
     if (fread(author, 32, 1, f) < 1) return 0;
     if (fread(copyright, 32, 1, f) < 1) return 0;
+
+    if (version > 1) {
+        int c = readBE16(f);
+        *ntsc = c & 0b00001000;
+    }
 
     if (fseek(f, dataOffset, SEEK_SET) < 0) return 0;
 
