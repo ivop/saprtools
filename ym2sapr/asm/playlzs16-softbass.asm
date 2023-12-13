@@ -90,7 +90,11 @@ SKCTL  = $d20f
 .ifdef HZ60
     prints 0, "Replay rate: 60Hz"
 .else
-    prints 0, "Replay rate: 50Hz"
+    .ifdef HZ100
+        prints 0, "Replay rate: 100Hz"
+    .else
+        prints 0, "Replay rate: 50Hz"
+    .endif
 .endif
     prints 0, " "
     print 0, songname
@@ -104,7 +108,11 @@ SKCTL  = $d20f
 .ifdef HZ60
     lda #60
 .else
-    lda #50
+    .ifdef HZ100
+        lda #100
+    .else
+        lda #50
+    .endif
 .endif
     sta frames
     inc SAVMSC+1
@@ -325,7 +333,11 @@ wait_table
 .ifdef HZ60
     dta 0, 26, 52, 78, 104, 130
 .else
-    dta 8, 8, 8, 8, 8, 8
+    .ifdef HZ100
+        dta 86, 8, 86, 8, 86, 8
+    .else
+        dta 8, 8, 8, 8, 8, 8
+    .endif
 .endif
 wait_table_len = * - wait_table
 
@@ -489,7 +501,11 @@ wave4
 .ifdef HZ60
     lda #60
 .else
-    lda #50
+    .ifdef HZ100
+        lda #100
+    .else
+        lda #50
+    .endif
 .endif
     sta frames
 

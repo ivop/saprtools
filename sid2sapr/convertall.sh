@@ -340,6 +340,26 @@ echo -n \
 make compress$player player60$player
 mv player.xex xex$player/deathlok-snowflake.xex
 
+# Original of 100HZ test cover
+
+./sid2sapr $stereo -t2 -m all -b $basstype sid/'Rastan.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Rastan (tune 2)                " \
+    "Author: Martin Galway" > asm/songname.txt
+make compress$player player$player
+mv player.xex xex$player/galway-rastan-tune2.xex
+
+# CIA 100HZ TEST (error in HSVC length database)
+
+./sid2sapr $stereo -n 6500 -m all -b $basstype sid/'Rastan_Saga.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Rastan Saga (cover)            " \
+    "Author: Kent Patfield (Patto)" > asm/songname.txt
+make compress$player player100$player
+mv player.xex xex$player/patto-rastan-tune2-cover.xex
+
 #fi
 
 done
