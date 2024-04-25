@@ -297,6 +297,15 @@ make compress$player
 make player$player
 mv player.xex xex$player/galway-ocean2.xex
 
+./sid2sapr -a $stereo -b $basstype sid/'Terra_Cresta.sid'
+echo -n \
+    "Source: Commodore 64                   " \
+    "Title : Terra Cresta                   " \
+    "Author: Martin Galway" > asm/songname.txt
+make compress$player
+make player$player
+mv player.xex xex$player/galway-terra.xex
+
 # PETER CLARKE
 
 ./sid2sapr $stereo -b $basstype sid/'Ocean_Loader_3.sid'
