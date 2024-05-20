@@ -219,6 +219,7 @@ int c64_cpu_jsr(uint16_t newpc, uint8_t newa) {
     while (m6502_pc(&cpu) != 0xff03) {
         pins = m6502_tick(&cpu, pins);
         const uint16_t addr = M6502_GET_ADDR(pins);
+        if (memory_read(addr) == 0x40) break; // RTI
         if (pins & M6502_RW) {
             M6502_SET_DATA(pins, memory_read(addr));
         } else {
