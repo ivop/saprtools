@@ -259,7 +259,7 @@ uint16_t c64_load_sid(char *filename,
                     uint16_t *songs, uint16_t *startSong,
                     uint32_t *speed, char *name, char *author,
                     char *copyright, uint8_t *ntsc) {
-    char magic[4];
+    char magic[5];
     uint16_t version, dataOffset, loadAddress;
 
     FILE *f = fopen(filename, "rb");
@@ -276,6 +276,7 @@ uint16_t c64_load_sid(char *filename,
     }
 
     version = readBE16(f);
+    magic[4] = 0;
     fprintf(stderr, "%s version %d\n", magic, version);
 
      dataOffset  = readBE16(f);
