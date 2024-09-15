@@ -20,3 +20,4 @@ vgm2sapr/*.sapr
 vgm2sapr/*.lz16
 vgm2sapr/*.xex
 vgm2sapr/asm/songname.txt
+.DS_Store
