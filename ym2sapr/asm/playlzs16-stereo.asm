@@ -46,7 +46,7 @@ SKCTL = $d20f
     mva #0 $02c6    ; black background
     mva #15 $02c5   ; white foreground
     mva #0 82       ; left margin
-    prints 0, " "
+    prints 0, "}"   ; clear screen
 .ifdef VGM2SAPR
     prints 0, "VGM2SAPR v1.3 (STEREO)"
 .else
