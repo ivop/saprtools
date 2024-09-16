@@ -1,5 +1,6 @@
 *.exe
 *.o
+*.swp
 *~
 aylet/aylet
 lzss-sap/bin
