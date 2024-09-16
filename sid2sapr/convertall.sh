@@ -2,6 +2,20 @@
 
 set -e
 
+function create_xex(){
+  file_source=$1
+  file_title=$2
+  file_author=$3
+  file_name=$4.xex
+  echo "Creating title $file_title by $file_author from $file_source as $file_name with player $player".
+  make compress$player
+
+  printf 'Source: %-32sTitle : %-32sAuthor: %s' "$file_source" "$file_title" "$file_author" > asm/songname.txt
+
+  make player$player
+  mv player.xex xex$player/$file_name
+}
+
 make
 
 for player in "" -mono -softbass ; do
@@ -22,79 +36,35 @@ fi
 
 #if false; then
 
+file_source="Commodore 64"
+file_author="Jeroen Tel"
+
 # JEROEN TEL
 
 ./sid2sapr $stereo -x 0 -b $basstype sid/'Alloyrun.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Alloyrun                       " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-alloy.xex
+create_xex "$file_source" "Alloyrun" "$file_author" "tel-alloy"
 
 ./sid2sapr $stereo -d -b $basstype sid/'Alternative_Fuel.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Alternative Fuel               " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-fuel.xex
+create_xex "$file_source" "Alternative Fuel" "Jeroen Tel" "tel-fuel"
 
 ./sid2sapr $stereo -x 2 -b $basstype sid/'Cybernoid.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Cybernoid                      " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-cybernoid.xex
+create_xex "$file_source" "Cybernoid" "$file_author" "tel-cybernoid"
 
 ./sid2sapr $stereo -x 1 -m both -b $basstype sid/'Cybernoid_II.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Cybernoid II                   " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-cybernoid2.xex
+create_xex "$file_source" "Cybernoid II" "$file_author" "tel-cybernoid2"
 
 ./sid2sapr $stereo -x 2 -m ringmod -b $basstype sid/'Hawkeye.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Hawkeye                        " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-hawkeye.xex
+create_xex "$file_source" "Hawkeye" "$file_author" "tel-hawkeye"
 
 ./sid2sapr $stereo -x 1 -m both -b $basstype sid/'Ice_Age.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Ice Age                        " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-iceage.xex
+create_xex "$file_source" "Ice Age" "$file_author" "tel-iceage"
 
 ./sid2sapr $stereo -b $basstype sid/'JT_42.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : JT 42                          " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-jt42.xex
+create_xex "$file_source" "JT 42" "$file_author" "tel-jt42"
 
 ./sid2sapr $stereo -b $basstype sid/'Kinetix.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Kinetix                        " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-kinetix.xex
+create_xex "$file_source" "Kinetix" "$file_author" "tel-kinetix"
+return
 
 # LAXITY
 
