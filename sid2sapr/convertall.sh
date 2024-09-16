@@ -8,9 +8,10 @@ function create_output(){
   file_author=$2
   file_title=$3
   file_name=$4.xex
-  file_frequency=${5:-"50"}
+  file_frequency=$5
+  file_frequency=${file_frequency:-"50"}
  
-  echo "Creating title '$file_title' by '$file_author' from '$file_source' as '$file_name' with player $player ($file_frequency Hz)."
+  echo "Creating title '$file_title' by '$file_author' from '$file_source' as '$file_name' with player '$player' at $file_frequency Hz."
   make compress$player
 
   printf 'Source: %-32sTitle : %-32sAuthor: %s' "$file_source" "$file_title" "$file_author" > asm/songname.txt
@@ -25,9 +26,13 @@ function create_title(){
   create_output "$file_source" "$file_author" $1 $2
 }
 
+function create_sapr(){
+  ./sid2sapr $stereo -b $basstype "$@"
+}
+
 make
 
-for player in "" -mono -softbass ; do
+for player in "" "-mono" "-softbass" ; do
 
 if [ "$player" = "-mono" ]; then
     basstype=buzzy
@@ -41,28 +46,30 @@ else
     stereo=
 fi
 
-# -b basstype and -a are ignored in stereo mode
+# Note: sid2sapr options "-b basstype" and "-a" are ignored in stereo mode
 
-#if false; then
+# if false; then
 
 file_source="Commodore 64"
 
 # JEROEN TEL
 file_author="Jeroen Tel"
 
-./sid2sapr $stereo -x 0 -b $basstype sid/'Alloyrun.sid'
+create_sapr "-x 0" "sid/Alloyrun.sid"
 create_title "Alloyrun" "tel-alloy"
 
-./sid2sapr $stereo -d -b $basstype sid/'Alternative_Fuel.sid'
+create_sapr "-d" "sid/Alternative_Fuel.sid"
 create_title "Alternative Fuel" "tel-fuel"
 
-./sid2sapr $stereo -x 2 -b $basstype sid/'Cybernoid.sid'
+create_sapr "-x 2" "sid/Cybernoid.sid"
 create_title "Cybernoid" "tel-cybernoid"
 
 ./sid2sapr $stereo -x 1 -m both -b $basstype sid/'Cybernoid_II.sid'
+#create_sapr "-x 1 -m both" "sid/Cybernoid_II.sid"
 create_title "Cybernoid II" "tel-cybernoid2"
 
 ./sid2sapr $stereo -x 2 -m ringmod -b $basstype sid/'Hawkeye.sid'
+#create_sapr "-x 2 -m ringmod" "sid/Hawkeye.sid"
 create_title "Hawkeye" "tel-hawkeye"
 
 ./sid2sapr $stereo -x 1 -m both -b $basstype sid/'Ice_Age.sid'
@@ -85,7 +92,6 @@ create_title "Syncopated" "laxity-syncopated"
 
 ./sid2sapr $stereo -b $basstype sid/'Wisdom.sid'
 create_title "Wisdom" "laxity-wisdom"
-
 
 # ROB HUBBARD
 file_author="Rob Hubbard"
@@ -182,6 +188,8 @@ file_author="Charles Deenen"
 ./sid2sapr $stereo -m both -f -b $basstype sid/'Zamzara.sid'
 create_title "Zamzara" "deenen-zamzara"
 
+#fi
+
 # NTSC VBI 60HZ TEST
 file_author="Anthony Butch Davis (Deathlok)"
 
@@ -193,7 +201,7 @@ echo -n \
 make compress$player player60$player
 mv player.xex xex$player/deathlok-snowflake.xex
 
-# create_title "Snowflake" "deathlok-snowflake" "60"
+#create_title "Snowflake" "deathlok-snowflake" "60"
 
 # Original of 100HZ test cover
 file_author="Martin Galway"
