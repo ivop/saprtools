@@ -2,6 +2,8 @@
 
 set -ex
 
+make
+
 ./aylet -y -t 1 spectrum/BackToTheFuture2.ay > ../ym2sapr/spectrum/BackToTheFuture2.ym
 ./aylet -y -t 1 spectrum/BeverlyHillsCop.ay > ../ym2sapr/spectrum/BeverlyHillsCop.ym
 ./aylet -y -A 56 -F 1 spectrum/MissileGroundZero.AY > ../ym2sapr/spectrum/MissileGroundZero.ym
