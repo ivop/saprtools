@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/zsh
 
 ./sid2sapr -p 12 -x 1 -e 1 -E 1.0 -b softbass sid/Syncopated.sid
 echo -n \
