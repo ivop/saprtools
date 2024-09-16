@@ -2,9 +2,37 @@
 
 set -e
 
+# Parameters: file_source file_author_file_title file_name [file_frequency]
+create_output() {
+  file_source=$1
+  file_author=$2
+  file_title=$3
+  file_name=$4.xex
+  file_frequency=$5
+  file_frequency=${file_frequency:-"50"}
+
+  echo "Creating title '$file_title' by '$file_author' from '$file_source' as '$file_name' with player '$player' at $file_frequency Hz."
+  make compress$player
+
+  printf 'Source: %-32sTitle : %-32sAuthor: %s' "$file_source" "$file_title" "$file_author" > asm/songname.txt
+
+  make player$file_frequency$player
+  mv player.xex xex$player/$file_name
+}
+
+# Evironment: file_source file_author
+# Parameters: file_title file_name
+create_title() {
+  create_output "$file_source" "$file_author" "$1" "$2" "$3"
+}
+
+create_sapr() {
+  ./sid2sapr $stereo -b $basstype "$@"
+}
+
 make
 
-for player in "" -mono -softbass ; do
+for player in "" "-mono" "-softbass" ; do
 
 if [ "$player" = "-mono" ]; then
     basstype=buzzy
@@ -18,363 +46,165 @@ else
     stereo=
 fi
 
-# -b basstype and -a are ignored in stereo mode
+# Note: sid2sapr options "-b basstype" and "-a" are ignored in stereo mode
 
-#if false; then
+# if false; then
+
+file_source="Commodore 64"
 
 # JEROEN TEL
+file_author="Jeroen Tel"
 
-./sid2sapr $stereo -x 0 -b $basstype sid/'Alloyrun.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Alloyrun                       " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-alloy.xex
+create_sapr -x 0 "sid/Alloyrun.sid"
+create_title "Alloyrun" "tel-alloy"
 
-./sid2sapr $stereo -d -b $basstype sid/'Alternative_Fuel.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Alternative Fuel               " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-fuel.xex
+create_sapr -d "sid/Alternative_Fuel.sid"
+create_title "Alternative Fuel" "tel-fuel"
 
-./sid2sapr $stereo -x 2 -b $basstype sid/'Cybernoid.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Cybernoid                      " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-cybernoid.xex
+create_sapr -x 2 "sid/Cybernoid.sid"
+create_title "Cybernoid" "tel-cybernoid"
 
-./sid2sapr $stereo -x 1 -m both -b $basstype sid/'Cybernoid_II.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Cybernoid II                   " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-cybernoid2.xex
+create_sapr -x 1 -m both "sid/Cybernoid_II.sid"
+create_title "Cybernoid II" "tel-cybernoid2"
 
-./sid2sapr $stereo -x 2 -m ringmod -b $basstype sid/'Hawkeye.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Hawkeye                        " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-hawkeye.xex
+create_sapr -x 2 -m ringmod "sid/Hawkeye.sid"
+create_title "Hawkeye" "tel-hawkeye"
 
-./sid2sapr $stereo -x 1 -m both -b $basstype sid/'Ice_Age.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Ice Age                        " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-iceage.xex
+create_sapr -x 1 -m both "sid/Ice_Age.sid"
+create_title "Ice Age" "tel-iceage"
 
-./sid2sapr $stereo -b $basstype sid/'JT_42.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : JT 42                          " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-jt42.xex
+create_sapr "sid/JT_42.sid"
+create_title "JT 42" "tel-jt42"
 
-./sid2sapr $stereo -b $basstype sid/'Kinetix.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Kinetix                        " \
-    "Author: Jeroen Tel" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/tel-kinetix.xex
+create_sapr "sid/Kinetix.sid"
+create_title "Kinetix" "tel-kinetix"
 
 # LAXITY
+file_author="Thomas E. Petersen (Laxity)"
 
-./sid2sapr $stereo -b $basstype sid/'Freeze.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Freeze                         " \
-    "Author: Thomas E. Petersen (Laxity)" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/laxity-freeze.xex
+create_sapr "sid/Freeze.sid"
+create_title "Freeze" "laxity-freeze"
 
-./sid2sapr $stereo -b $basstype sid/'Syncopated.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Syncopated                     " \
-    "Author: Thomas E. Petersen (Laxity)" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/laxity-syncopated.xex
+create_sapr "sid/Syncopated.sid"
+create_title "Syncopated" "laxity-syncopated"
 
-./sid2sapr $stereo -b $basstype sid/'Wisdom.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Wisdom                         " \
-    "Author: Thomas E. Petersen (Laxity)" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/laxity-wisdom.xex
+create_sapr "sid/Wisdom.sid"
+create_title "Wisdom" "laxity-wisdom"
 
 # ROB HUBBARD
+file_author="Rob Hubbard"
 
-./sid2sapr $stereo -x 0 -b $basstype sid/'International_Karate.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : International Karate           " \
-    "Author: Rob Hubbard" > asm/songname.txt
-make compress$player
-make player$player PLAYER_LOWMEM=-d:LOWMEM=0x1800
-mv player.xex xex$player/hubbard-ik.xex
+create_sapr -x 0 "sid/International_Karate.sid"
+# make player50$player PLAYER_LOWMEM=-d:LOWMEM=0x1800
+create_title "International Karate" "hubbard-ik"
 
-./sid2sapr $stereo -b $basstype sid/'Crazy_Comets.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Crazy Comets                   " \
-    "Author: Rob Hubbard" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/hubbard-comets.xex
+create_sapr "sid/Crazy_Comets.sid"
+create_title "Crazy Comets" "hubbard-comets"
 
-./sid2sapr $stereo -b $basstype sid/'Delta.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Delta                          " \
-    "Author: Rob Hubbard" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/hubbard-delta.xex
+create_sapr "sid/Delta.sid"
+create_title "Delta" "hubbard-delta"
 
-./sid2sapr $stereo -b $basstype sid/'Lightforce.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Lightforce                     " \
-    "Author: Rob Hubbard" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/hubbard-lightforce.xex
+create_sapr "sid/Lightforce.sid"
+create_title "Lightforce" "hubbard-lightforce"
 
-./sid2sapr $stereo -b $basstype sid/'Monty_on_the_Run.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Monty on the Run               " \
-    "Author: Rob Hubbard" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/hubbard-monty.xex
+create_sapr "sid/Monty_on_the_Run.sid"
+create_title "Monty on the Run" "hubbard-monty"
 
-./sid2sapr $stereo -b $basstype sid/'Spellbound.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Spellbound                     " \
-    "Author: Rob Hubbard" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/hubbard-spellbound.xex
+create_sapr "sid/Spellbound.sid"
+create_title "Spellbound" "hubbard-spellbound"
 
-./sid2sapr $stereo -b $basstype sid/'Thing_on_a_Spring.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Thing On A Spring              " \
-    "Author: Rob Hubbard" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/hubbard-toas.xex
+create_sapr "sid/Thing_on_a_Spring.sid"
+create_title "Thing On A Spring" "hubbard-toas"
 
-./sid2sapr $stereo -d -b $basstype sid/'Warhawk.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Warhawk                        " \
-    "Author: Rob Hubbard" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/hubbard-warhawk.xex
+create_sapr -d "sid/Warhawk.sid"
+create_title "Warhawk" "hubbard-warhawk"
 
 # MITCH & DANE
+file_author="Mitch & Dane"
 
-./sid2sapr $stereo -b $basstype sid/'Dose_of_D.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Dose Of D                      " \
-    "Author: Mitch & Dane" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/md-dose.xex
+create_sapr "sid/Dose_of_D.sid"
+create_title "Dose Of D" "md-dose"
 
-./sid2sapr $stereo -b $basstype sid/'Jigsaw.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Jigsaw                         " \
-    "Author: Mitch & Dane" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/md-jigsaw.xex
+create_sapr "sid/Jigsaw.sid"
+create_title "Jigsaw" "md-jigsaw"
 
 # CADAVER
+file_author="Lasse Oorni (Cadaver)"
 
-./sid2sapr $stereo -b $basstype sid/'Aces_High.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Aces High                      " \
-    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/cadaver-aceshigh.xex
+create_sapr "sid/Aces_High.sid"
+create_title "Aces High" "cadaver-aceshigh"
 
 # loop once
-./sid2sapr $stereo -n $(((1*60+38)*50)) -b $basstype sid/'Escape_from_New_York.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Escape from New York           " \
-    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/cadaver-escapefromny.xex
+create_sapr -n $(((1*60+38)*50)) "sid/Escape_from_New_York.sid"
+create_title "Escape from New York" "cadaver-escapefromny"
 
 # loop once
-./sid2sapr $stereo -n $(((1*60+18)*50)) -b $basstype sid/'GoatTracker_example_MW1_title.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : GoatTracker example MW1 title  " \
-    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/cadaver-goatexample.xex
+create_sapr -n $(((1*60+18)*50)) "sid/GoatTracker_example_MW1_title.sid"
+create_title "GoatTracker example MW1 title" "cadaver-goatexample"
 
-./sid2sapr $stereo -b $basstype sid/'Metal_Warrior_4.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Metal Warrior 4                " \
-    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/cadaver-mw4.xex
+create_sapr "sid/Metal_Warrior_4.sid"
+create_title "Metal Warrior 4" "cadaver-mw4"
 
-./sid2sapr $stereo -b $basstype sid/'Tarantula.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Tarantula                      " \
-    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/cadaver-tarantula.xex
+create_sapr "sid/Tarantula.sid"
+create_title "Tarantula" "cadaver-tarantula"
 
-./sid2sapr $stereo -b $basstype sid/'Unleash_the_Fucking_Fury.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Unleash The Fucking Fury       " \
-    "Author: Lasse Oorni (Cadaver)" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/cadaver-unleash.xex
+create_sapr "sid/Unleash_the_Fucking_Fury.sid"
+create_title "Unleash The Fucking Fury" "cadaver-unleash"
 
 # MARTIN GALWAY
+file_author="Martin Galway"
 
-./sid2sapr $stereo -b $basstype sid/'Ocean_Loader_1.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Ocean Loader 1                 " \
-    "Author: Martin Galway" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/galway-ocean1.xex
+create_sapr "sid/Ocean_Loader_1.sid"
+create_title "Ocean Loader 1" "galway-ocean1"
 
-./sid2sapr $stereo -b $basstype sid/'Ocean_Loader_2.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Ocean Loader 2                 " \
-    "Author: Martin Galway" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/galway-ocean2.xex
+create_sapr "sid/Ocean_Loader_2.sid"
+create_title "Ocean Loader 2" "galway-ocean2"
 
-./sid2sapr -a $stereo -b $basstype sid/'Terra_Cresta.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Terra Cresta                   " \
-    "Author: Martin Galway" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/galway-terra.xex
+create_sapr -a "sid/Terra_Cresta.sid"
+create_title "Terra Cresta" "galway-terra"
 
 # PETER CLARKE
+file_author="Peter Clarke"
 
-./sid2sapr $stereo -b $basstype sid/'Ocean_Loader_3.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Ocean Loader 3                 " \
-    "Author: Peter Clarke" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/clarke-ocean3.xex
+create_sapr "sid/Ocean_Loader_3.sid"
+create_title "Ocean Loader 3" "clarke-ocean3"
 
 # CHRIS HUELSBECK
+file_author="Chris Huelsbeck & Ramiro Vaca"
 
-./sid2sapr $stereo -b $basstype sid/'R-Type.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : R-Type                         " \
-    "Author: Chris Huelsbeck & Ramiro Vaca" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/huelsbeck-rtype.xex
+create_sapr "sid/R-Type.sid"
+create_title "R-Type" "huelsbeck-rtype"
 
 # CHARLES DEENEN
+file_author="Charles Deenen"
 
-./sid2sapr $stereo -m both -f -b $basstype sid/'Zamzara.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Zamzara                        " \
-    "Author: Charles Deenen" > asm/songname.txt
-make compress$player
-make player$player
-mv player.xex xex$player/deenen-zamzara.xex
+create_sapr -m both -f "sid/Zamzara.sid"
+create_title "Zamzara" "deenen-zamzara"
 
 # NTSC VBI 60HZ TEST
+file_author="Anthony Butch Davis (Deathlok)"
 
-./sid2sapr $stereo -m all -b $basstype sid/'Snowflake.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Snowflake                      " \
-    "Author: Anthony Butch Davis (Deathlok)" > asm/songname.txt
-make compress$player player60$player
-mv player.xex xex$player/deathlok-snowflake.xex
+create_sapr -m all "sid/Snowflake.sid"
+create_title "Snowflake" "deathlok-snowflake" "60"
 
 # Original of 100HZ test cover
+file_author="Martin Galway"
 
-./sid2sapr $stereo -t2 -m all -b $basstype sid/'Rastan.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Rastan (tune 2)                " \
-    "Author: Martin Galway" > asm/songname.txt
-make compress$player player$player
-mv player.xex xex$player/galway-rastan-tune2.xex
+create_sapr -t2 -m all "sid/Rastan.sid"
+create_title "Rastan (tune 2)" "galway-rastan-tune2"
 
 # CIA 100HZ TEST (error in HSVC length database)
+file_author="Kent Patfield (Patto)"
 
-./sid2sapr $stereo -n 6500 -m all -b $basstype sid/'Rastan_Saga.sid'
-echo -n \
-    "Source: Commodore 64                   " \
-    "Title : Rastan Saga (cover)            " \
-    "Author: Kent Patfield (Patto)" > asm/songname.txt
-make compress$player player100$player
-mv player.xex xex$player/patto-rastan-tune2-cover.xex
+create_sapr -n 6500 -m all "sid/Rastan_Saga.sid"
+create_title "Rastan Saga (cover)" "patto-rastan-tune2-cover" "100"
 
 #fi
 
 done
 
 # clear for further tests
-echo -n " " > asm/songname.txt
+rm asm/songname.txt
 
-# remove one that's too big
+# remove one that's too big (53k)
 rm xex/hubbard-ik.xex
