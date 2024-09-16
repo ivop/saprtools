@@ -2,18 +2,20 @@
 
 set -e
 
-# Parameters: file_source file_author_file_title file_name
+# Parameters: file_source file_author_file_title file_name [file_frequency]
 function create_output(){
   file_source=$1
   file_author=$2
   file_title=$3
   file_name=$4.xex
-  echo "Creating title $file_title by $file_author from $file_source as $file_name with player $player".
+  file_frequency=${5:-"50"}
+ 
+  echo "Creating title '$file_title' by '$file_author' from '$file_source' as '$file_name' with player $player ($file_frequency Hz)."
   make compress$player
 
   printf 'Source: %-32sTitle : %-32sAuthor: %s' "$file_source" "$file_title" "$file_author" > asm/songname.txt
 
-  make player50$player
+  make player$file_frequency$player
   mv player.xex xex$player/$file_name
 }
 
@@ -94,7 +96,7 @@ echo -n \
     "Title : International Karate           " \
     "Author: $file_author" > asm/songname.txt
 make compress$player
-make player$player PLAYER_LOWMEM=-d:LOWMEM=0x1800
+make player50$player PLAYER_LOWMEM=-d:LOWMEM=0x1800
 mv player.xex xex$player/hubbard-ik.xex
 
 ./sid2sapr $stereo -b $basstype sid/'Crazy_Comets.sid'
@@ -181,6 +183,7 @@ file_author="Charles Deenen"
 create_title "Zamzara" "deenen-zamzara"
 
 # NTSC VBI 60HZ TEST
+file_author="Anthony Butch Davis (Deathlok)"
 
 ./sid2sapr $stereo -m all -b $basstype sid/'Snowflake.sid'
 echo -n \
@@ -190,6 +193,8 @@ echo -n \
 make compress$player player60$player
 mv player.xex xex$player/deathlok-snowflake.xex
 
+# create_title "Snowflake" "deathlok-snowflake" "60"
+
 # Original of 100HZ test cover
 file_author="Martin Galway"
 
@@ -197,6 +202,7 @@ file_author="Martin Galway"
 create_title "Rastan (tune 2)" "galway-rastan-tune2"
 
 # CIA 100HZ TEST (error in HSVC length database)
+file_author="Kent Patfield (Patto)"
 
 ./sid2sapr $stereo -n 6500 -m all -b $basstype sid/'Rastan_Saga.sid'
 echo -n \
@@ -205,6 +211,8 @@ echo -n \
     "Author: Kent Patfield (Patto)" > asm/songname.txt
 make compress$player player100$player
 mv player.xex xex$player/patto-rastan-tune2-cover.xex
+
+# create_title "Snowflake" "patto-rastan-tune2-cover" "100"
 
 #fi
 
