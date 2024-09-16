@@ -20,8 +20,8 @@
 ; Assemble this file with MADS assembler, the compressed song is expected in
 ; the `test.lz16` file at assembly time.
 ;
-; The plater needs 256 bytes of buffer for each pokey register stored, for a
-; full SAP file this is 2304 bytes.
+; The player needs 256 ($100) bytes of buffer for each pokey register stored,
+; for a full mono SAP-R file this is 2304 ($900) bytes.
 ;
 
 .ifndef LOWMEM

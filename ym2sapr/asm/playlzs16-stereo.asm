@@ -1,4 +1,4 @@
-; ym2sapr lzss player
+; XXX2sapr lzss player
 ; Play left and right LZSS stream on stereo Pokey
 ; by Ivo van Poorten, based on dmsc's player.
 ;
@@ -15,13 +15,14 @@
 ;  Total match bits: 16 bits
 ;
 ; Compress using:
-;  lzss -b 16 -o 8 -m 1 input.rsap test.lz16
+;  lzss -b 16 -o 8 -m 1 left.rsap left.lz16
+;  lzss -b 16 -o 8 -m 1 right.rsap right.lz16
 ;
 ; Assemble this file with MADS assembler, the compressed song is expected in
-; the `test.lz16` file at assembly time.
+; the `left.lz16` and `right.lz16` file at assembly time.
 ;
-; The plater needs 256 bytes of buffer for each pokey register stored, for a
-; full SAP file this is 2304 bytes.
+; The player needs 256 ($100) bytes of buffer for each pokey register stored,
+; for a full stereo SAP file this is 4608 ($1200) bytes.
 ;
 
 .ifndef LOWMEM
@@ -38,7 +39,7 @@ CONSOL = $d01f
 RANDOM = $d20a
 VCOUNT = $d40b
 WSYNC  = $d40a
-SKCTL = $d20f
+SKCTL  = $d20f
 
     org $2000
 
