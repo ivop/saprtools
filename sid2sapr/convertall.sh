@@ -1,16 +1,16 @@
-#! /bin/zsh
+#! /bin/sh
 
 set -e
 
 # Parameters: file_source file_author_file_title file_name [file_frequency]
-function create_output(){
+create_output() {
   file_source=$1
   file_author=$2
   file_title=$3
   file_name=$4.xex
   file_frequency=$5
   file_frequency=${file_frequency:-"50"}
- 
+
   echo "Creating title '$file_title' by '$file_author' from '$file_source' as '$file_name' with player '$player' at $file_frequency Hz."
   make compress$player
 
@@ -22,11 +22,11 @@ function create_output(){
 
 # Evironment: file_source file_author
 # Parameters: file_title file_name
-function create_title(){
-  create_output "$file_source" "$file_author" $1 $2 $3
+create_title() {
+  create_output "$file_source" "$file_author" "$1" "$2" "$3"
 }
 
-function create_sapr(){
+create_sapr() {
   ./sid2sapr $stereo -b $basstype "$@"
 }
 

@@ -1,22 +1,24 @@
 #! /bin/sh
-pushd aylet
-./convertall.sh
-popd
+set -ex
 
-pushd sid2sapr
+cd aylet
 ./convertall.sh
-popd
+cd ..
 
-pushd vgm2sapr
+cd sid2sapr
 ./convertall.sh
-popd
+cd ..
 
-pushd vgm2ym
+cd vgm2sapr
 ./convertall.sh
-popd
+cd ..
 
-pushd ym2sapr
+cd vgm2ym
+./convertall.sh
+cd ..
+
+cd ym2sapr
 ./convertall.sh
 ./convertall-mono.sh
 ./convertall-softbass.sh
-popd
+cd ..
