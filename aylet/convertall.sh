@@ -9,5 +9,5 @@ make
 ./aylet -y -A 56 -F 1 spectrum/MissileGroundZero.AY > ../ym2sapr/spectrum/MissileGroundZero.ym
 
 ./aylet -y -c -t 1 cpc/'twistn shout 1.ay' > ../ym2sapr/cpc/'twistn shout 1.ym'
-./aylet -y -c -t 1 cpc/"Burnin'Rubber.ay" > ../ym2sapr/cpc/"Burnin'Rubber..ym"
+./aylet -y -c -t 1 cpc/"Burnin'Rubber.ay" > ../ym2sapr/cpc/"Burnin'Rubber.ym"
 
