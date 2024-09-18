@@ -11,6 +11,11 @@ create_sapr() {
 make
 echo >convertall.log
 
+file_converter="ym2sapr"
+
+for player in "stereo" ; do
+echo "Starting ${file_converter} conversion for ${player} player."
+
 #if false; then
 
 # BBC MICRO
@@ -272,6 +277,8 @@ create_sapr -r 60 "pcengine/Tengai Makyou - Fuun Kabukiden/57 London Tower.vgz"
 create_title "Tengai Makyou - London Tower" "pce-tmfk-london-tower" "60"
 
 #fi
+
+done
 
 # clear for further tests
 rm songname.txt
