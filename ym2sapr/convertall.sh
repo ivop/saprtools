@@ -87,7 +87,7 @@ create_title "Weird Dreams 1" "whittaker-weird-dreams"
 file_source="ZX Spectrum"
 
 file_author="David Whittaker"
-if [ "${player}" = "-softbass" ]; then
+if [ "${player}" = "softbass" ]; then
   create_sapr -p 9 "spectrum/BackToTheFuture2.ym"
 else
   create_sapr "spectrum/BackToTheFuture2.ym"
