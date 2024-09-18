@@ -11,12 +11,14 @@ create_sapr() {
 make
 echo >convertall.log
 
-for player in "" "-mono" "-softbass" ; do
+file_converter="ym2sapr"
+
+for player in "stereo" "mono" "softbass" ; do
 
 case "$player" in
-  "") basstype="" ;;
-  "-mono") basstype="-m -b buzzy" ;;
-  "-softbass") basstype="-m -b softbass" ;;
+  "stereo") basstype="" ;;
+  "mono") basstype="-m -b buzzy" ;;
+  "softbass") basstype="-m -b softbass" ;;
 esac
 
 #if false; then
