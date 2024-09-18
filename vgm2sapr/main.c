@@ -885,7 +885,7 @@ static void write_dmg_register(struct gameboy_dmg *dmg, uint8_t a, uint8_t d) {
 
 static bool write_sapr_header(FILE *file) {
     if (fprintf(file, "SAP\r\nAUTHOR \"\"\r\nNAME \"\"\r\nDATE \"\"\r\nTYPE R\r\n\r\n") < 0) {
-        fprintf(stderr, "error writing to file\n");
+        fprintf(stderr, "ERROR: error writing to file\n");
         return false;
     }
     return true;
@@ -904,17 +904,17 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
 
     outleft = fopen("left.sapr", "wb");
     if (!outleft) {
-        fprintf(stderr, "unable to open left.sapr for writing\n");
+        fprintf(stderr, "ERROR: unable to open left.sapr for writing\n");
         return -1;
     }
 
     outright = fopen("right.sapr", "wb");
     if (!outright) {
-        fprintf(stderr, "unable to open right.sapr for writing\n");
+        fprintf(stderr, "ERROR: unable to open right.sapr for writing\n");
         return -1;
     }
 
-    fprintf(stderr, "writing SAP-R file to left.sapr and right.sapr\n");
+    fprintf(stdout, "writing SAP-R file to left.sapr and right.sapr\n");
 
     if (!write_sapr_header(outleft)) return -1;
     if (!write_sapr_header(outright)) return -1;
@@ -956,7 +956,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             uint32_t ss;
             gzfread((uint8_t *)&ss, 1, 4, file);
             ss = readLE32((uint8_t *)&ss);
-            fprintf(stderr, "skipping data block type 0x%02x, size %08x\n", tt, ss);
+            fprintf(stdout, "skipping data block type 0x%02x, size %08x\n", tt, ss);
             gzseek(file, ss, SEEK_CUR);
             break;
         case 0x31:      /* AY8910 */
@@ -1010,7 +1010,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
                     written[reg]++;
                 } else {
                     if (force_new) {
-                        debug_fprintf(stderr, "*** new frame forced\n");
+                        debug_fprintf(stdout, "*** new frame forced\n");
                         gzseek(file, -3, SEEK_CUR);
                         fcnt=framelen;              // force new frame
                         break;
@@ -1028,7 +1028,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             uint8_t dd = gzgetc(file);
 
             if (aa >= 0x30) {
-                fprintf(stderr, "gameboy_dmg: aa=%02x out of range!\n", aa);
+                fprintf(stderr, "ERROR: gameboy_dmg: aa=%02x out of range!\n", aa);
                 break;
             }
 
@@ -1038,7 +1038,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
                 written[aa]++;
             } else {
                 if (force_new) {
-                    debug_fprintf(stderr, "*** new frame forced\n");
+                    debug_fprintf(stdout, "*** new frame forced\n");
                     gzseek(file, -3, SEEK_CUR);
                     fcnt=framelen;              // force new frame
                     break;
@@ -1054,7 +1054,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             uint8_t dd = gzgetc(file);
 
             if (aa > 9) {
-                fprintf(stderr, "huc6280: aa=%02x out of range!\n", aa);
+                fprintf(stderr, "ERROR: huc6280: aa=%02x out of range!\n", aa);
                 break;
             }
 
@@ -1110,7 +1110,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
                     written[bb]++;
             } else {
                 if (force_new) {
-                    debug_fprintf(stderr, "*** new frame forced\n");
+                    debug_fprintf(stdout, "*** new frame forced\n");
                     gzseek(file, -3, SEEK_CUR);
                     fcnt=framelen;              // force new frame
                     break;
@@ -1151,7 +1151,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
         case 0xbe:
         case 0xbf:
             if (!unknown) {
-                fprintf(stderr, "skipping unknown chipset\n");
+                fprintf(stderr, "ERROR: skipping unknown chipset\n");
                 unknown = 1;
             }
             gzseek(file, 2, SEEK_CUR);
@@ -1174,7 +1174,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
         case 0xd5:
         case 0xd6:
             if (!unknown) {
-                fprintf(stderr, "skipping unknown chipset\n");
+                fprintf(stderr, "ERROR: skipping unknown chipset\n");
                 unknown = 1;
             }
             gzseek(file, 3, SEEK_CUR);
@@ -1191,7 +1191,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             wait = 882;
             break;
         case 0x66:
-            fprintf(stderr, "end of sound data\n");
+            fprintf(stdout, "end of sound data\n");
             run = 0;
             break;
         case 0x70:
@@ -1237,7 +1237,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             gzseek(file, 4, SEEK_CUR);
             break;
         default:
-            fprintf(stderr, "unhandled data command %02x\n", c);
+            fprintf(stderr, "ERROR: unhandled data command %02x\n", c);
             return 0;
         }
 
@@ -1261,7 +1261,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
                 for (int x=0; x<16; x++)
                     newwave += written[0x20+x];
                 if (newwave)
-                    fprintf(stderr, "new wave written to wavetable\n");
+                    fprintf(stdout, "new wave written to wavetable\n");
 
                 dmg_to_pokey(&dmg, &pokeyL[0], 0, v);
                 dmg_to_pokey(&dmg, &pokeyL[4], 1, v);
@@ -1284,7 +1284,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             fcnt -= framelen;
             for (int i = 0; i<16; i++) {
                 if (synced && written[i]>1)
-                    debug_fprintf(stderr, "[%d] reg 0x%02x written to %d times\n", scnt, i, written[i]);
+                    debug_fprintf(stdout, "[%d] reg 0x%02x written to %d times\n", scnt, i, written[i]);
             }
             memset(written, 0, sizeof(written));
             synced = 1;
@@ -1384,7 +1384,7 @@ int main(int argc, char **argv) {
         case 'p':
             maxpokvol = atoi(optarg);
             if (maxpokvol < 0 || maxpokvol > 15) {
-                fprintf(stderr, "invalid maximum pokey volume\n");
+                fprintf(stderr, "ERROR: invalid maximum pokey volume\n");
                 return 1;
             }
             break;
@@ -1403,7 +1403,7 @@ int main(int argc, char **argv) {
     }
 
     if (optind+1 != argc) {
-        fprintf(stderr, "wrong arguments\n");
+        fprintf(stderr, "ERROR: wrong arguments\n");
         usage();
         return 1;
     }
@@ -1411,7 +1411,7 @@ int main(int argc, char **argv) {
     gzFile file;
     file = gzopen(argv[optind], "r");
     if (!file) {
-        fprintf(stderr, "unable to open %s\n", argv[optind]);
+        fprintf(stderr, "ERROR: unable to open %s\n", argv[optind]);
         return 1;
     }
 
@@ -1420,64 +1420,64 @@ int main(int argc, char **argv) {
     struct vgm_header *v = &vgm_header;
 
     if (strncmp(v->ident, "Vgm ", 4)) {
-        fprintf(stderr, "Vgm header not found\n");
+        fprintf(stderr, "ERROR: Vgm header not found\n");
         return 1;
     }
 
-    fprintf(stderr, "vgm version: %1x.%2x\n", v->version>>8, v->version &0xff);
+    fprintf(stdout, "vgm version: %1x.%2x\n", v->version>>8, v->version &0xff);
 
     uint32_t data_offset = 0x40;
     if (v->version >= 0x150)
         data_offset = 0x34 + v->vgm_data_offset;
 
-    fprintf(stderr, "data offset: 0x%02x\n", data_offset);
+    fprintf(stdout, "data offset: 0x%02x\n", data_offset);
 
     gzseek(file, data_offset, SEEK_SET);
 
     if (framerate == 0.0) {
         if ((v->version >= 0x101 && !v->rate) || (v->version < 0x101)) {
-            fprintf(stderr, "file does not specify framerate. use -r option\n");
+            fprintf(stderr, "ERROR: file does not specify framerate. use -r option\n");
             return 1;
         } 
         framerate = v->rate;
     }
 
-    fprintf(stderr, "framerate: %.2f Hz\n", framerate);
+    fprintf(stdout, "framerate: %.2f Hz\n", framerate);
 
-    fprintf(stderr, "total number of samples: %d\n", v->total_nsamples);
-    fprintf(stderr, "samples per frame: %.2f\n", 44100.0/framerate);
-    fprintf(stderr, "song length: %.2f seconds\n", v->total_nsamples/44100.0);
-    fprintf(stderr, "maximum pokey volume: %d\n", maxpokvol);
+    fprintf(stdout, "total number of samples: %d\n", v->total_nsamples);
+    fprintf(stdout, "samples per frame: %.2f\n", 44100.0/framerate);
+    fprintf(stdout, "song length: %.2f seconds\n", v->total_nsamples/44100.0);
+    fprintf(stdout, "maximum pokey volume: %d\n", maxpokvol);
     if (mute_high)
-        fprintf(stderr, "mute clear pokey div up to: %d\n", mute_high);
+        fprintf(stdout, "mute clear pokey div up to: %d\n", mute_high);
 
     if (v->sn76489_clock) {
         init_voltab_sn(maxpokvol);
 
-        fprintf(stderr, "detected SN76489\n");
-        fprintf(stderr, "clock: %d Hz\n", v->sn76489_clock);
+        fprintf(stdout, "detected SN76489\n");
+        fprintf(stdout, "clock: %d Hz\n", v->sn76489_clock);
         if (v->version < 0x0110)
             v->sn76489_shift_width = 16;
-        fprintf(stderr, "shift register width: %d bits\n", v->sn76489_shift_width);
+        fprintf(stdout, "shift register width: %d bits\n", v->sn76489_shift_width);
         write_sapr(file, v, CHIP_SN76489);
     } else if (v->version >= 0x0161 && v->gameboy_dmg_clock) {
         init_voltab_dmg(maxpokvol);
 
-        fprintf(stderr, "detected GameBoy DMG\n");
-        fprintf(stderr, "clock: %d Hz\n", v->gameboy_dmg_clock);
+        fprintf(stdout, "detected GameBoy DMG\n");
+        fprintf(stdout, "clock: %d Hz\n", v->gameboy_dmg_clock);
         write_sapr(file, v, CHIP_GAMEBOY_DMG);
     } else if (v->version >= 0x0161 && v->huc6280_clock) {
         init_voltab_huc(maxpokvol);
 
-        fprintf(stderr, "detected HuC6280\n");
-        fprintf(stderr, "clock: %d Hz\n", v->huc6280_clock);
+        fprintf(stdout, "detected HuC6280\n");
+        fprintf(stdout, "clock: %d Hz\n", v->huc6280_clock);
         write_sapr(file, v, CHIP_HUC6280);
     } else {
         fprintf(stderr, "no supported chip detected\n");
         return 1;
     }
 
-    fprintf(stderr, "finished!\n");
+    fprintf(stdout, "finished!\n");
 
     return 0;
 }
