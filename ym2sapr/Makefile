@@ -6,7 +6,7 @@ LZSS = ../lzss-sap/bin/lzss
 ym2sapr: main.cpp lzh.cpp lzh.h
 	$(CXX) -O2 -o ym2sapr main.cpp lzh.cpp -lm
 
-compress: $(LZSS)
+compress-stereo: $(LZSS)
 	@$(LZSS) -6 left.sapr left.lz16   >>convertall.log  2>&1
 	@$(LZSS) -6 right.sapr right.lz16 >>convertall.log  2>&1
 
@@ -15,7 +15,7 @@ compress-mono: $(LZSS)
 
 compress-softbass: compress-mono
 
-player50:
+player50-stereo:
 	mads -o:player.xex ../player/asm/playlzs16-stereo.asm
 
 player50-mono:
@@ -24,7 +24,7 @@ player50-mono:
 player50-softbass:
 	mads -o:player.xex ../player/asm/playlzs16-softbass.asm
 
-player60:
+player60-stereo:
 	mads -d:HZ60 -o:player.xex ../player/asm/playlzs16-stereo.asm
 
 
