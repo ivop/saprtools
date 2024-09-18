@@ -19,6 +19,4 @@ cd ..
 
 cd ym2sapr
 ./convertall.sh
-./convertall-mono.sh
-./convertall-softbass.sh
 cd ..
