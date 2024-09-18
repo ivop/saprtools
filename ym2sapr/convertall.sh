@@ -14,6 +14,7 @@ echo >convertall.log
 file_converter="ym2sapr"
 
 for player in "stereo" "mono" "softbass" ; do
+echo "Starting ${file_converter} conversion for ${player} player."
 
 case "$player" in
   "stereo") basstype="" ;;

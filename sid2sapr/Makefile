@@ -6,7 +6,7 @@ LZSS = ../lzss-sap/bin/lzss
 sid2sapr: main.c c64.c m6502.h c64.h md5.c md5.h saw.h
 		$(CC) $(CFLAGS) -o sid2sapr main.c c64.c md5.c $(LIBS)
 
-compress: $(LZSS)
+compress-stereo: $(LZSS)
 	@$(LZSS) -6 left.sapr left.lz16   >>convertall.log  2>&1
 	@$(LZSS) -6 right.sapr right.lz16 >>convertall.log  2>&1
 
@@ -15,7 +15,7 @@ compress-mono: $(LZSS)
 
 compress-softbass: compress-mono
 
-player50:
+player50-stereo:
 	mads -d:SID2SAPR $(PLAYER_LOWMEM) -o:player.xex ../player/asm/playlzs16-stereo.asm
 
 player50-mono:
@@ -27,7 +27,7 @@ player50-softbass:
 player50-softbass-sawtooth:
 	mads -d:SAWTOOTH -d:SID2SAPR $(PLAYER_LOWMEM) -o:player.xex ../player/asm/playlzs16-softbass.asm
 
-player60:
+player60-stereo:
 	mads -d:SID2SAPR $(PLAYER_LOWMEM) -d:HZ60 -o:player.xex ../player/asm/playlzs16-stereo.asm
 
 player60-mono:
