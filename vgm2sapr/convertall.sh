@@ -1,540 +1,298 @@
-#! /bin/zsh
+#! /bin/dash
 
 set -e
+
+# Parameters: file_source file_author_file_title file_name [file_frequency]
+create_output() {
+  file_source=$1
+  file_author=$2
+  file_title=$3
+  file_name=$4.xex
+  file_frequency=$5
+  file_frequency=${file_frequency:-"50"}
+
+  echo "Creating title '${file_title}' by '${file_author}' from '${file_source}' as '${file_name}' with player '${player}' at ${file_frequency} Hz."
+  make compress
+
+  printf 'Source: %-32sTitle : %-32sAuthor: %s' "${file_source}" "${file_title}" "${file_author}" >songname.txt
+
+  make "player${file_frequency}${player}"
+  mv player.xex "xex${player}/${file_name}"
+}
+
+# Evironment: file_source file_author
+# Parameters: file_title file_name
+create_title() {
+  create_output "${file_source}" "${file_author}" "$1" "$2" "$3"
+}
+
+create_sapr() {
+ ./vgm2sapr "$@"
+}
 
 make
 
 #if false; then
 
 # BBC MICRO
+file_source="BBC Micro"
 
-./vgm2sapr bbc/CrazeeRider-title.vgz
-echo -n \
-    "Source: BBC Micro                      " \
-    "Title : Crazee Rider                   " \
-    "Author: Martin Galway" > asm/songname.txt
-make compress
-make player
-mv player.xex xex/bbc-crazeerider.xex
+file_author="Martin Galway"
 
-./vgm2sapr bbc/Galaforce2-title.vgz
-echo -n \
-    "Source: BBC Micro                      " \
-    "Title : Galaforce 2                    " \
-    "Author: Martin Galway" > asm/songname.txt
-make compress
-make player
-mv player.xex xex/bbc-galaforce2.xex
+create_sapr "bbc/CrazeeRider-title.vgz"
+create_title "Crazee Rider" "bbc-crazeerider" "50"
 
-./vgm2sapr bbc/Firetrack-ingame.vgz
-echo -n \
-    "Source: BBC Micro                      " \
-    "Title : Firetrack                      " \
-    "Author: Nick Pelling" > asm/songname.txt
-make compress
-make player
-mv player.xex xex/bbc-firetrack.xex
+create_sapr "bbc/Galaforce2-title.vgz"
+create_title "Galaforce 2" "bbc-galaforce2" "50"
 
-./vgm2sapr bbc/TubularBells.vgz
-echo -n \
-    "Source: BBC Micro                      " \
-    "Title : Tubular Bells (demo)           " \
-    "Author: Nigel Scott" > asm/songname.txt
-make compress
-make player
-mv player.xex xex/bbc-tubular.xex
+file_author="Nick Pelling"
+create_sapr bbc/Firetrack-ingame.vgz
+create_title "Firetrack" "bbc-firetrack" "50"
+
+file_author="Nigel Scott"
+create_sapr "bbc/TubularBells.vgz"
+create_title "Tubular Bells (demo)" "bbc-tubular" "50"
 
 # Sega Game 1000
+file_source="Sega Game 1000"
 
-./vgm2sapr sega/'H.E.R.O. (SG) - 02 - Main Theme.vgm'
-echo -n \
-    "Source: Sega Game 1000                 " \
-    "Title : H.E.R.O Main Theme             " \
-    "Author: " > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/sg1k-hero.xex
+file_author=""
+create_sapr "sega/H.E.R.O. (SG) - 02 - Main Theme.vgm"
+create_title "H.E.R.O Main Theme" "sg1k-hero" "60"
 
 # Sega Master System
+file_source="Sega Game Master System"
 
-./vgm2sapr sega/'Sonic The Hedgehog - 03 - Green Hill Zone.vgm'
-echo -n \
-    "Source: Sega Game Master System        " \
-    "Title : Sonic - Green Hill Zone        " \
-    "Author: Masato Nakamura, Yuzo Koshiro" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/sms-sonic-ghz.xex
+file_author="Masato Nakamura, Yuzo Koshiro"
+create_sapr "sega/Sonic The Hedgehog - 03 - Green Hill Zone.vgm"
+create_title "Sonic - Green Hill Zone" "sms-sonic-ghz" "60"
 
-./vgm2sapr sega/'Ace of Aces - 01 - Title Screen.vgm'
-echo -n \
-    "Source: Sega Game Master System        " \
-    "Title : Ace Of Aces - Title Screen     " \
-    "Author: " > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/sms-aceofaces.xex
+file_author=""
+create_sapr "sega/Ace of Aces - 01 - Title Screen.vgm"
+create_title "Ace Of Aces - Title Screen" "sms-aceofaces" "60"
 
-./vgm2sapr sega/'system-of-masters.vgz'
-echo -n \
-    "Source: Sega Game Master System        " \
-    "Title : System Of Masters              " \
-    "Author: Alex Mauer" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/sms-system.xex
+file_author="Alex Mauer"
+create_sapr "sega/system-of-masters.vgz"
+create_title "System Of Masters" "sms-system" "60"
 
 # Sega Game Gear
+file_source="Sega Game Gear"
 
-./vgm2sapr sega/'The Incredible Hulk - 01 - Unused Title Theme.vgm'
-echo -n \
-    "Source: Sega Game Gear                 " \
-    "Title : The Incredible Hulk Title Theme" \
-    "Author: Steve Collett, Matt Furniss" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gg-hulk.xex
+file_author="Steve Collett, Matt Furniss"
+create_sapr "sega/The Incredible Hulk - 01 - Unused Title Theme.vgm"
+create_title "The Incredible Hulk Title Theme" "gg-hulk" "60"
 
+file_author="Masafumi Ogata"
 # no framerate in the file
-./vgm2sapr -r 60 sega/'Sonic the Hedgehog 2 - 20 - Good Ending (Game Gear).vgm'
-echo -n \
-    "Source: Sega Game Gear                 " \
-    "Title : Sonic 2 - Good Ending          " \
-    "Author: Masafumi Ogata" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gg-sonic2.xex
+create_sapr -r 60 "sega/Sonic the Hedgehog 2 - 20 - Good Ending (Game Gear).vgm"
+create_title "Sonic 2 - Good Ending" "gg-sonic2" "60"
 
-./vgm2sapr sega/'Spider-Man - X-Men - Arcades Revenge - 01 - Title.vgm'
-echo -n \
-    "Source: Sega Game Gear                 " \
-    "Title : Spider-Man / X-Men: AR         " \
-    "Author: G.Follin, T.Follin, A.Brimble" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gg-spider.xex
+file_author="G.Follin, T.Follin, A.Brimble"
+create_sapr "sega/Spider-Man - X-Men - Arcades Revenge - 01 - Title.vgm"
+create_title "Spider-Man / X-Men: AR" "gg-spider" "60"
 
 # TANDY 1000
+file_source="Tandy 1000"
 
-./vgm2sapr -r 60 tandy/'Zeliard - 02 Departure.vgz'
-echo -n \
-    "Source: Tandy 1000                     " \
-    "Title : Zeliard - Departure            " \
-    "Author: Masakuni Mitsuhashi, H. Godai" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/tandy-zeliard.xex
+file_author="Masakuni Mitsuhashi, H. Godai"
+create_sapr -r 60 "tandy/Zeliard - 02 Departure.vgz"
+create_title "Zeliard - Departure" "tandy-zeliard" "60"
 
-./vgm2sapr -r 60 tandy/'Wibarm - 01 Title.vgz'
-echo -n \
-    "Source: Tandy 1000                     " \
-    "Title : Wibarm - Title                 " \
-    "Author: Toshiya Yamanaka" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/tandy-wibarm.xex
+file_author="Toshiya Yamanaka"
+create_sapr -r 60 "tandy/Wibarm - 01 Title.vgz"
+create_title "Wibarm - Title" "tandy-wibarm" "60"
 
 # IBM PCjr
+file_source="IBM PCjr"
 
-./vgm2sapr -r 60 ibmpcjr/'KK3 - 19 Finale.vgz'
-echo -n \
-    "Source: IBM PCjr                       " \
-    "Title : King's Quest III - Finale      " \
-    "Author: Margaret Lowe" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/ibmpcjr-kk3.xex
+file_author="Margaret Lowe"
+create_sapr -r 60 "ibmpcjr/KK3 - 19 Finale.vgz"
+create_title "King's Quest III - Finale" "ibmpcjr-kk3" "60"
 
-./vgm2sapr -r 60 ibmpcjr/'Crossfire (floppy version).vgz'
-echo -n \
-    "Source: IBM PCjr                       " \
-    "Title : Crossfire (Floppy Version)     " \
-    "Author: Jay Sullivan" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/ibmpcjr-crossfire.xex
+file_author="Jay Sullivan"
+create_sapr -r 60 "ibmpcjr/Crossfire (floppy version).vgz"
+create_title "Crossfire (Floppy Version)" "ibmpcjr-crossfire" "60"
 
 # SEGA PICO
+file_source="SEGA Pico"
 
-./vgm2sapr -r 60 sega/'Sonic Gameworld.vgz'
-echo -n \
-    "Source: SEGA Pico                      " \
-    "Title : Sonic The Hedgehog's Gameworld " \
-    "Author: Kojiro Mikusa" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pico-sonicgw.xex
+file_author="Kojiro Mikusa"
+create_sapr -r 60 "sega/Sonic Gameworld.vgz"
+create_title "Sonic The Hedgehog's Gameworld" "pico-sonicgw" "60"
 
 # ARCADE
+file_source="Arcade"
 
+file_author="Konami Kukeiha Club"
 # completely different clock of 1536000Hz!
-./vgm2sapr -r 60 arcade/'Mr. Goemon - 08 Stage 2 BGM 3 ~ BGM 4.vgz'
-echo -n \
-    "Source: Arcade                         " \
-    "Title : Mr. Goemon - Stage 2+3 BGM     " \
-    "Author: Konami Kukeiha Club" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/arcade-mrgoemon.xex
+create_sapr -r 60 "arcade/Mr. Goemon - 08 Stage 2 BGM 3 ~ BGM 4.vgz"
+create_title "Mr. Goemon - Stage 2+3 BGM" "arcade-mrgoemon" "60"
 
 # GAME BOY
+file_source="Game Boy"
 
-./vgm2sapr -r 60 gb/'Ninja Gaiden Shadow - Stage 5.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : Ninja Gaiden Shadow - Stage 5  " \
-    "Author: Hiroyuki Iwatsuki" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-ninjagaiden.xex
+file_author="Hiroyuki Iwatsuki"
+create_sapr -r 60 "gb/Ninja Gaiden Shadow - Stage 5.vgz"
+create_title "Ninja Gaiden Shadow - Stage 5" "gb-ninjagaiden" "60"
 
-./vgm2sapr -r 60 gb/'Super Mario Land - Staff Roll.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : Super Mario Land - Staff Roll  " \
-    "Author: Hirokazu Tanaka" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-sml.xex
+file_author="Hirokazu Tanaka"
+create_sapr -r 60 "gb/Super Mario Land - Staff Roll.vgz"
+create_title "Super Mario Land - Staff Roll" "gb-sml" "60"
 
-./vgm2sapr -r 60 gb/'Super Mario Land 2 - Athletic Theme.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : Super Mario Land 2 - Athletic  " \
-    "Author: Kazumi Totaka" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-sml2.xex
+file_author="Kazumi Totaka"
+create_sapr -r 60 "gb/Super Mario Land 2 - Athletic Theme.vgz"
+create_title "Super Mario Land 2 - Athletic" "gb-sml2" "60"
 
-./vgm2sapr -r 60 gb/'Batman Animated Series - Batman Theme.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : Batman Animated Series - Theme " \
-    "Author: Yoshiyuki Hagiwara, D. Elfman" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-batman-theme.xex
+file_author="Yoshiyuki Hagiwara, D. Elfman"
+create_sapr -r 60 "gb/Batman Animated Series - Batman Theme.vgz"
+create_title "Batman Animated Series - Theme" "gb-batman-theme" "60"
 
-./vgm2sapr -r 60 gb/'Batman - Title.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : Batman - Title                 " \
-    "Author: Nobuyuki Hara" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-batman-title.xex
+file_author="Nobuyuki Hara"
+create_sapr -r 60 "gb/Batman - Title.vgz"
+create_title "Batman - Title" "gb-batman-title" "60"
 
-./vgm2sapr -r 60 gb/'Blaster Master Boy - Ending.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : Blaster Master Boy - Ending    " \
-    "Author: Takeaki Kunimoto, Shinichi Seya" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-blaster-master.xex
+file_author="Takeaki Kunimoto, Shinichi Seya"
+create_sapr -r 60 "gb/Blaster Master Boy - Ending.vgz"
+create_title "Blaster Master Boy - Ending" "gb-blaster-master" "60"
 
-./vgm2sapr -r 60 gb/'Mega Man IV - Title.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : Mega Man IV - Title            " \
-    "Author: Kouji Murata" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-megaman4-title.xex
+file_author="Kouji Murata"
+create_sapr -r 60 "gb/Mega Man IV - Title.vgz"
+create_title "Mega Man IV - Title" "gb-megaman4-title" "60"
 
-./vgm2sapr -r 60 gb/'Spirou - Mountain.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : Spirou - Mountain              " \
-    "Author: Alberto Jose Gonzalez" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-spirou-mountain.xex
+file_author="Alberto Jose Gonzalez"
+create_sapr -r 60 "gb/Spirou - Mountain.vgz"
+create_title "Spirou - Mountain" "gb-spirou-mountain" "60"
 
-./vgm2sapr -r 60 gb/'Turok - Title Screen.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : Turok - Title Screen           " \
-    "Author: Alberto Jose Gonzalez" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-turok-title.xex
+file_author="Alberto Jose Gonzalez"
+create_sapr -r 60 "gb/Turok - Title Screen.vgz"
+create_title "Turok - Title Screen" "gb-turok-title" "60"
 
-./vgm2sapr -r 60 gb/'Final Fantasy Adventure - Rising Sun.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : Final Fantasy Adv. - Rising Sun" \
-    "Author: Kenji Ito" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-ffa-rising-sun.xex
+file_author="Kenji Ito"
+create_sapr -r 60 "gb/Final Fantasy Adventure - Rising Sun.vgz"
+create_title "Final Fantasy Adv. - Rising Sun" "gb-ffa-rising-sun" "60"
 
-./vgm2sapr -r 60 gb/'Final Fantasy Legend II - The Legend Begins.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : FF Legend 2 - The Legend Begins" \
-    "Author: Nobuo Uematsu" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-ffl2-legend-begins.xex
+file_author="Nobuo Uematsu"
+create_sapr -r 60 "gb/Final Fantasy Legend II - The Legend Begins.vgz"
+create_title "FF Legend 2 - The Legend Begins" "gb-ffl2-legend-begins" "60"
 
-./vgm2sapr -r 60 gb/'The Smurfs - Title Screen.vgz'
-echo -n \
-    "Source: Game Boy                       " \
-    "Title : The Smurfs - Title Screen      " \
-    "Author: Alberto Jose Gonzalez" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gb-smurfs-title.xex
+file_author="Alberto Jose Gonzalez"
+create_sapr -r 60 "gb/The Smurfs - Title Screen.vgz"
+create_title "The Smurfs - Title Screen" "gb-smurfs-title" "60"
 
 # GAME BOY COLOR
+file_source="Game Boy Color"
 
-./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - GR Island.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Pokemon Card - GR Island       " \
-    "Author: Ichiro Shimakura" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-pokemon-island.xex
+file_author="Ichiro Shimakura"
+create_sapr -r 60 "gbc/Pokemon Card GB2 - GR Island.vgz"
+create_title "Pokemon Card - GR Island" "gbc-pokemon-island" "60"
 
-./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - Imakunis Theme.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Pokemon Card - Ikaminu's Theme " \
-    "Author: Ichiro Shimakura" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-pokemon-ikamunis.xex
+file_author="Ichiro Shimakura"
+create_sapr -r 60 "gbc/Pokemon Card GB2 - Imakunis Theme.vgz"
+create_title "Pokemon Card - Ikaminu's Theme" "gbc-pokemon-ikamunis" "60"
 
-./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - Staff Roll.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Pokemon Card - Staff Roll      " \
-    "Author: Ichiro Shimakura" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-pokemon-roll.xex
+create_sapr -r 60 "gbc/Pokemon Card GB2 - Staff Roll.vgz"
+create_title "Pokemon Card - Staff Roll" "gbc-pokemon-roll" "60"
 
-./vgm2sapr -r 60 gbc/'Pokemon Card GB2 - Title Screen.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Pokemon Card - Title Screen    " \
-    "Author: Ichiro Shimakura" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-pokemon-title.xex
+create_sapr -r 60 "gbc/Pokemon Card GB2 - Title Screen.vgz"
+create_title "Pokemon Card - Title Screen" "gbc-pokemon-title" "60"
 
-./vgm2sapr -r 60 gbc/'Action Man - Moon Base 2.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Action Man - Moon Base 2       " \
-    "Author: Iku Mizutani" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-actionman-moonbase2.xex
+file_author="Iku Mizutani"
+create_sapr -r 60 "gbc/Action Man - Moon Base 2.vgz"
+create_title "Action Man - Moon Base 2" "gbc-actionman-moonbase2" "60"
 
-./vgm2sapr -r 60 gbc/'Beatmania - Hunting For You.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Beatmania - Hunting For You    " \
-    "Author: Hiroyuki Togo" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-beatmania-hunting.xex
+file_author="Hiroyuki Togo"
+create_sapr -r 60 "gbc/Beatmania - Hunting For You.vgz"
+create_title "Beatmania - Hunting For You" "gbc-beatmania-hunting" "60"
 
-./vgm2sapr -r 60 gbc/'Pokemon Trading Card Game - Title.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Pokemon Trading Card Game Title" \
-    "Author: Ichiro Shimakura" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-pokemon-trading.xex
+file_author="Ichiro Shimakura"
+create_sapr -r 60 "gbc/Pokemon Trading Card Game - Title.vgz"
+create_title "Pokemon Trading Card Game Title" "gbc-pokemon-trading" "60"
 
-./vgm2sapr -r 60 gbc/'Robocop - Robocop Theme.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Robocop - Robocop Theme        " \
-    "Author: B.Poledouris, K.Wierzynkiewicz" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-robocop-theme.xex
+file_author="B.Poledouris, K.Wierzynkiewicz"
+create_sapr -r 60 "gbc/Robocop - Robocop Theme.vgz"
+create_title "Robocop - Robocop Theme" "gbc-robocop-theme" "60"
 
-./vgm2sapr -r 60 gbc/'Turok 2 - Base.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Turok 2 - Base                 " \
-    "Author: Alberto Jose Gonzalez" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-turok2-base.xex
+file_author="Alberto Jose Gonzalez"
+create_sapr -r 60 "gbc/Turok 2 - Base.vgz"
+create_title "Turok 2 - Base" "gbc-turok2-base" "60"
 
-./vgm2sapr -r 60 gbc/'Lufia - The Legend Returns - Prologue.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Lufia Legend Returns - Prologue" \
-    "Author: Yasunori Shiono, et al." > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-lufia-prologue.xex
+file_author="Yasunori Shiono, et al."
+create_sapr -r 60 "gbc/Lufia - The Legend Returns - Prologue.vgz"
+create_title "Lufia Legend Returns - Prologue" "gbc-lufia-prologue" "60"
 
-./vgm2sapr -r 60 gbc/'Super Mario Bros. Deluxe - Running About.vgz'
-echo -n \
-    "Source: Game Boy Color                 " \
-    "Title : Super Mario BD - Running About " \
-    "Author: Koji Kondo" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/gbc-smbd-running-about.xex
+file_author="Koji Kondo"
+create_sapr -r 60 "gbc/Super Mario Bros. Deluxe - Running About.vgz"
+create_title "Super Mario BD - Running About" "gbc-smbd-running-about" "60"
 
 # TURBOGRAFX-16 / PC ENGINE
+file_source="TurboGrafx-16 / PC Engine"
 
-./vgm2sapr -m 16 -r 60 pcengine/'Bomberman 94 - Jammin Jungle.vgz'
-echo -n \
-    "Source: TurboGrafx-16 / PC Engine      " \
-    "Title : Bomberman '94 - Jammin Jungle  " \
-    "Author: Jun Chikuma, Hajime Kowara" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-bomberman94.xex
+file_author="Jun Chikuma, Hajime Kowara"
+create_sapr -m 16 -r 60 "pcengine/Bomberman 94 - Jammin Jungle.vgz"
+create_title "Bomberman '94 - Jammin Jungle" "pce-bomberman94" "60"
 
-./vgm2sapr -r 60 pcengine/'Dragon'\''s Cruse - Take It Easy (Sunken Ship).vgz'
-echo -n \
-    "Source: TurboGrafx-16 / PC Engine      " \
-    "Title : Dragon's Curse - Take It Easy  " \
-    "Author: Shinichi Sakamoto" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-dragons-curse.xex
+file_author="Shinichi Sakamoto"
+create_sapr -r 60 "pcengine/Dragon's Cruse - Take It Easy (Sunken Ship).vgz"
+create_title "Dragon's Curse - Take It Easy" "pce-dragons-curse" "60"
 
-./vgm2sapr -r 60 pcengine/'Magical Chase - Ending.vgz'
-echo -n \
-    "Source: TurboGrafx-16 / PC Engine      " \
-    "Title : Magical Chase - Ending         " \
-    "Author: Hitoshi Sakimoto" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-magical-chase-ending.xex
+file_author="Hitoshi Sakimoto"
+create_sapr -r 60 "pcengine/Magical Chase - Ending.vgz"
+create_title "Magical Chase - Ending" "pce-magical-chase-ending" "60"
 
-./vgm2sapr -r 60 pcengine/"Magical Chase - You're Restless.vgz"
-echo -n \
-    "Source: TurboGrafx-16 / PC Engine      " \
-    "Title : Magical Chase - You're Restless" \
-    "Author: Masaharu Iwata" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-magical-chase-restless.xex
+file_author="Masaharu Iwata"
+create_sapr -r 60 pcengine/"Magical Chase - You're Restless.vgz"
+create_title "Magical Chase - You're Restless" "pce-magical-chase-restless" "60"
 
-./vgm2sapr -r 60 pcengine/'Snatcher - Cold Sleep.vgz'
-echo -n \
-    "Source: TurboGrafx-16 PC Engine CD-ROM " \
-    "Title : Snatcher - Cold Sleep          " \
-    "Author: Konami Kukeiha Club" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-snatcher-cold-sleep.xex
+file_author="Keita Hoshi, Makiko Tanifuji"
+create_sapr -r 60 "pcengine/Soldier Blade - Opening.vgz"
+create_title "Soldier Blade - Opening" "pce-soldier-blade-opening" "60"
 
-./vgm2sapr -r 60 pcengine/'Soldier Blade - Opening.vgz'
-echo -n \
-    "Source: TurboGrafx-16 / PC Engine      " \
-    "Title : Soldier Blade - Opening        " \
-    "Author: Keita Hoshi, Makiko Tanifuji" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-soldier-blade-opening.xex
+file_author="Falcom Sound Team J.D.K."
+create_sapr -r 60 "pcengine/Ys IV The Dawn Of Ys - On The Other Side Of The Recollection.vgz"
+create_title "Ys IV: Other Side of the Recol." "pce-ys-recollection" "60"
 
-./vgm2sapr -r 60 pcengine/'The Legend Of Xanadu II - Underground Water Course.vgz'
-echo -n \
-    "Source: NEC PC Engine CD               " \
-    "Title : Xanadu II - Underground Water C" \
-    "Author: Atsushi Shirakawa, et al." > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-xanadu2-water-course.xex
+file_author="Hiroshi Kawaguchi"
+create_sapr -r 60 "pcengine/After Burner II - After Burner.vgz"
+create_title "After Burner II - After Burner" "pce-after-burner2" "60"
 
-./vgm2sapr -r 60 pcengine/'Ys IV The Dawn Of Ys - On The Other Side Of The Recollection.vgz'
-echo -n \
-    "Source: TurboGrafx-16 / PC Engine      " \
-    "Title : Ys IV: Other Side of the Recol." \
-    "Author: Falcom Sound Team J.D.K." > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-ys-recollection.xex
+file_author="Kenji Yoshida, et al."
+create_sapr -r 60 "pcengine/Cratermaze - Booby Samba.vgz"
+create_title "Cratermaze - Booby Samba" "pce-cratermaze-booby-samba" "60"
 
-./vgm2sapr -r 60 pcengine/'After Burner II - After Burner.vgz'
-echo -n \
-    "Source: TurboGrafx-16 / PC Engine      " \
-    "Title : After Burner II - After Burner " \
-    "Author: Hiroshi Kawaguchi" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-after-burner2.xex
+file_author="Akihiro Akamatsu, Sachiko Oita"
+create_sapr -r 60 "pcengine/Terra Cresta II - Ending.vgz"
+create_title "Terra Cresta II - Ending" "pce-terra-cresta2-ending" "60"
 
-./vgm2sapr -r 60 pcengine/'Cratermaze - Booby Samba.vgz'
-echo -n \
-    "Source: TurboGrafx-16 / PC Engine      " \
-    "Title : Cratermaze - Booby Samba       " \
-    "Author: Kenji Yoshida, et al." > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-cratermaze-booby-samba.xex
+file_source="TurboGrafx-16 PC Engine CD-ROM"
+file_author="Konami Kukeiha Club"
+create_sapr -r 60 "pcengine/Snatcher - Cold Sleep.vgz"
+create_title "Snatcher - Cold Sleep" "pce-snatcher-cold-sleep" "60"
 
-./vgm2sapr -r 60 pcengine/'Terra Cresta II - Ending.vgz'
-echo -n \
-    "Source: TurboGrafx-16 / PC Engine      " \
-    "Title : Terra Cresta II - Ending       " \
-    "Author: Akihiro Akamatsu, Sachiko Oita" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-terra-cresta2-ending.xex
+file_source="NEC PC Engine CD"
+file_author="Atsushi Shirakawa, et al."
+create_sapr -r 60 "pcengine/The Legend Of Xanadu II - Underground Water Course.vgz"
+create_title "Xanadu II - Underground Water C" "pce-xanadu2-water-course" "60"
 
 #fi
 
-./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'07 Great Merchant.vgz'
-echo -n \
-    "Source: PC Engine Super CD-ROM2        " \
-    "Title : Tengai Makyou - Great Merchant " \
-    "Author: Kohei Tanaka" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-tmfk-great-merchant.xex
+file_source="PC Engine Super CD-ROM2"
 
-./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'13 Sign of the Demon King.vgz'
-echo -n \
-    "Source: PC Engine Super CD-ROM2        " \
-    "Title : TM:FK - Sign Of The Demon King " \
-    "Author: Kohei Tanaka" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-tmfk-sign-demon-king.xex
+file_author="Kohei Tanaka"
 
-./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'24 Secret Maneuvering.vgz'
-echo -n \
-    "Source: PC Engine Super CD-ROM2        " \
-    "Title : Tengai Mak.  Secret Maneuvering" \
-    "Author: Kohei Tanaka" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-tmfk-secret-maneuvering.xex
+create_sapr -r 60 "pcengine/Tengai Makyou - Fuun Kabukiden/07 Great Merchant.vgz"
+create_title "Tengai Makyou - Great Merchant" "pce-tmfk-great-merchant" "60"
 
-./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'40 Fujiyama.vgz'
-echo -n \
-    "Source: PC Engine Super CD-ROM2        " \
-    "Title : Tengai Makyou - Fujiyama       " \
-    "Author: Kohei Tanaka" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-tmfk-fujiyama.xex
+create_sapr -r 60 "pcengine/Tengai Makyou - Fuun Kabukiden/13 Sign of the Demon King.vgz"
+create_title "TM:FK - Sign Of The Demon King" "pce-tmfk-sign-demon-king" "60"
 
-./vgm2sapr -r 60 pcengine/'Tengai Makyou - Fuun Kabukiden'/'57 London Tower.vgz'
-echo -n \
-    "Source: PC Engine Super CD-ROM2        " \
-    "Title : Tengai Makyou - London Tower   " \
-    "Author: Kohei Tanaka" > asm/songname.txt
-make compress
-make player60
-mv player.xex xex/pce-tmfk-london-tower.xex
+create_sapr -r 60 "pcengine/Tengai Makyou - Fuun Kabukiden/24 Secret Maneuvering.vgz"
+create_title "Tengai Mak.  Secret Maneuvering" "pce-tmfk-secret-maneuvering" "60"
+
+create_sapr -r 60 "pcengine/Tengai Makyou - Fuun Kabukiden/40 Fujiyama.vgz"
+create_title "Tengai Makyou - Fujiyama" "pce-tmfk-fujiyama" "60"
+
+create_sapr -r 60 "pcengine/Tengai Makyou - Fuun Kabukiden/57 London Tower.vgz"
+create_title "Tengai Makyou - London Tower" "pce-tmfk-london-tower" "60"
 
 # clear for further tests
-echo -n " " > asm/songname.txt
+rm songname.txt
