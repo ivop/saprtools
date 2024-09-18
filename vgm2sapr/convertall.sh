@@ -1,36 +1,15 @@
-#! /bin/dash
+#! /bin/sh
 
 set -e
 
-# Parameters: file_source file_author_file_title file_name [file_frequency]
-create_output() {
-  file_source=$1
-  file_author=$2
-  file_title=$3
-  file_name=$4.xex
-  file_frequency=$5
-  file_frequency=${file_frequency:-"50"}
-
-  echo "Creating title '${file_title}' by '${file_author}' from '${file_source}' as '${file_name}' with player '${player}' at ${file_frequency} Hz."
-  make compress
-
-  printf 'Source: %-32sTitle : %-32sAuthor: %s' "${file_source}" "${file_title}" "${file_author}" >songname.txt
-
-  make "player${file_frequency}${player}"
-  mv player.xex "xex${player}/${file_name}"
-}
-
-# Evironment: file_source file_author
-# Parameters: file_title file_name
-create_title() {
-  create_output "${file_source}" "${file_author}" "$1" "$2" "$3"
-}
+. ../player/convert.sh
 
 create_sapr() {
- ./vgm2sapr "$@"
+  ./vgm2sapr "$@" >>convertall.log 2>&1
 }
 
 make
+echo >convertall.log
 
 #if false; then
 
@@ -273,8 +252,6 @@ file_author="Atsushi Shirakawa, et al."
 create_sapr -r 60 "pcengine/The Legend Of Xanadu II - Underground Water Course.vgz"
 create_title "Xanadu II - Underground Water C" "pce-xanadu2-water-course" "60"
 
-#fi
-
 file_source="PC Engine Super CD-ROM2"
 
 file_author="Kohei Tanaka"
@@ -293,6 +270,8 @@ create_title "Tengai Makyou - Fujiyama" "pce-tmfk-fujiyama" "60"
 
 create_sapr -r 60 "pcengine/Tengai Makyou - Fuun Kabukiden/57 London Tower.vgz"
 create_title "Tengai Makyou - London Tower" "pce-tmfk-london-tower" "60"
+
+#fi
 
 # clear for further tests
 rm songname.txt

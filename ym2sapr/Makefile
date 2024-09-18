@@ -37,7 +37,7 @@ $(LZSS):
 	+make -C ../lzss-sap
 
 clean:
-	rm -f ym2sapr *~ */*~
+	rm -f *.exe *.log ym2sapr *~ */*~
 
 cleaner: clean
 	rm -f *.sapr *.lz16 player.xex
