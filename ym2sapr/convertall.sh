@@ -11,6 +11,14 @@ create_sapr() {
 make
 echo >convertall.log
 
+for player in "" "-mono" "-softbass" ; do
+
+if [ "$player" = "-mono" ]; then
+    basstype=buzzy
+else
+    basstype=softbass
+fi
+
 #if false; then
 
 # "Atari ST
@@ -135,6 +143,8 @@ create_sapr "msx/xak-ending2.ym"
 create_title "Xak: TAoVS: Ending 2" "xak-ending2" "60"
 
 #fi
+
+done
 
 # clear for further tests
 rm songname.txt
