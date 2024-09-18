@@ -5,7 +5,7 @@ set -e
 . ../player/convert.sh
 
 create_sapr() {
-  ./ym2sapr "$@" >>convertall.log 2>&1
+  ./ym2sapr ${basstype} "$@" >>convertall.log 2>&1
 }
 
 make
@@ -13,11 +13,11 @@ echo >convertall.log
 
 for player in "" "-mono" "-softbass" ; do
 
-if [ "$player" = "-mono" ]; then
-    basstype=buzzy
-else
-    basstype=softbass
-fi
+case "$player" in
+  "") basstype="" ;;
+  "-mono") basstype="-m -b buzzy" ;;
+  "-softbass") basstype="-m -b softbass" ;;
+esac
 
 #if false; then
 
@@ -85,10 +85,14 @@ create_title "Weird Dreams 1" "whittaker-weird-dreams"
 file_source="ZX Spectrum"
 
 file_author="David Whittaker"
-create_sapr spectrum/BackToTheFuture2.ym
+if [ "${player}" = "-softbass" ]; then
+  create_sapr -p 9 "spectrum/BackToTheFuture2.ym"
+else
+  create_sapr "spectrum/BackToTheFuture2.ym"
+fi
 create_title "Back To The Future 2" "whittaker-bttf2"
 
-create_sapr spectrum/BeverlyHillsCop.ym
+create_sapr "spectrum/BeverlyHillsCop.ym"
 create_title "Beverly Hills Cop" "whittaker-axelf"
 
 #Amstrad CPC
@@ -111,25 +115,29 @@ file_author="Tim Follin"
 create_sapr "spectrum/MissileGroundZero.ym"
 create_title "Missile: Ground Zero" "missile-ground0"
 
-# MSX2
+# MSX/MSX2
 file_source="MSX/MSX2"
 
 file_author="Yuzo Koshiro, Mieko Ishikawa"
-create_sapr msx/dsiv-opening.ym
+create_sapr "msx/dsiv-opening.ym"
 create_title "Dragon Slayer IV: Opening Theme" "dsiv-opening" "60"
 
-create_sapr msx/dsiv-shop.ym
+create_sapr "msx/dsiv-shop.ym"
 create_title "Dragon Slayer IV: Theme of Shop" "dsiv-shop" "60"
 
-create_sapr msx/dsiv-lyll.ym
+create_sapr "msx/dsiv-lyll.ym"
 create_title "Dragon Slayer IV: Lyll Worzen" "dsiv-lyll" "60"
 
-create_sapr msx/dsiv-maia.ym
+create_sapr "msx/dsiv-maia.ym"
 create_title "Dragon Slayer IV: Maia Worzen" "dsiv-maia" "60"
 
-create_sapr msx/dsiv-ending.ym
+create_sapr "msx/dsiv-ending.ym"
 create_title "Dragon Slayer IV: Ending Theme" "dsiv-ending" "60"
 
+# MSX2
+file_source="MSX2"
+
+file_author="Tadahiro Nitta, Ryuji Sasai"
 create_sapr "msx/xak-path.ym"
 create_title "Xak: TAoVS: Path To The Fort" "xak-path" "60"
 
