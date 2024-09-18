@@ -2,35 +2,14 @@
 
 set -e
 
-# Parameters: file_source file_author_file_title file_name [file_frequency]
-create_output() {
-  file_source=$1
-  file_author=$2
-  file_title=$3
-  file_name=$4.xex
-  file_frequency=$5
-  file_frequency=${file_frequency:-"50"}
-
-  echo "Creating title '$file_title' by '$file_author' from '$file_source' as '$file_name' with player '$player' at $file_frequency Hz."
-  make compress$player
-
-  printf 'Source: %-32sTitle : %-32sAuthor: %s' "$file_source" "$file_title" "$file_author" > asm/songname.txt
-
-  make player$file_frequency$player
-  mv player.xex xex$player/$file_name
-}
-
-# Evironment: file_source file_author
-# Parameters: file_title file_name
-create_title() {
-  create_output "$file_source" "$file_author" "$1" "$2" "$3"
-}
+. ../player/convert.sh
 
 create_sapr() {
-  ./sid2sapr $stereo -b $basstype "$@"
+  ./sid2sapr $stereo -b $basstype "$@" >>convertall.log 2>&1
 }
 
 make
+echo >convertall.log
 
 for player in "" "-mono" "-softbass" ; do
 
@@ -95,8 +74,9 @@ create_title "Wisdom" "laxity-wisdom"
 file_author="Rob Hubbard"
 
 create_sapr -x 0 "sid/International_Karate.sid"
-# make player50$player PLAYER_LOWMEM=-d:LOWMEM=0x1800
+export PLAYER_LOWMEM=-d:LOWMEM=0x1800
 create_title "International Karate" "hubbard-ik"
+unset PLAYER_LOWMEM
 
 create_sapr "sid/Crazy_Comets.sid"
 create_title "Crazy Comets" "hubbard-comets"
@@ -204,7 +184,7 @@ create_title "Rastan Saga (cover)" "patto-rastan-tune2-cover" "100"
 done
 
 # clear for further tests
-rm asm/songname.txt
+rm songname.txt
 
 # remove one that's too big (53k)
 rm xex/hubbard-ik.xex
