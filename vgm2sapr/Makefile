@@ -10,11 +10,11 @@ compress: $(LZSS)
 	$(LZSS) -6 left.sapr left.lz16
 	$(LZSS) -6 right.sapr right.lz16
 
-player:
-	mads -d:VGM2SAPR -o:player.xex asm/playlzs16-stereo.asm
+player50:
+	mads -d:VGM2SAPR -o:player.xex ../player/asm/playlzs16-stereo.asm
 
 player60:
-	mads -d:VGM2SAPR -d:HZ60 -o:player.xex asm/playlzs16-stereo.asm
+	mads -d:VGM2SAPR -d:HZ60 -o:player.xex ../player/asm/playlzs16-stereo.asm
 
 $(LZSS):
 	+make -C ../lzss-sap
