@@ -39,7 +39,7 @@ player60-softbass:
 player60-softbass-sawtooth:
 	mads -d:SAWTOOTH -d:SID2SAPR $(PLAYER_LOWMEM) -d:HZ60 -o:player.xex ../player/asm/playlzs16-softbass.asm
 
-player100:
+player100-stereo:
 	mads -d:SID2SAPR $(PLAYER_LOWMEM) -d:HZ100 -o:player.xex ../player/asm/playlzs16-stereo.asm
 
 player100-mono:
