@@ -11,12 +11,15 @@ create_sapr() {
 make
 echo >convertall.log
 
-for player in "" "-mono" "-softbass" ; do
+file_converter="ym2sapr"
+
+for player in "stereo" "mono" "softbass" ; do
+echo "Starting ${file_converter} conversion for ${player} player."
 
 case "$player" in
-  "") basstype="" ;;
-  "-mono") basstype="-m -b buzzy" ;;
-  "-softbass") basstype="-m -b softbass" ;;
+  "stereo") basstype="" ;;
+  "mono") basstype="-m -b buzzy" ;;
+  "softbass") basstype="-m -b softbass" ;;
 esac
 
 #if false; then
@@ -85,7 +88,7 @@ create_title "Weird Dreams 1" "whittaker-weird-dreams"
 file_source="ZX Spectrum"
 
 file_author="David Whittaker"
-if [ "${player}" = "-softbass" ]; then
+if [ "${player}" = "softbass" ]; then
   create_sapr -p 9 "spectrum/BackToTheFuture2.ym"
 else
   create_sapr "spectrum/BackToTheFuture2.ym"

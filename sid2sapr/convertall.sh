@@ -11,15 +11,18 @@ create_sapr() {
 make
 echo >convertall.log
 
-for player in "" "-mono" "-softbass" ; do
+file_converter="sid2sapr"
 
-if [ "$player" = "-mono" ]; then
+for player in "stereo" "mono" "softbass" ; do
+echo "Starting ${file_converter} conversion for ${player} player."
+
+if [ "$player" = "mono" ]; then
     basstype=buzzy
 else
     basstype=softbass
 fi
 
-if [ "$player" = "" ]; then
+if [ "$player" = "stereo" ]; then
     stereo=-s
 else
     stereo=
@@ -187,4 +190,4 @@ done
 rm songname.txt
 
 # remove one that's too big (53k)
-rm xex/hubbard-ik.xex
+rm "../xex/${file_converter}/stereo/hubbard-ik.xex"
