@@ -49,9 +49,9 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 
 Two Pokeys. Either four 16-bit channels, or eight 8-bit channels (six used by PC Engine conversions).
 
-https://github.com/ivop/saprtools/tree/main/ym2sapr/xex  
-https://github.com/ivop/saprtools/tree/main/sid2sapr/xex  
-https://github.com/ivop/saprtools/tree/main/vgm2sapr/xex  
+https://github.com/ivop/saprtools/tree/main/xex/ym2sapr/stereo
+https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/stereo 
+https://github.com/ivop/saprtools/tree/main/xex/vgm2sapr/stereo 
 
 ##### Mono with SOFTBASS
 
@@ -59,20 +59,21 @@ Single Pokey. Four 8-bit channels, with up to three channels with low-CPU IRQ-ba
 On emulation, you can turn on Altirra's sound monitor and see when channels switch to V (volume only) for the low basses.
 Some SID conversions use two 8-bit channels and one 16-bit channel, but not all are adjusted to use that yet.
 
-https://github.com/ivop/saprtools/tree/main/ym2sapr/xex-softbass  
-https://github.com/ivop/saprtools/tree/main/sid2sapr/xex-softbass  
+https://github.com/ivop/saprtools/tree/main/xex/ym2sapr/softbass
+https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/softbass
 
 ##### Mono with distortion C bass
 
 Single Pokey with distortion C bass. These are hit or miss. No bass vibrato, so some sound bad. But it's the Pokey bass sound ;)
 All were done with the "buzzy" type, which only becomes "gritty" when it goes lower than the range "buzzy" bass provides.
 
-https://github.com/ivop/saprtools/tree/main/ym2sapr/xex-mono  
-https://github.com/ivop/saprtools/tree/main/sid2sapr/xex-mono  
+https://github.com/ivop/saprtools/tree/main/xex/ym2sapr/mono
+https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/mono
 
 ### Build Instructions
 
-Enter the directory of the converter you want to build, and type make.
+Start "convertall.sh" in the main directory of the repository.
+Alternatively enter the directory of the converter you want to build, and type "make".
 Needed are a C and C++ compiler like CLang or GCC, and to assemble the Atari 8-bit players you need Mad Assembler[^3] (mads) available in your path.
 All tools were tested on a recent Linux distribution, but should also work with WSL2 on Windows.
 Native Windows with cygwin or MSYS2 has not been tested yet, but some known portability issues were taken into consideration during development, like using "rb" with fopen() to open in binary mode.
@@ -80,7 +81,7 @@ Each directory contains its own README.md with sometimes more detailed instructi
 
 ### Credits
 
-ym2sapr, vgm2ym, sid2sapr, sndh2ym, and vgm2sapr are Copyright © 2023 by Ivo van Poorten. Licensed under the terms of the BSD-2 license. See LICENSE for details.
+ym2sapr, vgm2ym, sid2sapr, sndh2ym, and vgm2sapr are Copyright © 2023-2024 by Ivo van Poorten. Licensed under the terms of the BSD-2 license. See LICENSE for details.
 
 aylet is Copyright © 2001-2005 by Russell Marks and Ian Collier. ym modifications are Copyright © 2023 by Ivo van Poorten. Licensed under the terms of the GPL-2. See COPYING for details.
 
