@@ -1,4 +1,5 @@
 *.exe
+*.log
 *.o
 *~
 .DS_Store
