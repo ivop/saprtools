@@ -74,9 +74,9 @@ create_title "Wisdom" "laxity-wisdom"
 file_author="Rob Hubbard"
 
 create_sapr -x 0 "sid/International_Karate.sid"
+export PLAYER_LOWMEM=-d:LOWMEM=0x1800
 create_title "International Karate" "hubbard-ik"
-# TODO
-make player50$player PLAYER_LOWMEM=-d:LOWMEM=0x1800
+unset PLAYER_LOWMEM
 
 create_sapr "sid/Crazy_Comets.sid"
 create_title "Crazy Comets" "hubbard-comets"
