@@ -49,9 +49,9 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 
 Two Pokeys. Either four 16-bit channels, or eight 8-bit channels (six used by PC Engine conversions).
 
-https://github.com/ivop/saprtools/tree/main/xex/ym2sapr/stereo
-https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/stereo
-https://github.com/ivop/saprtools/tree/main/xex/vgm2sapr/stereo
+https://github.com/ivop/saprtools/tree/main/xex/ym2sapr/stereo  
+https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/stereo  
+https://github.com/ivop/saprtools/tree/main/xex/vgm2sapr/stereo  
 
 ##### Mono with SOFTBASS
 
@@ -59,16 +59,16 @@ Single Pokey. Four 8-bit channels, with up to three channels with low-CPU IRQ-ba
 On emulation, you can turn on Altirra's sound monitor and see when channels switch to V (volume only) for the low basses.
 Some SID conversions use two 8-bit channels and one 16-bit channel, but not all are adjusted to use that yet.
 
-https://github.com/ivop/saprtools/tree/main/xex/ym2sapr/softbass
-https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/softbass
+https://github.com/ivop/saprtools/tree/main/xex/ym2sapr/softbass  
+https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/softbass  
 
 ##### Mono with distortion C bass
 
 Single Pokey with distortion C bass. These are hit or miss. No bass vibrato, so some sound bad. But it's the Pokey bass sound ;)
 All were done with the "buzzy" type, which only becomes "gritty" when it goes lower than the range "buzzy" bass provides.
 
-https://github.com/ivop/saprtools/tree/main/xex/ym2sapr/mono
-https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/mono
+https://github.com/ivop/saprtools/tree/main/xex/ym2sapr/mono  
+https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/mono  
 
 ### Build Instructions
 
