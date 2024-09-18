@@ -13,10 +13,6 @@ cd vgm2sapr
 ./convertall.sh
 cd ..
 
-cd vgm2ym
-./convertall.sh
-cd ..
-
 cd ym2sapr
 ./convertall.sh
 cd ..
