@@ -11,7 +11,7 @@ create_sapr() {
 make
 echo >convertall.log
 
-file_converter="ym2sapr"
+file_converter="vgm2sapr"
 
 for player in "stereo" ; do
 echo "Starting ${file_converter} conversion for ${player} player."
