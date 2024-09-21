@@ -84,9 +84,9 @@ static dbentry_t db[] = {
 static dbentry_t db[DB_MAX];
 
 static int dbcount = DB_COUNT;  /* entry count                 */
-static int dbmax = DB_MAX;      /* max entry                   */
+//static int dbmax = DB_MAX;      /* max entry                   */
 static int dbsort = DB_SORT;    /* set if db is sorted         */
-static int dbchange = 0;        /* set if db has been modified */
+//static int dbchange = 0;        /* set if db has been modified */
 
 static int cmp(const void *ea, const void *eb) {
     const dbentry_t *a = (const dbentry_t *)ea;

@@ -217,7 +217,8 @@ int main(int argc, char **argv) {
 
     fprintf(stderr, "timedb hash: %08x\n", hash);
 
-    unsigned int frames, flags;
+    unsigned int frames;
+    int flags;
     if (timedb_get(hash, subtune-1, &frames, &flags) >= 0) {
         fprintf(stderr, "hash found!\n");
         if (!seconds_override) {
