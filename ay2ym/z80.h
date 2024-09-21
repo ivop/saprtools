@@ -1,3 +1,4 @@
+
 /* Miscellaneous definitions for xz80, copyright (C) 1994 Ian Collier.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,7 +23,7 @@
 #define Z80_save  5
 #define Z80_log   6
 
-extern void z80loop(unsigned char *data,unsigned char *stacketc);
+extern void z80loop(unsigned char *data, unsigned char *stacketc);
 
 #define fetch(x) (mem[x])
 #define fetch2(x) ((fetch(((x)+1)&0xffff)<<8)|fetch(x))
@@ -39,17 +40,20 @@ extern void z80loop(unsigned char *data,unsigned char *stacketc);
 #define store2(x,y) store2b(x,(y)>>8,(y)&255)
 
 #ifdef __GNUC__
-static void inline storefunc(unsigned short ad,unsigned char b){
-   store(ad,b);
+static void inline storefunc(unsigned short ad, unsigned char b) {
+    store(ad, b);
 }
-#undef store
-#define store(x,y) storefunc(x,y)
 
-static void inline store2func(unsigned short ad,unsigned char b1,unsigned char b2){
-   store2b(ad,b1,b2);
+#    undef store
+#    define store(x,y) storefunc(x,y)
+
+static void inline store2func(unsigned short ad, unsigned char b1,
+                              unsigned char b2) {
+    store2b(ad, b1, b2);
 }
-#undef store2b
-#define store2b(x,hi,lo) store2func(x,hi,lo)
+
+#    undef store2b
+#    define store2b(x,hi,lo) store2func(x,hi,lo)
 #endif
 
 #define bc ((b<<8)|c)
