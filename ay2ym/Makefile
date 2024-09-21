@@ -1,5 +1,5 @@
-CC=gcc
-CFLAGS=-O2 -Wall
+CC ?= gcc
+CFLAGS ?= -O2 -Wall
 
 all: ay2ym
 

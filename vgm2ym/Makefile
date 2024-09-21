@@ -1,4 +1,3 @@
-
 CC ?= gcc
 
 vgm2ym: main.c

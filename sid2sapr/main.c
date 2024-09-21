@@ -223,7 +223,7 @@ static uint8_t find_closest_distc(const struct bass table[], double f) {
     int found = 0;
 
     for (int i=0; i<36; i++) {
-        double newd = abs(table[i].realf - f);
+        double newd = fabs(table[i].realf - f);
         if (newd < delta) {
             delta = newd;
             found = i;

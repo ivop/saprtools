@@ -13,4 +13,6 @@
 *.png binary
 *.jpg binary
 
+*.ay binary diff=hex
 *.xex binary diff=hex
+*.ym binary diff=hex

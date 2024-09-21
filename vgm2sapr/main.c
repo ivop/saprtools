@@ -413,7 +413,7 @@ static uint8_t find_closest_distc(const struct bass table[], double f) {
     int found = 0;
 
     for (int i=0; i<36; i++) {
-        double newd = abs(table[i].realf - f);
+        double newd = fabs(table[i].realf - f);
         if (newd < delta) {
             delta = newd;
             found = i;
@@ -974,14 +974,14 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             if (val & 0x80) {
                 reg = (val >> 4) & 0x07;
 
-                if (sn.r[reg] & 0x0f != val & 0x0f)
+                if ((sn.r[reg] & 0x0f) != (val & 0x0f))
                     changed = true;
 
                 switch (reg) {
                 case REG_FREQ1:
                 case REG_FREQ2:
                 case REG_FREQ3:
-                    if (sn.r[reg] & 0x0f != val & 0x0f)
+                    if ((sn.r[reg] & 0x0f) != (val & 0x0f))
                         changed = true;
                     sn.r[reg] &= 0x03f0;
                     sn.r[reg] |= val & 0x0f;

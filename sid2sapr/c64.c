@@ -42,9 +42,9 @@
 // --------------------------------------------------------------------------
 // FIXED POINT HELPERS  (16.16 signed)
 //
-static inline int fixed_from_float(float f) {
-    return (int)(f * (1 << 16));
-}
+//static inline int fixed_from_float(float f) {
+//    return (int)(f * (1 << 16));
+//}
 
 // --------------------------------------------------------------------------
 // CALCULATED "CONSTANTS"

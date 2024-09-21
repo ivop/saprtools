@@ -1,5 +1,5 @@
-CFLAGS ?= -O2 -Wall
 CC ?= gcc
+CFLAGS ?= -O2 -Wall
 
 CFLAGS += $$(pkg-config --cflags sdl)
 LIBS += $$(pkg-config --libs sdl)
