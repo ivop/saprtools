@@ -18,8 +18,8 @@ Tools for creating or manipulating Atari 8-bit SAP-R files.
 | --- | --- | --- | --- | --- |
 | 1. | Atari ST | YM2149 | .ym | ym2sapr |
 | | Atari ST | YM2149 | .sndh | sndh2ym, ym2sapr |
-| 2. | ZX Spectrum | AY8910 | .ay | aylet -y, ym2sapr |
-| 3. | Amstrad CPC | AY8910 | .ay | aylet -y, ym2sapr |
+| 2. | ZX Spectrum | AY8910 | .ay | ay2ym, ym2sapr |
+| 3. | Amstrad CPC | AY8910 | .ay | ay2ym, ym2sapr |
 | 4. | MSX/MSX2 | AY8910 | .vgm | vgm2ym, ym2sapr |
 | | MSX/MSX2 | AY8910 | .kss | kss2vgm[^1], vgm2ym, ym2sapr |
 | 5. | Commodore 64 | SID | .sid | sid2sapr |
@@ -83,7 +83,7 @@ Each directory contains its own README.md with sometimes more detailed instructi
 
 ym2sapr, vgm2ym, sid2sapr, sndh2ym, and vgm2sapr are Copyright © 2023-2024 by Ivo van Poorten. Licensed under the terms of the BSD-2 license. See LICENSE for details.
 
-aylet is Copyright © 2001-2005 by Russell Marks and Ian Collier. ym modifications are Copyright © 2023 by Ivo van Poorten. Licensed under the terms of the GPL-2. See COPYING for details.
+ay2ym is Copyright © 2024 by Ivo van Poorten, Copyright © 2001-2005 by Russell Marks, Copyright © 1994 by Ian Collier. Licensed under the terms of the GPL-2. See LICESE for details.
 
 lzss-sap is Copyright © 2020 by Daniel Serpell. MIT license. See LICENSE for details.  
 

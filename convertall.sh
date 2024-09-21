@@ -1,7 +1,7 @@
 #! /bin/sh
 set -ex
 
-cd aylet
+cd ay2ym
 ./convertall.sh
 cd ..
 
