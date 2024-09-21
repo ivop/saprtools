@@ -55,10 +55,9 @@ struct cb_vars {
 /* Count machine cycles and capture PSG registers every interval */
 
 static void cb(uint32_t pc, void *arg) {
-    uint16_t insn = probe_read_memory_16(pc);
+    //uint16_t insn = probe_read_memory_16(pc);
     struct cb_vars *cb_vars = arg;
     FILE *out = cb_vars->out;
-    uint8_t regs[16];
     union psg *psg = psg_device.state.internal;
     static uint64_t prev_cycle = 40000, cycle;
 
