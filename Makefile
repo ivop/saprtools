@@ -1,17 +1,13 @@
-MAKEFLAGS += --no-print-directory
-
 all:
-	set -ex
-	cd ay2ym    && ./convertall.sh && cd ..
-	cd lzss-sap && make            && cd ..
-	cd sid2sapr && ./convertall.sh && cd ..
-	cd vgm2sapr && ./convertall.sh && cd ..
-	cd ym2sapr  && ./convertall.sh && cd ..
+	cd ay2ym    && ./convertall.sh
+	+make -C lzss-sap
+	cd sid2sapr && ./convertall.sh
+	cd vgm2sapr && ./convertall.sh
+	cd ym2sapr  && ./convertall.sh
 
 clean:
-	cd ay2ym    && make clean && cd ..
-	cd lzss-sap && make clean && cd ..
-	cd sid2sapr && make clean && cd ..
-	cd vgm2sapr && make clean && cd ..
-	cd ym2sapr  && make clean && cd ..
-
+	+make -C ay2ym clean
+	+make -C lzss-sap clean
+	+make -C sid2sapr clean
+	+make -C vgm2sapr clean
+	+make -C ym2sapr clean
