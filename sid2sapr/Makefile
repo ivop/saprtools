@@ -1,5 +1,5 @@
-CFLAGS ?= -O2 -Wall
 CC ?= gcc
+CFLAGS ?= -O2 -Wall
 LIBS = -lm
 LZSS = ../lzss-sap/bin/lzss
 

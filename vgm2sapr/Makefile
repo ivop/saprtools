@@ -1,4 +1,3 @@
-
 CC ?= gcc
 
 LZSS = ../lzss-sap/bin/lzss
