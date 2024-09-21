@@ -72,8 +72,9 @@ https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/mono
 
 ### Build Instructions
 
-Run "make" in the main directory of the repository.
-Alternatively enter the directory of the converter you want to build, and type "make".
+Run ```make``` in the main directory of the repository.
+Alternatively enter the directory of the converter you want to build, and type ```make```.
+To run all sample conversions, run ```make convertall```.
 Needed are a C and C++ compiler like CLang or GCC, and to assemble the Atari 8-bit players you need Mad Assembler[^3] (mads) available in your path.
 All tools were tested on a recent Linux distribution, but should also work with WSL2 on Windows.
 Native Windows with cygwin has been tested. Native windows with MSYS2 has not been tested yet, but some known portability issues were taken into consideration during development, like using "rb" with fopen() to open in binary mode.
