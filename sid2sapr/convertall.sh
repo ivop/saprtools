@@ -8,7 +8,6 @@ create_sapr() {
   ./sid2sapr $stereo -b $basstype "$@" >>convertall.log 2>&1
 }
 
-make
 echo >convertall.log
 
 file_converter="sid2sapr"

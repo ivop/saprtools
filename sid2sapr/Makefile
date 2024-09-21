@@ -3,6 +3,11 @@ CFLAGS ?= -O2 -Wall
 LIBS = -lm
 LZSS = ../lzss-sap/bin/lzss
 
+all: sid2sapr
+
+convertall: sid2sapr
+	./convertall.sh
+
 sid2sapr: main.c c64.c m6502.h c64.h md5.c md5.h saw.h
 		$(CC) $(CFLAGS) -o sid2sapr main.c c64.c md5.c $(LIBS)
 

@@ -1,7 +1,5 @@
 #! /bin/sh
 
-make
-
 ./vgm2ym -r 60 -f -o ../ym2sapr/msx/dsiv-opening.ym \
          msx/'Dragon Slayer IV - 02 Opening Theme 2.vgz'
 ./vgm2ym -r 60 -f -o ../ym2sapr/msx/dsiv-shop.ym \

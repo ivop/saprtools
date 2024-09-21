@@ -8,7 +8,6 @@ create_sapr() {
   ./vgm2sapr "$@" >>convertall.log 2>&1
 }
 
-make
 echo >convertall.log
 
 file_converter="vgm2sapr"

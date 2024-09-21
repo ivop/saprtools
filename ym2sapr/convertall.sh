@@ -8,7 +8,6 @@ create_sapr() {
   ./ym2sapr ${basstype} "$@" >>convertall.log 2>&1
 }
 
-make
 echo >convertall.log
 
 file_converter="ym2sapr"

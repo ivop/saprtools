@@ -1,7 +1,11 @@
-
 CXX ?= g++
 
 LZSS = ../lzss-sap/bin/lzss
+
+all: ym2sapr
+
+convertall: ym2sapr
+	./convertall.sh
 
 ym2sapr: main.cpp lzh.cpp lzh.h
 	$(CXX) -O2 -o ym2sapr main.cpp lzh.cpp -lm

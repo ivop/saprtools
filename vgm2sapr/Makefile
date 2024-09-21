@@ -1,6 +1,10 @@
 CC ?= gcc
-
 LZSS = ../lzss-sap/bin/lzss
+
+all: vgm2sapr
+
+convertall: vgm2sapr
+	./convertall.sh
 
 vgm2sapr: main.c
 	$(CC) -O2 -o vgm2sapr main.c -lm -lz
