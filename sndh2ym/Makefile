@@ -9,6 +9,11 @@ SRC = $(BASE)/lib/ice/ice.c $(BASE)/lib/internal/print.c \
 CFLAGS = -O2 -Wall -I$(BASE)/include
 LIB = $(BASE)/lib/psgplay/libpsgplay.a
 
+all: sndh2ym
+
+convertall: sndh2ym
+	./convertall.sh
+
 sndh2ym: $(SRC) $(LIB)
 	$(CC) $(CFLAGS) -o sndh2ym $(SRC) $(LIB) -lm
 
