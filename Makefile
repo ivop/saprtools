@@ -1,4 +1,4 @@
-
+MAKEFLAGS += --no-print-directory
 
 all:
 	set -ex
