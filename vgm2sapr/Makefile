@@ -19,7 +19,7 @@ $(LZSS):
 	+make -C ../lzss-sap
 
 clean:
-	rm -f 	rm -f *.exe *.log *~ */*~ vgm2sapr
+	rm -f *.exe *.log *~ */*~ vgm2sapr
 
 cleaner: clean
 	rm -f *.sapr *.xex *.lz16
