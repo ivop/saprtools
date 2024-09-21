@@ -1,4 +1,5 @@
 all:
+	+make -C sndh2ym
 	cd ay2ym    && ./convertall.sh
 	+make -C lzss-sap
 	cd sid2sapr && ./convertall.sh
@@ -6,6 +7,7 @@ all:
 	cd ym2sapr  && ./convertall.sh
 
 clean:
+	+make -C sndh2ym clean
 	+make -C ay2ym clean
 	+make -C lzss-sap clean
 	+make -C sid2sapr clean
