@@ -596,6 +596,7 @@ static void usage(void) {
 "               in stereo mode, one channel is extended to 32-bits\n"
 "   -g cents    stereo HP filter detune amount in cents\n"
 "   -G value    adjust HP filter volume [0.0-1.0]\n"
+"   -D          transpose HP filter channel 1 octave down\n"
 );
 }
 
@@ -619,10 +620,11 @@ int main(int argc, char *argv[]) {
     int hpfilter = 0;
     double detune_cents = 0.0;
     double hpf_volume = 1.0;
+    bool hpf_down = false;
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:e:E:F:g:G:")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:e:E:F:g:G:D")) != -1) {
         switch (option) {
         case 'a':
             adjust = true;
@@ -745,6 +747,9 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "invalid hpfilter volume adjustment\n");
                 return 1;
             }
+            break;
+        case 'D':
+            hpf_down = true;
             break;
         case 'h':
         default:
@@ -877,10 +882,23 @@ int main(int argc, char *argv[]) {
                                             (int)round(pulse_volume*100));
     if (xflag) {
         fprintf(stderr, "experimental: ");
-        if (sawtooth) {
-            fprintf(stderr, "extend 8-bit channel %d to double channel sawtooth\n", xorder[2]);
+        if (!stereo) {
+            if (sawtooth) {
+                fprintf(stderr, "extend 8-bit channel %d to double channel sawtooth\n", xorder[2]);
+            } else if (hpfilter) {
+                fprintf(stderr, "extend 8-bit channel %d to two channel hp filter\n", xorder[2]);
+            } else {
+                fprintf(stderr, "extend 8-bit channel %d to 16-bit\n", xorder[2]);
+            }
         } else {
-            fprintf(stderr, "extend 8-bit channel %d to 16-bit\n", xorder[2]);
+            if (sawtooth) {
+                fprintf(stderr, "there is no sawtooth in stereo mode\n");
+                return 1;
+            } else if (hpfilter) {
+                fprintf(stderr, "stereo: extend 16-bit channel %d to four channel hp filter\n", xorder[2]);
+            } else {
+                fprintf(stderr, "stereo: -x ignored\n");
+            }
         }
     }
 
@@ -912,6 +930,12 @@ int main(int argc, char *argv[]) {
             }
             if (hpfilter) {
                 pokey2[8] = 0x7a; // join 1+2, join 3+4, high clock, filter 2+4
+                if (hpf_down) { // XXX recalculate from SID frequency
+                    uint16_t div = (pokey2[2] << 8) | pokey2[0];
+                    div <<= 1;
+                    pokey2[2] = div >> 8;
+                    pokey2[0] = div & 0xff;
+                }
                 pokey2[4] = pokey2[0];
                 pokey2[6] = pokey2[2];
                 if (hpf_volume < 1.0) {
