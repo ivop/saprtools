@@ -32,8 +32,6 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-softbass player50-softbass-sawtooth
 mv player.xex experimental/exp-robocop.xex
 
-# fi
-
 # Two channel "high-pass" filter, detune starts to sound out-of-tune when
 # note frequency rises. Some parts sound really nice, other parts not so
 # much... If only we could switch configurations at several places during
@@ -50,6 +48,28 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Zamzara" "Charles Deenen" > songname.txt
 make compress-softbass player50-softbass-sawtooth
 mv player.xex experimental/exp-zamzara-hpf.xex
+
+#fi
+
+# Stereo HP filter, one full pokey for one channel. Now where talkin' ;)
+
+./sid2sapr -m both -x 2 -s -F 3 -g 10.0 sid/Zamzara.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Zamzara" "Charles Deenen" > songname.txt
+make compress-stereo player50-stereo
+mv player.xex experimental/exp-zamzara-stereo-hpf.xex
+
+./sid2sapr -x 2 -s -F 3 -g 10.0 sid/Cybernoid.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Cybernoid" "Jeroen Tel" > songname.txt
+make compress-stereo player50-stereo
+mv player.xex experimental/exp-cybernoid-stereo-hpf.xex
+
+./sid2sapr -x 1 -m both -s -F 3 -g 10.0 sid/Cybernoid_II.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Cybernoid II" "Jeroen Tel" > songname.txt
+make compress-stereo player50-stereo
+mv player.xex experimental/exp-cybernoid2-stereo-hpf.xex
 
 # clear for further tests
 rm -f songname.txt

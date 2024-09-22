@@ -473,6 +473,16 @@ static void adjust_for_cancellation(uint8_t *pokey) {
 
 /* ------------------------------------------------------------------------ */
 
+static uint16_t detune_16bits(uint16_t div, double cents) {
+    double f = ATARI_CLOCK / 2.0 / (div + 7);   // back to Hertz
+
+    f *= pow(2, cents/1200.0);
+
+    return round((ATARI_CLOCK / 2.0 / f) - 7);
+}
+
+/* ------------------------------------------------------------------------ */
+
 static char *calculate_md5(char *filename) {
     unsigned char inBuf[1024];
     int inLen;
@@ -562,7 +572,8 @@ static void usage(void) {
 "   -d          damp ringmod to half volume\n"
 "   -w value    let PWM influence the volume by factor [0.0-1.0]\n"
 "   -s          enable stereo pokey mode [default: mono pokey]\n"
-"   -x voice    extend one mono channel to 16-bits [default: none]\n"
+"   -x voice    extend one mono channel (0-2) to 16-bits [default: none]\n"
+"               also selects HP filtered voice in stereo mode, see below\n"
 "\n"
 "               [HIGHLY EXPERIMENTAL]\n"
 "   -e type     extend one mono channel to sawtooth\n"
@@ -575,12 +586,15 @@ static void usage(void) {
 "   -E factor   change non-sawtooth volume [0.0-1.0, default: 1.0]\n"
 "               sometimes use -p to raise overall volume first\n"
 "               also works for hpfiler (-F) option\n"
-"   -F type     extend one mono channel to HP filter\n"
+"\n"
+"   -F type     extend one channel to use HP filter\n"
 "               must be used in combination with -x\n"
 "               type: 1 - detuned channel +1, muted\n"
 "               type: 2 - detuned channel -1, muted\n"
 "               type: 3 - type 1, volume 50%%\n"
 "               type: 4 - type 2, volume 50%%\n"
+"               in stereo mode, one channel is extended to 32-bits\n"
+"   -g cents    stereo HP filter detune amount in cents\n"
 );
 }
 
@@ -602,10 +616,11 @@ int main(int argc, char *argv[]) {
     int sawtooth = 0;
     double nonsawf = 1.0;
     int hpfilter = 0;
+    double detune_cents = 0.0;
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:e:E:F:")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:e:E:F:g:")) != -1) {
         switch (option) {
         case 'a':
             adjust = true;
@@ -718,6 +733,15 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "invalid hpfilter type\n");
                 return 1;
             }
+            break;
+        case 'g':
+            detune_cents = strtod(optarg, NULL);
+#if 0
+            if (detune_cents < -25 || detune_cents > 25) {
+                fprintf(stderr, "detune in cents out of range [-25,25]\n");
+                return 1;
+            }
+#endif
             break;
         case 'h':
         default:
@@ -867,16 +891,46 @@ int main(int argc, char *argv[]) {
 
         if (stereo) {
             memset(pokey2, 0, 9);
-            pokey[8] = pokey2[8] = 0x78;
+            pokey[8] = pokey2[8] = 0x78; // join 1+2, join 3+4, high clock
         }
 
         c64_cpu_jsr(playAddress, 0);
         c64_handle_adsr(nsamples/2);
 
         if (stereo) {
-            sid2pokey2(0, &pokey[0]);
-            sid2pokey2(1, &pokey[4]);
-            sid2pokey2(2, &pokey2[0]);
+            if (xflag) {
+                sid2pokey2(xorder[0], &pokey[0]);
+                sid2pokey2(xorder[1], &pokey[4]);
+                sid2pokey2(xorder[2], &pokey2[0]);
+            } else {
+                sid2pokey2(0, &pokey[0]);
+                sid2pokey2(1, &pokey[4]);
+                sid2pokey2(2, &pokey2[0]);
+            }
+            if (hpfilter) {
+                pokey2[8] = 0x7a; // join 1+2, join 3+4, high clock, filter 2+4
+                pokey2[4] = pokey2[0];
+                pokey2[6] = pokey2[2];
+                if (hpfilter >= 3) {
+                    uint8_t v = (pokey2[3] & 0x0f) >> 1;
+                    pokey2[7] = (pokey2[3] & 0xf0) | v; // vol 50%
+                } else {
+                    pokey2[7] = pokey2[3] & 0xf0; // muted
+                }
+                if ((hpfilter-1) & 1 ) {    // type 1 and 3
+                    uint16_t div = (pokey2[6] << 8) | pokey2[4];
+                    uint16_t newdiv = detune_16bits(div, detune_cents);
+                    if (newdiv == div) newdiv++;
+                    pokey2[4] = newdiv & 0x00ff;
+                    pokey2[6] = newdiv >> 8;
+                } else {                    // type 2 and 4
+                    uint16_t div = (pokey2[6] << 8) | pokey2[4];
+                    uint16_t newdiv = detune_16bits(div, -detune_cents);
+                    if (newdiv == div) newdiv--;
+                    pokey2[4] = newdiv & 0x00ff;
+                    pokey2[6] = newdiv >> 8;
+                }
+            }
         } else {
             if (xflag) {
                 if (!sawtooth && !hpfilter) {
