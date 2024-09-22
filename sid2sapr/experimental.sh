@@ -2,7 +2,7 @@
 
 make
 
-#if false; then
+if false; then
 
 # Two channel sawtooth, has problems with vibrato because of high clock and
 # fast changing of frequency. Some parts sound pretty good, others not so
@@ -49,23 +49,23 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-softbass player50-softbass-sawtooth
 mv player.xex experimental/exp-zamzara-hpf.xex
 
-#fi
+fi
 
 # Stereo HP filter, one full pokey for one channel. Now where talkin' ;)
 
-./sid2sapr -m both -x 2 -s -F 3 -g 10.0 sid/Zamzara.sid
+./sid2sapr -m both -x 2 -s -F 3 -g 10.0 -G 0.9 sid/Zamzara.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Zamzara" "Charles Deenen" > songname.txt
 make compress-stereo player50-stereo
 mv player.xex experimental/exp-zamzara-stereo-hpf.xex
 
-./sid2sapr -x 2 -s -F 3 -g 10.0 sid/Cybernoid.sid
+./sid2sapr -x 2 -s -F 3 -g 10.0 -G 0.8 sid/Cybernoid.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Cybernoid" "Jeroen Tel" > songname.txt
 make compress-stereo player50-stereo
 mv player.xex experimental/exp-cybernoid-stereo-hpf.xex
 
-./sid2sapr -x 1 -m both -s -F 3 -g 10.0 sid/Cybernoid_II.sid
+./sid2sapr -x 1 -m both -s -F 3 -g 10.0 -G 0.8 sid/Cybernoid_II.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Cybernoid II" "Jeroen Tel" > songname.txt
 make compress-stereo player50-stereo

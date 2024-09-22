@@ -595,6 +595,7 @@ static void usage(void) {
 "               type: 4 - type 2, volume 50%%\n"
 "               in stereo mode, one channel is extended to 32-bits\n"
 "   -g cents    stereo HP filter detune amount in cents\n"
+"   -G value    adjust HP filter volume [0.0-1.0]\n"
 );
 }
 
@@ -617,10 +618,11 @@ int main(int argc, char *argv[]) {
     double nonsawf = 1.0;
     int hpfilter = 0;
     double detune_cents = 0.0;
+    double hpf_volume = 1.0;
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:e:E:F:g:")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:e:E:F:g:G:")) != -1) {
         switch (option) {
         case 'a':
             adjust = true;
@@ -736,12 +738,13 @@ int main(int argc, char *argv[]) {
             break;
         case 'g':
             detune_cents = strtod(optarg, NULL);
-#if 0
-            if (detune_cents < -25 || detune_cents > 25) {
-                fprintf(stderr, "detune in cents out of range [-25,25]\n");
+            break;
+        case 'G':
+            hpf_volume = strtod(optarg, NULL);
+            if (hpf_volume < 0.0 || hpf_volume > 1.0) {
+                fprintf(stderr, "invalid hpfilter volume adjustment\n");
                 return 1;
             }
-#endif
             break;
         case 'h':
         default:
@@ -911,6 +914,11 @@ int main(int argc, char *argv[]) {
                 pokey2[8] = 0x7a; // join 1+2, join 3+4, high clock, filter 2+4
                 pokey2[4] = pokey2[0];
                 pokey2[6] = pokey2[2];
+                if (hpf_volume < 1.0) {
+                    uint8_t v = pokey2[3] & 0x0f;
+                    v = round((double) v * hpf_volume);
+                    pokey2[3] = (pokey2[3] & 0xf0) | v;
+                }
                 if (hpfilter >= 3) {
                     uint8_t v = (pokey2[3] & 0x0f) >> 1;
                     pokey2[7] = (pokey2[3] & 0xf0) | v; // vol 50%
