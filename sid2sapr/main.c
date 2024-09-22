@@ -574,6 +574,13 @@ static void usage(void) {
 "                     3 - 12-TET table (selected from type 1)\n"
 "   -E factor   change non-sawtooth volume [0.0-1.0, default: 1.0]\n"
 "               sometimes use -p to raise overall volume first\n"
+"               also works for hpfiler (-F) option\n"
+"   -F type     extend one mono channel to HP filter\n"
+"               must be used in combination with -x\n"
+"               type: 1 - detuned channel +1, muted\n"
+"               type: 2 - detuned channel -1, muted\n"
+"               type: 3 - type 1, volume 50%%\n"
+"               type: 4 - type 2, volume 50%%\n"
 );
 }
 
@@ -594,10 +601,11 @@ int main(int argc, char *argv[]) {
     bool xflag = false;
     int sawtooth = 0;
     double nonsawf = 1.0;
+    int hpfilter = 0;
 
     int option, i;
 
-    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:e:E:")) != -1) {
+    while ((option = getopt(argc, argv, "hb:o:p:n:at:fm:dw:sx:e:E:F:")) != -1) {
         switch (option) {
         case 'a':
             adjust = true;
@@ -701,6 +709,13 @@ int main(int argc, char *argv[]) {
             nonsawf = strtod(optarg, NULL);
             if (nonsawf < 0.0 || nonsawf > 1.0) {
                 fprintf(stderr, "invalid non-sawtooth volume factor\n");
+                return 1;
+            }
+            break;
+        case 'F':
+            hpfilter = atoi(optarg);
+            if (hpfilter < 1 || hpfilter > 4) {
+                fprintf(stderr, "invalid hpfilter type\n");
                 return 1;
             }
             break;
@@ -864,16 +879,17 @@ int main(int argc, char *argv[]) {
             sid2pokey2(2, &pokey2[0]);
         } else {
             if (xflag) {
-                if (!sawtooth) {
+                if (!sawtooth && !hpfilter) {
                     pokey[8] = 0x28;    // join 3+4, 3 @ high clock
                     sid2pokey(xorder[0], &pokey[0], false);
                     sid2pokey(xorder[1], &pokey[2], false);
                     sid2pokey2(xorder[2], &pokey[4]);
-                } else {
+                } else if (sawtooth) {
                     pokey[8] = 0x64;    // filter 1+3, both @ high clock
                     sid2pokey(xorder[0], &pokey[2], false);
                     sid2pokey(xorder[1], &pokey[6], false);
                     sid2pokey(xorder[2], &pokey[0], true);  // <<-- saw!
+adjust_nonsawf:
                     // adjust non-sawtooth volume
                     if (pokey[3] & 0x0f) {
                        int v = pokey[3]&0x0f;
@@ -888,6 +904,24 @@ int main(int argc, char *argv[]) {
                        pokey[7] |= v;
                     }
 
+                } else if (hpfilter) {
+                    pokey[8] = 0x04;    // filter 1+3, normal clock
+                    sid2pokey(xorder[0], &pokey[2], false);
+                    sid2pokey(xorder[1], &pokey[6], false);
+                    sid2pokey(xorder[2], &pokey[0], false);
+                    pokey[4] = pokey[0];
+                    if (hpfilter >= 3) {
+                        uint8_t v = (pokey[1] & 0x0f) >> 1;
+                        pokey[5] = (pokey[1] & 0xf0) | v; // vol 50%
+                    } else {
+                        pokey[5] = pokey[1] & 0xf0; // muted
+                    }
+                    if ((hpfilter-1) & 1 ) {    // type 1 and 3
+                        pokey[4]++;
+                    } else {                    // type 2 and 4
+                        pokey[4]--;
+                    }
+                    goto adjust_nonsawf;        // crude hack for now
                 }
             } else {
                 sid2pokey(0, &pokey[0], false);
