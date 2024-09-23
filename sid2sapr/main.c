@@ -993,6 +993,7 @@ adjust_nonsawf:
                     sid2pokey(xorder[0], &pokey[2], NO_SAW);
                     sid2pokey(xorder[1], &pokey[6], NO_SAW);
                     sid2pokey(xorder[2], &pokey[0], NO_SAW);
+                    if ((pokey[1] & 0xf0) == 0xa0) {
                     pokey[4] = pokey[0];
                     if (hpfilter >= 3) {
                         uint8_t v = (pokey[1] & 0x0f) >> 1;
@@ -1006,6 +1007,7 @@ adjust_nonsawf:
                         pokey[4]--;
                     }
                     goto adjust_nonsawf;        // crude hack for now
+                    }
                 } else {
                     pokey[8] = 0x28;    // join 3+4, 3 @ high clock
                     sid2pokey(xorder[0], &pokey[0], NO_SAW);
