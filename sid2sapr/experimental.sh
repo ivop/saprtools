@@ -65,11 +65,17 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-softbass player50-softbass
 mv player.xex experimental/exp-robocop-hpf.xex
 
-./sid2sapr -p 12 -x 1 -F 1 -D -b softbass sid/Syncopated.sid
+./sid2sapr -p11 -x 1 -F 1 -D -b softbass sid/Syncopated.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Syncopated" "Thomas E. Petersen (Laxity)" > songname.txt
 make compress-softbass player50-softbass
 mv player.xex experimental/exp-syncopated-hpf.xex
+
+./sid2sapr -p11 -x 0 -F 3 -D -b softbass sid/Freeze.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Freeze" "Thomas E. Petersen (Laxity)" > songname.txt
+make compress-softbass player50-softbass
+mv player.xex experimental/exp-freeze-hpf.xex
 
 #fi
 
