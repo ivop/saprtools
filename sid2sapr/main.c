@@ -988,7 +988,7 @@ adjust_nonsawf:
                        pokey[7] |= v;
                     }
 
-                } else if (hpfilter && ((pokey[0] & 0xf0) == 0xa0)) {
+                } else if (hpfilter) {
                     pokey[8] = 0x04;    // filter 1+3, normal clock
                     sid2pokey(xorder[0], &pokey[2], NO_SAW);
                     sid2pokey(xorder[1], &pokey[6], NO_SAW);
