@@ -928,7 +928,7 @@ int main(int argc, char *argv[]) {
                 sid2pokey2(1, &pokey[4]);
                 sid2pokey2(2, &pokey2[0]);
             }
-            if (hpfilter) {
+            if (hpfilter && ((pokey2[3] & 0xf0) == 0xa0)) {
                 pokey2[8] = 0x7a; // join 1+2, join 3+4, high clock, filter 2+4
                 if (hpf_down) { // XXX recalculate from SID frequency
                     uint16_t div = (pokey2[2] << 8) | pokey2[0];
@@ -990,7 +990,7 @@ adjust_nonsawf:
                        pokey[7] |= v;
                     }
 
-                } else if (hpfilter) {
+                } else if (hpfilter && ((pokey[0] & 0xf0) == 0xa0)) {
                     pokey[8] = 0x04;    // filter 1+3, normal clock
                     sid2pokey(xorder[0], &pokey[2], false);
                     sid2pokey(xorder[1], &pokey[6], false);
