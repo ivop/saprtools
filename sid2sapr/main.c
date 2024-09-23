@@ -968,12 +968,7 @@ int main(int argc, char *argv[]) {
             }
         } else {
             if (xflag) {
-                if (!sawtooth && !hpfilter) {
-                    pokey[8] = 0x28;    // join 3+4, 3 @ high clock
-                    sid2pokey(xorder[0], &pokey[0], NO_SAW);
-                    sid2pokey(xorder[1], &pokey[2], NO_SAW);
-                    sid2pokey2(xorder[2], &pokey[4]);
-                } else if (sawtooth) {
+                if (sawtooth) {
                     pokey[8] = 0x64;    // filter 1+3, both @ high clock
                     sid2pokey(xorder[0], &pokey[2], NO_SAW);
                     sid2pokey(xorder[1], &pokey[6], NO_SAW);
@@ -1011,6 +1006,11 @@ adjust_nonsawf:
                         pokey[4]--;
                     }
                     goto adjust_nonsawf;        // crude hack for now
+                } else {
+                    pokey[8] = 0x28;    // join 3+4, 3 @ high clock
+                    sid2pokey(xorder[0], &pokey[0], NO_SAW);
+                    sid2pokey(xorder[1], &pokey[2], NO_SAW);
+                    sid2pokey2(xorder[2], &pokey[4]);
                 }
             } else {
                 sid2pokey(0, &pokey[0], NO_SAW);
