@@ -24,13 +24,19 @@ mv player.xex experimental/exp-mw4-saw.xex
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Zamzara" "Charles Deenen" > songname.txt
 make compress-softbass player50-softbass-sawtooth
-mv player.xex experimental/exp-zamzara.xex
+mv player.xex experimental/exp-zamzara-saw.xex
 
 ./sid2sapr -m ringmod -x 0 -e 1 -p 12 -E 0.8 -b softbass -t 1 sid/RoboCop.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
        "Commodore 64" "Robocop" "Jonathan Dunn" > songname.txt
 make compress-softbass player50-softbass-sawtooth
 mv player.xex experimental/exp-robocop-saw.xex
+
+./sid2sapr -x 1 -p12 -E0.9 -F 1 -D -b softbass sid/R-Type.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "R-Type" "Chris Huelsbeck & Ramiro Vaca" > songname.txt
+make compress-softbass player50-softbass
+mv player.xex experimental/exp-rtype-hpf.xex
 
 #fi
 
