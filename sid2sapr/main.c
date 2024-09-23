@@ -994,19 +994,19 @@ adjust_nonsawf:
                     sid2pokey(xorder[1], &pokey[6], NO_SAW);
                     sid2pokey(xorder[2], &pokey[0], NO_SAW);
                     if ((pokey[1] & 0xf0) == 0xa0) {
-                    pokey[4] = pokey[0];
-                    if (hpfilter >= 3) {
-                        uint8_t v = (pokey[1] & 0x0f) >> 1;
-                        pokey[5] = (pokey[1] & 0xf0) | v; // vol 50%
-                    } else {
-                        pokey[5] = pokey[1] & 0xf0; // muted
-                    }
-                    if ((hpfilter-1) & 1 ) {    // type 1 and 3
-                        pokey[4]++;
-                    } else {                    // type 2 and 4
-                        pokey[4]--;
-                    }
-                    goto adjust_nonsawf;        // crude hack for now
+                        pokey[4] = pokey[0];
+                        if (hpfilter >= 3) {
+                            uint8_t v = (pokey[1] & 0x0f) >> 1;
+                            pokey[5] = (pokey[1] & 0xf0) | v; // vol 50%
+                        } else {
+                            pokey[5] = pokey[1] & 0xf0; // muted
+                        }
+                        if ((hpfilter-1) & 1 ) {    // type 1 and 3
+                            pokey[4]++;
+                        } else {                    // type 2 and 4
+                            pokey[4]--;
+                        }
+                        goto adjust_nonsawf;        // crude hack for now
                     }
                 } else {
                     pokey[8] = 0x28;    // join 3+4, 3 @ high clock
