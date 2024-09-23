@@ -919,7 +919,7 @@ int main(int argc, char *argv[]) {
         c64_handle_adsr(nsamples/2);
 
         if (stereo) {
-            if (xflag) {
+            if (xflag && hpfilter) {
                 sid2pokey2(xorder[0], &pokey[0]);
                 sid2pokey2(xorder[1], &pokey[4]);
                 sid2pokey2(xorder[2], &pokey2[0]);
