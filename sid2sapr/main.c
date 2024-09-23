@@ -605,7 +605,7 @@ static void usage(void) {
 "               type: 4 - type 2, volume 50%%\n"
 "               in stereo mode, one channel is extended to 32-bits\n"
 "   -g cents    stereo HP filter detune amount in cents\n"
-"   -G value    adjust HP filter volume [0.0-1.0]\n"
+"   -G value    adjust HP filter volume [0.0-1.0] (if type 3/4 is too loud)\n"
 "   -D          transpose HP filter channel 1 octave down\n"
 );
 }
