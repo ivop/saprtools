@@ -77,6 +77,24 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-softbass player50-softbass
 mv player.xex experimental/exp-freeze-hpf.xex
 
+./sid2sapr -n $(((1*60+38)*50)) -p11 -x 1 -F 3 -D -b softbass sid/Escape_from_New_York.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Escape From New York" "Lasse Oorni (Cadaver)" > songname.txt
+make compress-softbass player50-softbass
+mv player.xex experimental/exp-escapefromny-hpf.xex
+
+./sid2sapr -n $(((1*60+18)*50)) -p11 -x 2 -F 1 -D -b softbass sid/GoatTracker_example_MW1_title.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Goat Tracker Example MW1" "Lasse Oorni (Cadaver)" > songname.txt
+make compress-softbass player50-softbass
+mv player.xex experimental/exp-goatexample-hpf.xex
+
+./sid2sapr -n $(((1*60+18)*50)) -p11 -x 2 -F 1 -D -b buzzy sid/GoatTracker_example_MW1_title.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Goat Tracker Example MW1" "Lasse Oorni (Cadaver)" > songname.txt
+make compress-mono player50-mono
+mv player.xex experimental/exp-goatexample-buzzy-hpf.xex
+
 #fi
 
 #if false ; then
@@ -116,6 +134,12 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
        "Commodore 64" "Robocop" "Jonathan Dunn" > songname.txt
 make compress-stereo player50-stereo
 mv player.xex experimental/exp-robocop-stereo-hpf.xex
+
+./sid2sapr -x 2 -s -F 3 -g 10.0 -G 0.8 -D sid/JT_42.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "JT 42" "Jeroen Tel" > songname.txt
+make compress-stereo player50-stereo
+mv player.xex experimental/exp-jt42-stereo-hpf.xex
 
 #fi
 
