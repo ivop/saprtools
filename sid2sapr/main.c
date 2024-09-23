@@ -323,6 +323,9 @@ static int find_closest_sawtooth(double f) {
 
 /* ------------------------------------------------------------------------ */
 
+#define NO_SAW  false
+#define YES_SAW true
+
 static void sid2pokey(int voice, uint8_t *pokey, bool sawtooth) {
     struct sid_voice     *p = &sid.v[voice];
     struct sid_registers *r = &sid.r[voice];
@@ -967,14 +970,14 @@ int main(int argc, char *argv[]) {
             if (xflag) {
                 if (!sawtooth && !hpfilter) {
                     pokey[8] = 0x28;    // join 3+4, 3 @ high clock
-                    sid2pokey(xorder[0], &pokey[0], false);
-                    sid2pokey(xorder[1], &pokey[2], false);
+                    sid2pokey(xorder[0], &pokey[0], NO_SAW);
+                    sid2pokey(xorder[1], &pokey[2], NO_SAW);
                     sid2pokey2(xorder[2], &pokey[4]);
                 } else if (sawtooth) {
                     pokey[8] = 0x64;    // filter 1+3, both @ high clock
-                    sid2pokey(xorder[0], &pokey[2], false);
-                    sid2pokey(xorder[1], &pokey[6], false);
-                    sid2pokey(xorder[2], &pokey[0], true);  // <<-- saw!
+                    sid2pokey(xorder[0], &pokey[2], NO_SAW);
+                    sid2pokey(xorder[1], &pokey[6], NO_SAW);
+                    sid2pokey(xorder[2], &pokey[0], YES_SAW);   // !
 adjust_nonsawf:
                     // adjust non-sawtooth volume
                     if (pokey[3] & 0x0f) {
@@ -992,9 +995,9 @@ adjust_nonsawf:
 
                 } else if (hpfilter && ((pokey[0] & 0xf0) == 0xa0)) {
                     pokey[8] = 0x04;    // filter 1+3, normal clock
-                    sid2pokey(xorder[0], &pokey[2], false);
-                    sid2pokey(xorder[1], &pokey[6], false);
-                    sid2pokey(xorder[2], &pokey[0], false);
+                    sid2pokey(xorder[0], &pokey[2], NO_SAW);
+                    sid2pokey(xorder[1], &pokey[6], NO_SAW);
+                    sid2pokey(xorder[2], &pokey[0], NO_SAW);
                     pokey[4] = pokey[0];
                     if (hpfilter >= 3) {
                         uint8_t v = (pokey[1] & 0x0f) >> 1;
@@ -1010,9 +1013,9 @@ adjust_nonsawf:
                     goto adjust_nonsawf;        // crude hack for now
                 }
             } else {
-                sid2pokey(0, &pokey[0], false);
-                sid2pokey(1, &pokey[2], false);
-                sid2pokey(2, &pokey[6], false);
+                sid2pokey(0, &pokey[0], NO_SAW);
+                sid2pokey(1, &pokey[2], NO_SAW);
+                sid2pokey(2, &pokey[6], NO_SAW);
             }
         }
 
