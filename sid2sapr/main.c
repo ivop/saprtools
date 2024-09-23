@@ -234,7 +234,10 @@ static uint8_t find_closest_distc(const struct bass table[], double f) {
 
 /* ------------------------------------------------------------------------ */
 
-static void sid2pokey2(int voice, uint8_t *pokey) {
+#define NOTRANSP    false
+#define TRANSP_DOWN true
+
+static void sid2pokey2(int voice, uint8_t *pokey, bool trans_down) {
     struct sid_voice     *p = &sid.v[voice];
     struct sid_registers *r = &sid.r[voice];
 
@@ -243,6 +246,8 @@ static void sid2pokey2(int voice, uint8_t *pokey) {
     double constant = pow(256.0, 3.0) / c64_clock;
 
     double f = r->freq / constant;
+
+    if (trans_down) f /= 2.0;
 
     double POKreal = (ATARI_CLOCK / 2.0 / f) - 7;
 
@@ -326,7 +331,7 @@ static int find_closest_sawtooth(double f) {
 #define NO_SAW  false
 #define YES_SAW true
 
-static void sid2pokey(int voice, uint8_t *pokey, bool sawtooth) {
+static void sid2pokey(int voice, uint8_t *pokey, bool sawtooth, bool trans_down) {
     struct sid_voice     *p = &sid.v[voice];
     struct sid_registers *r = &sid.r[voice];
 
@@ -335,6 +340,8 @@ static void sid2pokey(int voice, uint8_t *pokey, bool sawtooth) {
     double constant = pow(256.0, 3.0) / c64_clock;
 
     double f = r->freq / constant;
+
+    if (trans_down) f /= 2.0;
 
     double POKreal = (ATARI_CLOCK / 28.0 / 2.0 / f) - 1;
 
@@ -923,21 +930,18 @@ int main(int argc, char *argv[]) {
 
         if (stereo) {
             if (xflag && hpfilter) {
-                sid2pokey2(xorder[0], &pokey[0]);
-                sid2pokey2(xorder[1], &pokey[4]);
-                sid2pokey2(xorder[2], &pokey2[0]);
+                sid2pokey2(xorder[0], &pokey[0], NOTRANSP);
+                sid2pokey2(xorder[1], &pokey[4], NOTRANSP);
+                sid2pokey2(xorder[2], &pokey2[0], NOTRANSP);
             } else {
-                sid2pokey2(0, &pokey[0]);
-                sid2pokey2(1, &pokey[4]);
-                sid2pokey2(2, &pokey2[0]);
+                sid2pokey2(0, &pokey[0], NOTRANSP);
+                sid2pokey2(1, &pokey[4], NOTRANSP);
+                sid2pokey2(2, &pokey2[0], NOTRANSP);
             }
             if (hpfilter && ((pokey2[3] & 0xf0) == 0xa0)) {
                 pokey2[8] = 0x7a; // join 1+2, join 3+4, high clock, filter 2+4
-                if (hpf_down) { // XXX recalculate from SID frequency
-                    uint16_t div = (pokey2[2] << 8) | pokey2[0];
-                    div <<= 1;
-                    pokey2[2] = div >> 8;
-                    pokey2[0] = div & 0xff;
+                if (hpf_down) {
+                    sid2pokey2(xorder[2], &pokey2[0], TRANSP_DOWN);
                 }
                 pokey2[4] = pokey2[0];
                 pokey2[6] = pokey2[2];
@@ -970,9 +974,9 @@ int main(int argc, char *argv[]) {
             if (xflag) {
                 if (sawtooth) {
                     pokey[8] = 0x64;    // filter 1+3, both @ high clock
-                    sid2pokey(xorder[0], &pokey[2], NO_SAW);
-                    sid2pokey(xorder[1], &pokey[6], NO_SAW);
-                    sid2pokey(xorder[2], &pokey[0], YES_SAW);   // !
+                    sid2pokey(xorder[0], &pokey[2], NO_SAW, NOTRANSP);
+                    sid2pokey(xorder[1], &pokey[6], NO_SAW, NOTRANSP);
+                    sid2pokey(xorder[2], &pokey[0], YES_SAW, NOTRANSP);   // !
 adjust_nonsawf:
                     // adjust non-sawtooth volume
                     if (pokey[3] & 0x0f) {
@@ -990,9 +994,9 @@ adjust_nonsawf:
 
                 } else if (hpfilter) {
                     pokey[8] = 0x04;    // filter 1+3, normal clock
-                    sid2pokey(xorder[0], &pokey[2], NO_SAW);
-                    sid2pokey(xorder[1], &pokey[6], NO_SAW);
-                    sid2pokey(xorder[2], &pokey[0], NO_SAW);
+                    sid2pokey(xorder[0], &pokey[2], NO_SAW, NOTRANSP);
+                    sid2pokey(xorder[1], &pokey[6], NO_SAW, NOTRANSP);
+                    sid2pokey(xorder[2], &pokey[0], NO_SAW, hpf_down);
                     if ((pokey[1] & 0xf0) == 0xa0) {
                         pokey[4] = pokey[0];
                         if (hpfilter >= 3) {
@@ -1007,17 +1011,22 @@ adjust_nonsawf:
                             pokey[4]--;
                         }
                         goto adjust_nonsawf;        // crude hack for now
+                    } else {
+                    // (if transpose down is too low for 8-bit filter,
+                    //  it becomes a bass note (dist C or softbass)
+                        pokey[8] = 0;
+                        sid2pokey(xorder[2], &pokey[0], NO_SAW, NOTRANSP);
                     }
                 } else {
                     pokey[8] = 0x28;    // join 3+4, 3 @ high clock
-                    sid2pokey(xorder[0], &pokey[0], NO_SAW);
-                    sid2pokey(xorder[1], &pokey[2], NO_SAW);
-                    sid2pokey2(xorder[2], &pokey[4]);
+                    sid2pokey(xorder[0], &pokey[0], NO_SAW, NOTRANSP);
+                    sid2pokey(xorder[1], &pokey[2], NO_SAW, NOTRANSP);
+                    sid2pokey2(xorder[2], &pokey[4], NOTRANSP);
                 }
             } else {
-                sid2pokey(0, &pokey[0], NO_SAW);
-                sid2pokey(1, &pokey[2], NO_SAW);
-                sid2pokey(2, &pokey[6], NO_SAW);
+                sid2pokey(0, &pokey[0], NO_SAW, NOTRANSP);
+                sid2pokey(1, &pokey[2], NO_SAW, NOTRANSP);
+                sid2pokey(2, &pokey[6], NO_SAW, NOTRANSP);
             }
         }
 

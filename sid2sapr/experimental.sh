@@ -2,7 +2,7 @@
 
 make
 
-#if false; then
+if false; then
 
 # Two channel sawtooth, has problems with vibrato because of high clock and
 # fast changing of frequency. Some parts sound pretty good, others not so
@@ -32,7 +32,7 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-softbass player50-softbass-sawtooth
 mv player.xex experimental/exp-robocop.xex
 
-#fi
+fi
 
 #if false; then
 
@@ -47,15 +47,15 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-softbass player50-softbass
 mv player.xex experimental/exp-mw4-hpf.xex
 
-./sid2sapr -m both -x 2 -F 3 -D -b softbass sid/Zamzara.sid
+./sid2sapr -p10 -E0.9 -m both -x 2 -F 3 -D -b softbass sid/Zamzara.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Zamzara" "Charles Deenen" > songname.txt
-make compress-softbass player50-softbass-sawtooth
+make compress-softbass player50-softbass
 mv player.xex experimental/exp-zamzara-hpf.xex
 
 #fi
 
-#if false ; then
+if false ; then
 
 # Stereo HP filter, one full pokey for one channel. Now where talkin' ;)
 
@@ -93,7 +93,7 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-stereo player50-stereo
 mv player.xex experimental/exp-robocop-stereo-hpf.xex
 
-#fi
+fi
 
 # clear for further tests
 rm -f songname.txt
