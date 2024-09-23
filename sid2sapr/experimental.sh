@@ -41,7 +41,7 @@ fi
 # much... If only we could switch configurations at several places during
 # the song ;-)
 
-./sid2sapr -p10 -E0.9 -x 1 -F 1 -b softbass sid/Metal_Warrior_4.sid
+./sid2sapr -p10 -E0.9 -x 1 -F 3 -b softbass sid/Metal_Warrior_4.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Metal Warrior 4" "Cadaver" > songname.txt
 make compress-softbass player50-softbass
@@ -52,6 +52,18 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Zamzara" "Charles Deenen" > songname.txt
 make compress-softbass player50-softbass
 mv player.xex experimental/exp-zamzara-hpf.xex
+
+./sid2sapr -m ringmod -x 0 -F 1 -D -t 1 -b softbass sid/RoboCop.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+       "Commodore 64" "Robocop" "Jonathan Dunn" > songname.txt
+make compress-softbass player50-softbass
+mv player.xex experimental/exp-robocop-hpf.xex
+
+./sid2sapr -p 12 -x 1 -F 1 -D -b softbass sid/Syncopated.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Syncopated" "Thomas E. Petersen (Laxity)" > songname.txt
+make compress-softbass player50-softbass
+mv player.xex experimental/exp-syncopated-hpf.xex
 
 #fi
 
