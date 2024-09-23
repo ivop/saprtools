@@ -77,9 +77,9 @@ SKCTL  = $d20f
     prints 0, "}"   ; clear screen
 .ifdef SID2SAPR
     .ifdef SAWTOOTH
-        prints 0, "SID2SAPR v1.10 (MONO) [SOFTBASS] [SAW]"
+        prints 0, "SID2SAPR v1.11 (MONO) [SOFTBASS] [SAW]"
     .else
-        prints 0, "SID2SAPR v1.10 (MONO) [SOFTBASS]"
+        prints 0, "SID2SAPR v1.11 (MONO) [SOFTBASS]"
     .endif
 .else
     prints 0, "YM2SAPR v1.9 (MONO) [SOFTBASS]"
