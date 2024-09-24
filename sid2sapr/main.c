@@ -483,6 +483,14 @@ static void adjust_for_cancellation(uint8_t *pokey) {
 
 /* ------------------------------------------------------------------------ */
 
+static uint8_t detune_8bits(uint16_t div, double cents) {
+    double f = ATARI_CLOCK / 28.0 / 2.0 / (div + 1);
+
+    f *= pow(2, cents/1200.0);
+
+    return round((ATARI_CLOCK / 28.0 / 2.0 / f) - 1);
+}
+
 static uint16_t detune_16bits(uint16_t div, double cents) {
     double f = ATARI_CLOCK / 2.0 / (div + 7);   // back to Hertz
 
@@ -599,12 +607,12 @@ static void usage(void) {
 "\n"
 "   -F type     extend one channel to use HP filter\n"
 "               must be used in combination with -x\n"
-"               type: 1 - detuned channel +1, muted\n"
-"               type: 2 - detuned channel -1, muted\n"
+"               type: 1 - detuned channel +, muted\n"
+"               type: 2 - detuned channel -, muted\n"
 "               type: 3 - type 1, volume 50%%\n"
 "               type: 4 - type 2, volume 50%%\n"
 "               in stereo mode, one channel is extended to 32-bits\n"
-"   -g cents    stereo HP filter detune amount in cents\n"
+"   -g cents    HP filter detune amount in cents\n"
 "   -G value    adjust HP filter volume [0.0-1.0] (if type 3/4 is too loud)\n"
 "   -D          transpose HP filter channel 1 octave down\n"
 );
@@ -750,6 +758,10 @@ int main(int argc, char *argv[]) {
             break;
         case 'g':
             detune_cents = strtod(optarg, NULL);
+            if (detune_cents < 0.0) {
+                fprintf(stderr, "detune value must be positive\n");
+                return 1;
+            }
             break;
         case 'G':
             hpf_volume = strtod(optarg, NULL);
@@ -1006,9 +1018,15 @@ adjust_nonsawf:
                             pokey[5] = pokey[1] & 0xf0; // muted
                         }
                         if ((hpfilter-1) & 1 ) {    // type 1 and 3
-                            pokey[4]++;
+                            uint8_t div = pokey[4];
+                            uint8_t newdiv = detune_8bits(div, detune_cents);
+                            if (div == newdiv) newdiv++;
+                            pokey[4] = newdiv;
                         } else {                    // type 2 and 4
-                            pokey[4]--;
+                            uint8_t div = pokey[4];
+                            uint8_t newdiv = detune_8bits(div, -detune_cents);
+                            if (div == newdiv) newdiv--;
+                            pokey[4] = newdiv;
                         }
                         goto adjust_nonsawf;        // crude hack for now
                     } else {
