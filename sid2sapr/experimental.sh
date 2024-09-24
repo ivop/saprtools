@@ -141,6 +141,12 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-stereo player50-stereo
 mv player.xex experimental/exp-jt42-stereo-hpf.xex
 
+./sid2sapr -x 0 -s -F 3 -g 10.0 -G 1.0 -D -d sid/Lightforce.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Lightforce" "Rob Hubbard" > songname.txt
+make compress-stereo player50-stereo
+mv player.xex experimental/exp-lightforce-stereo-hpf.xex
+
 #fi
 
 # clear for further tests
