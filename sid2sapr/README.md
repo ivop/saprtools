@@ -44,7 +44,8 @@ usage: sid2sapr [options] sid-file
    -d          damp ringmod to half volume
    -w value    let PWM influence the volume by factor [0.0-1.0]
    -s          enable stereo pokey mode [default: mono pokey]
-   -x voice    extend one mono channel to 16-bits [default: none]
+   -x voice    extend one mono channel (0-2) to 16-bits [default: none]
+               also selects HP filtered voice in stereo mode, see below
 
                [HIGHLY EXPERIMENTAL]
    -e type     extend one mono channel to sawtooth
@@ -56,4 +57,15 @@ usage: sid2sapr [options] sid-file
                      3 - 12-TET table (selected from type 1)
    -E factor   change non-sawtooth volume [0.0-1.0, default: 1.0]
                sometimes use -p to raise overall volume first
-```
+               also works for hpfiler (-F) option
+
+   -F type     extend one channel to use HP filter
+               must be used in combination with -x
+               type: 1 - detuned channel +, muted
+               type: 2 - detuned channel -, muted
+               type: 3 - type 1, volume 50%
+               type: 4 - type 2, volume 50%
+               in stereo mode, one channel is extended to 32-bits
+   -g cents    HP filter detune amount in cents
+   -G value    adjust HP filter volume [0.0-1.0] (if type 3/4 is too loud)
+   -D          transpose HP filter channel 1 octave down
