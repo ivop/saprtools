@@ -9,7 +9,7 @@ convertall: sid2sapr
 	./convertall.sh
 
 sid2sapr: main.c c64.c m6502.h c64.h md5.c md5.h saw.h
-		$(CC) $(CFLAGS) -o sid2sapr main.c c64.c md5.c $(LIBS)
+		$(CC) $(STATIC) $(CFLAGS) -o sid2sapr main.c c64.c md5.c $(LIBS)
 
 compress-stereo: $(LZSS)
 	@$(LZSS) -6 left.sapr left.lz16   >>convertall.log  2>&1

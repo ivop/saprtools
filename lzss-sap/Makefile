@@ -1,15 +1,12 @@
 CC?=gcc
 CFLAGS?=-O2 -Wall
 
-PROGS=\
-lz4s\
-lzss\
-split\
+PROGS= lz4s lzss split
 
 all: $(PROGS:%=bin/%)
 
 bin/%: src/%.c | bin
-	$(CC) -o $@ $(CFLAGS) $<
+	$(CC) $(STATIC) -o $@ $(CFLAGS) $<
 
 bin:
 	mkdir -p bin

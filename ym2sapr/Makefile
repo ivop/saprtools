@@ -8,7 +8,7 @@ convertall: ym2sapr
 	./convertall.sh
 
 ym2sapr: main.cpp lzh.cpp lzh.h
-	$(CXX) -O2 -o ym2sapr main.cpp lzh.cpp -lm
+	$(CXX) $(STATIC) -O2 -o ym2sapr main.cpp lzh.cpp -lm
 
 compress-stereo: $(LZSS)
 	@$(LZSS) -6 left.sapr left.lz16   >>convertall.log  2>&1

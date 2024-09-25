@@ -7,7 +7,7 @@ convertall: vgm2sapr
 	./convertall.sh
 
 vgm2sapr: main.c
-	$(CC) -O2 -o vgm2sapr main.c -lm -lz
+	$(CC) $(STATIC) -O2 -o vgm2sapr main.c -lm -lz
 
 compress-stereo: $(LZSS)
 	@$(LZSS) -6 left.sapr left.lz16   >>convertall.log  2>&1

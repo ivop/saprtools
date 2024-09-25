@@ -7,7 +7,7 @@ convertall: ay2ym
 	./convertall.sh
 
 ay2ym: main.c z80.c
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(STATIC) -o $@ $^
 
 clean:
 	rm -f ay2ym *.o *~

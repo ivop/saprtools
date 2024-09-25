@@ -15,7 +15,7 @@ convertall: sndh2ym
 	./convertall.sh
 
 sndh2ym: $(SRC) $(LIB)
-	$(CC) $(CFLAGS) -o sndh2ym $(SRC) $(LIB) -lm
+	$(CC) $(STATIC) $(CFLAGS) -o sndh2ym $(SRC) $(LIB) -lm
 
 $(LIB):
 	+make -C libpsgplay lib/psgplay/libpsgplay.a
