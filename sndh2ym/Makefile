@@ -22,7 +22,7 @@ $(LIB):
 
 clean:
 	rm -f *~ sndh2ym
-
-cleaner: clean
 	make -C libpsgplay clean
+
+distclean: clean
 	rm -f *.ym

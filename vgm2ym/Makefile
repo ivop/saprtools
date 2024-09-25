@@ -11,6 +11,6 @@ vgm2ym: main.c
 clean:
 	rm -f vgm2ym *~ */*~
 
-cleaner: clean
+distclean: clean
 	rm -f *.ym
 

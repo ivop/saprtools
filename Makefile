@@ -25,3 +25,12 @@ clean:
 	+make -C sid2sapr clean
 	+make -C vgm2sapr clean
 	+make -C ym2sapr clean
+
+distclean:
+	+make -C lzss-sap distclean
+	+make -C sndh2ym distclean
+	+make -C ay2ym distclean
+	+make -C vgm2ym distclean
+	+make -C sid2sapr distclean
+	+make -C vgm2sapr distclean
+	+make -C ym2sapr distclean

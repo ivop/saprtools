@@ -44,5 +44,5 @@ $(LZSS):
 clean:
 	rm -f *.exe *.log *~ */*~ ym2sapr
 
-cleaner: clean
+distclean: clean
 	rm -f *.sapr *.lz16 player.xex

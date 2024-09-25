@@ -15,3 +15,4 @@ clean:
 	rm -f *~ */*~
 	rm -rf bin
 
+distclean: clean

@@ -11,3 +11,6 @@ ay2ym: main.c z80.c
 
 clean:
 	rm -f ay2ym *.o *~
+
+distclean: clean
+	rm -f *.ym
