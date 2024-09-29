@@ -2,6 +2,8 @@
 
 Tools for creating or manipulating Atari 8-bit SAP-R files.
 
+Binary releases for Windows and Linux are [here](https://github.com/ivop/saprtools/releases).
+
 ### Contents
 
 1. [Creating SAP-R Files](#creating-sap-r-files)
