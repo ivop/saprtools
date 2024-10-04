@@ -17,6 +17,9 @@ convertall: all
 	+make -C vgm2sapr $(SILENT) $@
 	+make -C ym2sapr $(SILENT) $@
 
+test: convertall
+	+md5sum -c md5sums.txt
+
 clean:
 	+make -C lzss-sap clean
 	+make -C sndh2ym clean
