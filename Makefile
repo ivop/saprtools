@@ -1,5 +1,4 @@
 all:
-	+cd zlib && ./configure --static && make libz.a
 	+make -C lzss-sap
 	+make -C sndh2ym
 	+make -C ay2ym
