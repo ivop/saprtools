@@ -1,4 +1,5 @@
 all:
+	+cd zlib && ./configure --static && make libz.a
 	+make -C lzss-sap
 	+make -C sndh2ym
 	+make -C ay2ym
@@ -21,6 +22,7 @@ test: convertall
 	+md5sum -c md5sums.txt
 
 clean:
+	+make -C zlib clean
 	+make -C lzss-sap clean
 	+make -C sndh2ym clean
 	+make -C ay2ym clean
@@ -30,6 +32,7 @@ clean:
 	+make -C ym2sapr clean
 
 distclean:
+	+make -C zlib distclean
 	+make -C lzss-sap distclean
 	+make -C sndh2ym distclean
 	+make -C ay2ym distclean

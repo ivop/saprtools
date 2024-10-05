@@ -16,3 +16,5 @@
 *.ay binary diff=hex
 *.xex binary diff=hex
 *.ym binary diff=hex
+
+*.def text eol=crlf
