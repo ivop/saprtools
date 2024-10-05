@@ -23,3 +23,5 @@ ym2sapr/*.sapr
 ym2sapr/*.xex
 ym2sapr/songname.txt
 ym2sapr/ym2sapr
+zlib/zlib.pc
+zlib/libz.a
