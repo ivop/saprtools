@@ -6,7 +6,7 @@ SRC = $(BASE)/lib/ice/ice.c $(BASE)/lib/internal/print.c \
 	$(BASE)/system/unix/sndh.c $(BASE)/system/unix/string.c \
 	main.c timedb.c
 
-CFLAGS = -O2 -Wall -I$(BASE)/include
+CFLAGS = -O2 -Wall -I$(BASE)/include -std=gnu99
 LIB = $(BASE)/lib/psgplay/libpsgplay.a
 
 all: sndh2ym

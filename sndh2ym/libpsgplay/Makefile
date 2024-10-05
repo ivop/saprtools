@@ -50,7 +50,7 @@ S_CFLAGS = -fsanitize=address -fsanitize=leak -fsanitize=undefined	\
 endif
 
 DEP_CFLAGS = -Wp,-MD,$(@D)/$(@F).d -MT $(@D)/$(@F)
-BASIC_CFLAGS = -O2 -Wall -D_GNU_SOURCE $(HAVE_CFLAGS) $(DEP_CFLAGS)
+BASIC_CFLAGS = -std=gnu99 -O2 -Wall -D_GNU_SOURCE $(HAVE_CFLAGS) $(DEP_CFLAGS)
 BASIC_BUILD_CFLAGS = -Iinclude $(S_CFLAGS) $(BASIC_CFLAGS)
 BASIC_HOST_CFLAGS = -Iinclude $(S_CFLAGS) $(BASIC_CFLAGS)
 BASIC_TARGET_CFLAGS = -Iinclude $(BASIC_CFLAGS)

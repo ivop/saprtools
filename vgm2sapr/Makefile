@@ -1,5 +1,6 @@
 CC ?= gcc
-LZSS = ../lzss-sap/bin/lzss
+LZSS ?= ../lzss-sap/bin/lzss
+CFLAGS ?= -std=c99 -D_XOPEN_SOURCE=500 -O2
 
 all: vgm2sapr
 
@@ -7,7 +8,7 @@ convertall: vgm2sapr
 	./convertall.sh
 
 vgm2sapr: main.c
-	$(CC) $(STATIC) -O2 -o vgm2sapr main.c -lm -lz
+	$(CC) $(STATIC) $(CFLAGS) -o vgm2sapr main.c -lm -lz
 
 compress-stereo: $(LZSS)
 	@$(LZSS) -6 left.sapr left.lz16   >>convertall.log  2>&1

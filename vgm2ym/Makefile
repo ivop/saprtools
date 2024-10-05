@@ -1,4 +1,5 @@
 CC ?= gcc
+CFLAGS ?= -std=c99 -D_XOPEN_SOURCE=500 -O2
 
 all: vgm2ym
 
@@ -6,7 +7,7 @@ convertall: vgm2ym
 	./convertall.sh
 
 vgm2ym: main.c
-	$(CC) $(STATIC) -O2 -o vgm2ym main.c -lm -lz
+	$(CC) $(STATIC) $(CFLAGS) -o vgm2ym main.c -lm -lz
 
 clean:
 	rm -f vgm2ym *~ */*~

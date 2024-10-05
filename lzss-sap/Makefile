@@ -1,5 +1,5 @@
 CC?=gcc
-CFLAGS?=-O2 -Wall
+CFLAGS?=-O2 -Wall -std=c99 -D_XOPEN_SOURCE
 
 PROGS= lz4s lzss split
 
