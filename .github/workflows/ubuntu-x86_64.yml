@@ -1,9 +1,12 @@
-name: C/C++ CI
+name: CI Ubuntu x86_64
 run-name: ${{github.actor}} is testing out GitHub Actions
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
     - name: install packages

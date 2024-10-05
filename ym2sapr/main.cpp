@@ -729,7 +729,7 @@ int main(int argc, char **argv) {
     }
 
     fprintf(stderr, "frame size: %i\n", framesize);
-    fprintf(stderr, "number of frames: %li\n", nframes);
+    fprintf(stderr, "number of frames: %ji\n", (intmax_t) nframes);
     fprintf(stderr, "interleaved: %s\n", interleaved ? "true" : "false");
 
     if (interleaved) {

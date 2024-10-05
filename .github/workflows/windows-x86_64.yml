@@ -1,0 +1,29 @@
+name: CI Windows x86_64
+on: [push]
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-2019,windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Cygwin
+      uses: cygwin/cygwin-install-action@master
+      with:
+        packages: gcc-g++,make,xxd,git,cygwin-devel,zip,unzip,wget
+        add-to-path: false
+    - name: build saprtools with cygwin
+      shell: C:\cygwin\bin\bash.exe --login -o igncr -eo pipefail '{0}'
+      run: |
+        set -e
+        export PATH=/usr/bin
+        export MSYSTEM=
+        wget -O/usr/bin/mads https://github.com/tebe6502/Mad-Assembler/raw/refs/heads/master/bin/windows_x86_64/mads.exe
+        chmod 755 /usr/bin/mads
+        cd "${{github.workspace}}" && make -j`nproc` test

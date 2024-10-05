@@ -39,3 +39,4 @@ distclean:
 	+make -C sid2sapr distclean
 	+make -C vgm2sapr distclean
 	+make -C ym2sapr distclean
+	rm -f *~
