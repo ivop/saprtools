@@ -1,5 +1,8 @@
 # saprtools
 
+[![CI Ubuntu x86_64](https://github.com/ivop/saprtools/actions/workflows/ubuntu-x86_64.yml/badge.svg)](https://github.com/ivop/saprtools/actions/workflows/ubuntu-x86_64.yml)
+[![CI Windows x86_64](https://github.com/ivop/saprtools/actions/workflows/windows-x86_64.yml/badge.svg)](https://github.com/ivop/saprtools/actions/workflows/windows-x86_64.yml)
+
 Tools for creating or manipulating Atari 8-bit SAP-R files.
 
 Binary releases for Windows and Linux are [here](https://github.com/ivop/saprtools/releases).
