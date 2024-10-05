@@ -1,6 +1,6 @@
 all:
 	+make -C lzss-sap
-	+make -C sndh2ym
+	+test -n "${MSYSTEM}" || make -C sndh2ym
 	+make -C ay2ym
 	+make -C vgm2ym
 	+make -C sid2sapr
