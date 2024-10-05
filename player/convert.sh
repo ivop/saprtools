@@ -2,13 +2,13 @@
 
 # Parameters: file_converter file_source file_author_file_title file_name [file_frequency]
 create_output() {
-  local file_converter=$1
-  local file_source=$2
-  local file_author=$3
-  local file_title=$4
-  local file_name=$5.xex
-  local file_frequency=$6
-  local file_frequency=${file_frequency:-"50"}
+  local file_converter="$1"
+  local file_source="$2"
+  local file_author="$3"
+  local file_title="$4"
+  local file_name="$5.xex"
+  local file_frequency="$6"
+  local file_frequency="${file_frequency:-"50"}"
 
   message="Creating title '${file_title}' by '${file_author}' from '${file_source}' as '${file_name}' with player '${player}' at ${file_frequency} Hz."
   echo "$message"
