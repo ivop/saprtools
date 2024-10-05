@@ -449,4 +449,5 @@ int main(int argc, char **argv) {
 
     fclose(outf);
     puts("Done.");
+    return 0;
 }
