@@ -3,6 +3,7 @@ all:
 	+test -n "${MSYSTEM}" || make -C sndh2ym
 	+make -C ay2ym
 	+make -C vgm2ym
+	+make -C psg2ym
 	+make -C sid2sapr
 	+make -C vgm2sapr
 	+make -C ym2sapr
@@ -10,9 +11,10 @@ all:
 SILENT=-s
 
 convertall: all
-	+make -C sndh2ym $(SILENT) $@
+	+test -n "${MSYSTEM}" || make -C sndh2ym $(SILENT) $@
 	+make -C ay2ym $(SILENT) $@
 	+make -C vgm2ym $(SILENT) $@
+	+make -C psg2ym $(SILENT) $@
 	+make -C sid2sapr $(SILENT) $@
 	+make -C vgm2sapr $(SILENT) $@
 	+make -C ym2sapr $(SILENT) $@
@@ -26,6 +28,7 @@ clean:
 	+make -C sndh2ym clean
 	+make -C ay2ym clean
 	+make -C vgm2ym clean
+	+make -C psg2ym clean
 	+make -C sid2sapr clean
 	+make -C vgm2sapr clean
 	+make -C ym2sapr clean
@@ -36,6 +39,7 @@ distclean:
 	+make -C sndh2ym distclean
 	+make -C ay2ym distclean
 	+make -C vgm2ym distclean
+	+make -C psg2ym distclean
 	+make -C sid2sapr distclean
 	+make -C vgm2sapr distclean
 	+make -C ym2sapr distclean

@@ -74,6 +74,9 @@ create_title "Things That Go Bump" "crickey-things"
 create_sapr "atarist/ooh crickey wot a scorcher - your mind is my ashtray.ym"
 create_title "Your Mind Is My Ashtray" "crickey-ashtray"
 
+create_sapr "../sndh2ym/ym/Car_Race.ym"
+create_title "Car Race" "hippel-car-race"
+
 file_author="Count Zero"
 # fix high speed envelope notes ;)
 create_sapr -e 13 -f 32 "atarist/decade demo - gigadist-a.ym"
@@ -96,6 +99,14 @@ create_title "Back To The Future 2" "whittaker-bttf2"
 
 create_sapr "spectrum/BeverlyHillsCop.ym"
 create_title "Beverly Hills Cop" "whittaker-axelf"
+
+file_author="NQ"
+create_sapr -e 13 -f 8 "../psg2ym/ym/2018_nq_skrju_demosong.ym"
+create_title "Vortextracker Demosong" "vortex-demosong"
+
+file_author="MmcM"
+create_sapr -e 12 -f 8 "../psg2ym/ym/2019_MmcM_Conversions.ym"
+create_title "Conversions" "vortex-conversions"
 
 #Amstrad CPC
 file_source="Amstrad CPC"
