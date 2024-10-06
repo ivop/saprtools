@@ -108,6 +108,12 @@ file_author="MmcM / Sergey Kosov"
 create_sapr -e 12 -f 8 "../psg2ym/ym/2019_MmcM_Conversions.ym"
 create_title "Conversions" "vortex-conversions"
 
+create_sapr "../psg2ym/ym/MmcM - Fragment-2024 Realtime compose (2024) (DiHalt 2024 Winter, 3).ym"
+create_title "Fragment 2024 Realtime Compose" "mmcm-fragment24"
+
+create_sapr "../psg2ym/ym/MmcM - The Bright Rays Of You (2024) (Multimatograf 2024, 1).ym"
+create_title "The Bright Rays Of You" "mmcm-brightrays"
+
 #Amstrad CPC
 file_source="Amstrad CPC"
 
