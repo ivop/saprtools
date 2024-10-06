@@ -125,6 +125,10 @@ create_title "The Bright Rays Of You" "mmcm-brightrays"
 create_sapr -e 15 -f 8 "../psg2ym/ym/MmcM - AsSuRed (2000).ym"
 create_title "AsSuRed" "mmcm-assured"
 
+file_author="Pator"
+create_sapr -e 14 -f 8 "../psg2ym/ym/Pator - Solitude (2024) (Lost Party 2024, 1).ym"
+create_title "Solitude" "pator-solitude"
+
 #Amstrad CPC
 file_source="Amstrad CPC"
 
