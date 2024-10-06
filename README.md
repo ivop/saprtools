@@ -1,7 +1,9 @@
 # saprtools
 
-[![CI Ubuntu x86_64](https://github.com/ivop/saprtools/actions/workflows/ubuntu-x86_64.yml/badge.svg)](https://github.com/ivop/saprtools/actions/workflows/ubuntu-x86_64.yml)
-[![CI Windows x86_64](https://github.com/ivop/saprtools/actions/workflows/windows-x86_64.yml/badge.svg)](https://github.com/ivop/saprtools/actions/workflows/windows-x86_64.yml)
+[![Linux 32-bit](https://github.com/ivop/saprtools/actions/workflows/Linux%2032-bit.yml/badge.svg)](https://github.com/ivop/saprtools/actions/workflows/Linux%2032-bit.yml)
+[![Linux 64-bit](https://github.com/ivop/saprtools/actions/workflows/Linux%2064-bit.yml/badge.svg)](https://github.com/ivop/saprtools/actions/workflows/Linux%2064-bit.yml)
+[![Windows 32-bit](https://github.com/ivop/saprtools/actions/workflows/Windows%2032-bit.yml/badge.svg)](https://github.com/ivop/saprtools/actions/workflows/Windows%2032-bit.yml)
+[![Windows 64-bit](https://github.com/ivop/saprtools/actions/workflows/Windows%2064-bit.yml/badge.svg)](https://github.com/ivop/saprtools/actions/workflows/Windows%2064-bit.yml)
 
 Tools for creating or manipulating Atari 8-bit SAP-R files.
 
