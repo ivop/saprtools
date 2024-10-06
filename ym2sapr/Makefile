@@ -20,23 +20,22 @@ compress-mono: $(LZSS)
 compress-softbass: compress-mono
 
 player50-stereo:
-	mads -o:player.xex ../player/asm/playlzs16-stereo.asm
+	mads $(PLAYER_LOWMEM) -o:player.xex ../player/asm/playlzs16-stereo.asm
 
 player50-mono:
-	mads -o:player.xex ../player/asm/playlzs16-mono.asm
+	mads $(PLAYER_LOWMEM) -o:player.xex ../player/asm/playlzs16-mono.asm
 
 player50-softbass:
-	mads -o:player.xex ../player/asm/playlzs16-softbass.asm
+	mads $(PLAYER_LOWMEM) -o:player.xex ../player/asm/playlzs16-softbass.asm
 
 player60-stereo:
-	mads -d:HZ60 -o:player.xex ../player/asm/playlzs16-stereo.asm
-
+	mads $(PLAYER_LOWMEM) -d:HZ60 -o:player.xex ../player/asm/playlzs16-stereo.asm
 
 player60-mono:
-	mads -d:HZ60 -o:player.xex ../player/asm/playlzs16-mono.asm
+	mads $(PLAYER_LOWMEM) -d:HZ60 -o:player.xex ../player/asm/playlzs16-mono.asm
 
 player60-softbass:
-	mads -d:HZ60 -o:player.xex ../player/asm/playlzs16-softbass.asm
+	mads $(PLAYER_LOWMEM) -d:HZ60 -o:player.xex ../player/asm/playlzs16-softbass.asm
 
 $(LZSS):
 	+make -C ../lzss-sap

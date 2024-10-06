@@ -104,6 +104,14 @@ file_author="nq / Oleg Nikitin"
 create_sapr -e 13 -f 8 "../psg2ym/ym/2018_nq_skrju_demosong.ym"
 create_title "Vortextracker Demosong" "vortex-demosong"
 
+export PLAYER_LOWMEM=-d:LOWMEM=0x1000
+create_sapr -e 14 -f 8 "../psg2ym/ym/nq - synchronization (2015).ym"
+create_title "Synchronization" "nq-synchronization"
+unset PLAYER_LOWMEM
+
+create_sapr "../psg2ym/ym/nq - Coinz are mine - ingame (Old-School Threads) (2023).ym"
+create_title "Coinz Are Mine" "nq-coinz"
+
 file_author="MmcM / Sergey Kosov"
 create_sapr -e 12 -f 8 "../psg2ym/ym/2019_MmcM_Conversions.ym"
 create_title "Conversions" "vortex-conversions"
@@ -113,6 +121,9 @@ create_title "Fragment 2024 Realtime Compose" "mmcm-fragment24"
 
 create_sapr "../psg2ym/ym/MmcM - The Bright Rays Of You (2024) (Multimatograf 2024, 1).ym"
 create_title "The Bright Rays Of You" "mmcm-brightrays"
+
+create_sapr -e 15 -f 8 "../psg2ym/ym/MmcM - AsSuRed (2000).ym"
+create_title "AsSuRed" "mmcm-assured"
 
 #Amstrad CPC
 file_source="Amstrad CPC"

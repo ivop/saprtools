@@ -184,8 +184,11 @@ fbc49ba79f051fa936b330b14176dbd0  xex/ym2sapr/mono/enchanted-l6.xex
 79a69d73189728107e4c0c74b07537ca  xex/ym2sapr/mono/enchanted-l7.xex
 bd6f4f20cd371d2ef6271f0fe9c52646  xex/ym2sapr/mono/hippel-car-race.xex
 68051ea3864740aded677e8875d5c658  xex/ym2sapr/mono/missile-ground0.xex
+5772d7ec6d7280c6e1a84e3316eb44f4  xex/ym2sapr/mono/mmcm-assured.xex
 d096d88c820760d692b5edfd2dc159af  xex/ym2sapr/mono/mmcm-brightrays.xex
 b7b8f3386fffc398e6e23676ff02c707  xex/ym2sapr/mono/mmcm-fragment24.xex
+320a802661ef89d63ff60e27db6e9f1e  xex/ym2sapr/mono/nq-coinz.xex
+a99070b0b5838e693f1f199920d97e78  xex/ym2sapr/mono/nq-synchronization.xex
 771a71f3ea2b971f4b7e9d9f7dc21438  xex/ym2sapr/mono/twist.xex
 69776a4d7f9d6ec96b33fc3e8f60a15f  xex/ym2sapr/mono/vortex-conversions.xex
 f471752ab01eaa356389d6b0c34a6493  xex/ym2sapr/mono/vortex-demosong.xex
@@ -219,8 +222,11 @@ f4c8c8c990889dfddbfa9bc2d70ac6bd  xex/ym2sapr/softbass/enchanted-l6.xex
 517d0ea9824b539164166e1895ebe6d6  xex/ym2sapr/softbass/enchanted-l7.xex
 bffee29d0af2b3ca59296cf2ec6c0a4b  xex/ym2sapr/softbass/hippel-car-race.xex
 20b7903eb075a0fe8aee8c42dafb4ad4  xex/ym2sapr/softbass/missile-ground0.xex
+849a0c25a3c6289a113e149a6e9d6c01  xex/ym2sapr/softbass/mmcm-assured.xex
 0dd86d2160d275c8d64e96ad7403f7c2  xex/ym2sapr/softbass/mmcm-brightrays.xex
 8151ab660ab421f6701d7782483366a0  xex/ym2sapr/softbass/mmcm-fragment24.xex
+161b93d45c6e8c8b130f6aca3d01f79a  xex/ym2sapr/softbass/nq-coinz.xex
+0a2f8f053e8d294cb99f603160c4c702  xex/ym2sapr/softbass/nq-synchronization.xex
 c0f99b0a85539153268c292c18a33494  xex/ym2sapr/softbass/twist.xex
 71e06e1246bf363ddd43e185696b4a72  xex/ym2sapr/softbass/vortex-conversions.xex
 97241a5092c14e96cdecd8c13860cd55  xex/ym2sapr/softbass/vortex-demosong.xex
@@ -254,8 +260,11 @@ ed9a1d09eb98a998507d6fc0af4ef02d  xex/ym2sapr/stereo/enchanted-l6.xex
 ab0794abd04e365b66cb0c2bbbc938da  xex/ym2sapr/stereo/enchanted-l7.xex
 1f77c335a2687fe4a3255cee55a56154  xex/ym2sapr/stereo/hippel-car-race.xex
 daba730cd990e773727dde6d30d775ef  xex/ym2sapr/stereo/missile-ground0.xex
+1133d8cb69d7114c2bc2b9cd767fc882  xex/ym2sapr/stereo/mmcm-assured.xex
 5c9182c251e0ac6fb5bf9345d8fc5873  xex/ym2sapr/stereo/mmcm-brightrays.xex
 5423e3c67554a13e91e25abf2c9753eb  xex/ym2sapr/stereo/mmcm-fragment24.xex
+3d8400cfbb6a68f4083e96088bffd119  xex/ym2sapr/stereo/nq-coinz.xex
+21b1bcc4724feced370068ea571051c7  xex/ym2sapr/stereo/nq-synchronization.xex
 5b0fa780c502cb3d5a11c8c5442efe86  xex/ym2sapr/stereo/twist.xex
 2d02912e0f7d6e199a6e8f7dbf7fda43  xex/ym2sapr/stereo/vortex-conversions.xex
 91f25fb55e25396ed86be3f06d82b22c  xex/ym2sapr/stereo/vortex-demosong.xex
