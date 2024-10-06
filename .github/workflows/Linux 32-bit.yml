@@ -1,0 +1,29 @@
+name: CI Ubuntu x86
+run-name: ${{github.actor}} is testing out GitHub Actions
+on: [push]
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+          #os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup 32-bit Debian Buster chroot
+      run: |
+        sudo apt-get update
+        sudo apt-get install debootstrap
+        cd $HOME
+        sudo debootstrap --arch=i386 buster buster
+        sudo mkdir buster/workspace
+        sudo mount --bind "$GITHUB_WORKSPACE" buster/workspace
+
+        sudo chroot buster <<EOT
+        apt-get update
+        apt-get install -y --no-install-recommends git gcc g++ make ca-certificates wget fp-compiler xxd file coreutils
+        git clone --depth 1 --branch 2.1.6 https://github.com/tebe6502/Mad-Assembler mads
+        fpc -Mdelphi -vh -O3 -o/bin/mads mads/mads.pas
+        cd /workspace
+        make -j`nproc` test
+        EOT

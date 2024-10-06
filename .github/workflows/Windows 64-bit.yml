@@ -18,12 +18,14 @@ jobs:
       with:
         packages: gcc-g++,make,xxd,git,cygwin-devel,zip,unzip,wget
         add-to-path: false
+        platform: x86_64
     - name: build saprtools with cygwin
       shell: C:\cygwin\bin\bash.exe --login -o igncr -eo pipefail '{0}'
       run: |
         set -e
         export PATH=/usr/bin
         export MSYSTEM=
-        wget -O/usr/bin/mads https://github.com/tebe6502/Mad-Assembler/raw/refs/heads/master/bin/windows_x86_64/mads.exe
+        # This is actually a 32-bit binary
+        wget -O/usr/bin/mads https://github.com/tebe6502/Mad-Assembler/raw/refs/tags/2.1.6/bin/windows_x86_64/mads.exe
         chmod 755 /usr/bin/mads
         cd "${{github.workspace}}" && make -j`nproc` test
