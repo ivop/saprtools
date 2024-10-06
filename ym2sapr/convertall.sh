@@ -100,11 +100,11 @@ create_title "Back To The Future 2" "whittaker-bttf2"
 create_sapr "spectrum/BeverlyHillsCop.ym"
 create_title "Beverly Hills Cop" "whittaker-axelf"
 
-file_author="NQ"
+file_author="nq / Oleg Nikitin"
 create_sapr -e 13 -f 8 "../psg2ym/ym/2018_nq_skrju_demosong.ym"
 create_title "Vortextracker Demosong" "vortex-demosong"
 
-file_author="MmcM"
+file_author="MmcM / Sergey Kosov"
 create_sapr -e 12 -f 8 "../psg2ym/ym/2019_MmcM_Conversions.ym"
 create_title "Conversions" "vortex-conversions"
 

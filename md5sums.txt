@@ -185,8 +185,8 @@ fbc49ba79f051fa936b330b14176dbd0  xex/ym2sapr/mono/enchanted-l6.xex
 bd6f4f20cd371d2ef6271f0fe9c52646  xex/ym2sapr/mono/hippel-car-race.xex
 68051ea3864740aded677e8875d5c658  xex/ym2sapr/mono/missile-ground0.xex
 771a71f3ea2b971f4b7e9d9f7dc21438  xex/ym2sapr/mono/twist.xex
-1ed133b5ad578b748dcc403f6fb469b2  xex/ym2sapr/mono/vortex-conversions.xex
-95d462117114b0b237b9b91367f86232  xex/ym2sapr/mono/vortex-demosong.xex
+69776a4d7f9d6ec96b33fc3e8f60a15f  xex/ym2sapr/mono/vortex-conversions.xex
+f471752ab01eaa356389d6b0c34a6493  xex/ym2sapr/mono/vortex-demosong.xex
 182e406bf4b53f541c101201aefc4d79  xex/ym2sapr/mono/whittaker-axelf.xex
 c9631fb9600c8b986de0ba0cdf9d040b  xex/ym2sapr/mono/whittaker-bttf2.xex
 24ae5a1458fc6e7378ccf2a3ee4a9c41  xex/ym2sapr/mono/whittaker-weird-dreams.xex
@@ -218,8 +218,8 @@ f4c8c8c990889dfddbfa9bc2d70ac6bd  xex/ym2sapr/softbass/enchanted-l6.xex
 bffee29d0af2b3ca59296cf2ec6c0a4b  xex/ym2sapr/softbass/hippel-car-race.xex
 20b7903eb075a0fe8aee8c42dafb4ad4  xex/ym2sapr/softbass/missile-ground0.xex
 c0f99b0a85539153268c292c18a33494  xex/ym2sapr/softbass/twist.xex
-2595cac28d285204cf16efb4e374ad32  xex/ym2sapr/softbass/vortex-conversions.xex
-312a6ab58b5d8af96a3bea51f84b596a  xex/ym2sapr/softbass/vortex-demosong.xex
+71e06e1246bf363ddd43e185696b4a72  xex/ym2sapr/softbass/vortex-conversions.xex
+97241a5092c14e96cdecd8c13860cd55  xex/ym2sapr/softbass/vortex-demosong.xex
 6ee90f5aa2d04610e58c47a85749b8e6  xex/ym2sapr/softbass/whittaker-axelf.xex
 bf16dd5107edf746e9c8221eba274ab3  xex/ym2sapr/softbass/whittaker-bttf2.xex
 0e4105566dd40ce02fedd1e300bf0e21  xex/ym2sapr/softbass/whittaker-weird-dreams.xex
@@ -251,8 +251,8 @@ ab0794abd04e365b66cb0c2bbbc938da  xex/ym2sapr/stereo/enchanted-l7.xex
 1f77c335a2687fe4a3255cee55a56154  xex/ym2sapr/stereo/hippel-car-race.xex
 daba730cd990e773727dde6d30d775ef  xex/ym2sapr/stereo/missile-ground0.xex
 5b0fa780c502cb3d5a11c8c5442efe86  xex/ym2sapr/stereo/twist.xex
-7d64ffa510c79e519dd94daf8f2ca0f1  xex/ym2sapr/stereo/vortex-conversions.xex
-7d28000f85c7cf34334636378c82b4f6  xex/ym2sapr/stereo/vortex-demosong.xex
+2d02912e0f7d6e199a6e8f7dbf7fda43  xex/ym2sapr/stereo/vortex-conversions.xex
+91f25fb55e25396ed86be3f06d82b22c  xex/ym2sapr/stereo/vortex-demosong.xex
 e848cbe4b5c7a5357f5a8ed94de13e02  xex/ym2sapr/stereo/whittaker-axelf.xex
 d0afab6058cb19517ef2c2035bbbb7a0  xex/ym2sapr/stereo/whittaker-bttf2.xex
 d9053aa16e952705c5265e193952f0c6  xex/ym2sapr/stereo/whittaker-weird-dreams.xex
