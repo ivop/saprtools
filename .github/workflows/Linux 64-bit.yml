@@ -1,4 +1,4 @@
-name: CI Ubuntu x86_64
+name: Linux 64-bit
 run-name: ${{github.actor}} is testing out GitHub Actions
 on: [push]
 jobs:

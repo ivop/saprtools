@@ -1,4 +1,4 @@
-name: CI Windows x86_64
+name: Windows 64-bit
 on: [push]
 jobs:
   build:
