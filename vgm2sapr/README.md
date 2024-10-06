@@ -10,9 +10,9 @@ Convert SN76489, SEGA PSG, NCR8496, Game Boy DMG, and HuC6280 .vgm files to Atar
 cd saprtools/vgm2sapr
 make
 ./vgm2sapr sega/system-of-masters.vgz
-make compress
+make compress-stereo
 echo -n "System Of Masters - Alex Mauer" > asm/songname.txt
-make player60
+make player60-stereo
 atari800 player.xex
 ```
 

@@ -10,9 +10,9 @@ Convert Atari ST .ym files to Atari XL/XE mono or stereo SAP-R
 cd saprtools/ym2sapr
 make
 ./ym2sapr "test/testym5 - seven gates of jambala - level 11.ym"
-make compress
-echo -n "7 gates of Jambala L11 - Jochen Hippel" > asm/songname.txt
-make player
+make compress-stereo
+echo -n "7 gates of Jambala L11 - Jochen Hippel" > songname.txt
+make player50-stereo
 atari800 player.xex
 ```
 

@@ -12,7 +12,7 @@ make
 ./sid2sapr -n 3850 -b softbass sid/Freeze.sid
 make compress-softbass
 echo -n "Freeze - Laxity" > asm/songname.txt
-make player-softbass
+make player50-softbass
 atari800 player.xex
 ```
 
