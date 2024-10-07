@@ -1,0 +1,28 @@
+name: macOS arm64
+on: [push]
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macos-13-xlarge,macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build and test
+      run: |
+        brew install fpc md5sha1sum
+        git clone --depth 1 --branch 2.1.6 https://github.com/tebe6502/Mad-Assembler mads
+        fpc -Mdelphi -vh -O3 -omads/mads mads/mads.pas
+        export PATH=$PATH:`pwd`/mads
+        make -j`sysctl -n hw.ncpu` test
+
+    - name: Archive production artifacts
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: arm64-build-failure
+        path: xex
+
+          #    - name: Setup tmate session
+          #      if: ${{ failure() }}
+          #      uses: mxschmitt/action-tmate@v3
