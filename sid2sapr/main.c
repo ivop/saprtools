@@ -239,6 +239,8 @@ static uint8_t find_closest_distc(const struct bass table[], double f) {
 #define TRANSP_DOWN true
 
 static void sid2pokey2(int voice, uint8_t *pokey, bool trans_down) {
+    double POKreal = 0.0;
+    int POK = 0;
     struct sid_voice     *p = &sid.v[voice];
     struct sid_registers *r = &sid.r[voice];
 
@@ -250,9 +252,10 @@ static void sid2pokey2(int voice, uint8_t *pokey, bool trans_down) {
 
     if (trans_down) f /= 2.0;
 
-    double POKreal = (ATARI_CLOCK / 2.0 / f) - 7;
-
-    int POK = round(POKreal);
+    if (r->freq) {                                  // avoid div by zero
+        POKreal = (ATARI_CLOCK / 2.0 / f) - 7;
+        POK = round(POKreal);
+    }
 
     int dist = 0xa0;
 
@@ -333,6 +336,8 @@ static int find_closest_sawtooth(double f) {
 #define YES_SAW true
 
 static void sid2pokey(int voice, uint8_t *pokey, bool sawtooth, bool trans_down) {
+    double POKreal = 0.0;
+    int POK = 0;
     struct sid_voice     *p = &sid.v[voice];
     struct sid_registers *r = &sid.r[voice];
 
@@ -344,9 +349,10 @@ static void sid2pokey(int voice, uint8_t *pokey, bool sawtooth, bool trans_down)
 
     if (trans_down) f /= 2.0;
 
-    double POKreal = (ATARI_CLOCK / 28.0 / 2.0 / f) - 1;
-
-    int POK = round(POKreal);
+    if (r->freq) {                                      // avoid div by zero
+        POKreal = (ATARI_CLOCK / 28.0 / 2.0 / f) - 1;
+        POK = round(POKreal);
+    }
 
     int dist = 0xa0;
 
