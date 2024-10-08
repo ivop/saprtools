@@ -1,11 +1,10 @@
 name: macOS arm64
-on: [push]
+on: [workflow_dispatch]
 jobs:
   build:
     strategy:
       matrix:
         os: [macos-latest]
-          #os: [macos-13-xlarge,macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
@@ -21,9 +20,5 @@ jobs:
       if: ${{ failure() }}
       uses: actions/upload-artifact@v4
       with:
-        name: arm64-build-failure
+        name: macos-arm64-build-failure
         path: xex
-
-          #    - name: Setup tmate session
-          #      if: ${{ failure() }}
-          #      uses: mxschmitt/action-tmate@v3

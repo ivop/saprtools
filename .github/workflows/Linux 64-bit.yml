@@ -1,11 +1,12 @@
 name: Linux 64-bit
 run-name: ${{github.actor}} is testing out GitHub Actions
-on: [push]
+on: [workflow_dispatch]
 jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
+        os: [ubuntu-20.04]
+          #os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
@@ -19,3 +20,10 @@ jobs:
         echo "${PWD}/mads" >> $GITHUB_PATH
     - name: make test
       run: make -j`nproc` test
+
+    - name: Archive production artifacts
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux64-build-failure
+        path: xex

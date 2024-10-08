@@ -1,10 +1,11 @@
 name: Windows 32-bit
-on: [push]
+on: [workflow_dispatch]
 jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019,windows-2022]
+        os: [windows-2019]
+          #os: [windows-2019,windows-2022]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Set git to use LF
@@ -29,3 +30,10 @@ jobs:
         wget -O/usr/bin/mads https://github.com/tebe6502/Mad-Assembler/raw/refs/tags/2.1.6/bin/windows_x86_64/mads.exe
         chmod 755 /usr/bin/mads
         cd "${{github.workspace}}" && make -j`nproc` test
+
+    - name: Archive production artifacts
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: win32-build-failure
+        path: xex

@@ -1,6 +1,6 @@
 name: Linux 32-bit
 run-name: ${{github.actor}} is testing out GitHub Actions
-on: [push]
+on: [workflow_dispatch]
 jobs:
   build:
     strategy:
@@ -27,3 +27,10 @@ jobs:
         cd /workspace
         make -j`nproc` test
         EOT
+
+    - name: Archive production artifacts
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux32-build-failure
+        path: xex
