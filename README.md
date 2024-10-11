@@ -86,7 +86,8 @@ Run ```make``` in the main directory of the repository.
 Alternatively enter the directory of the converter you want to build, and type ```make```.
 To run all sample conversions, run ```make convertall```.
 Needed are a C and C++ compiler like CLang or GCC, and to assemble the Atari 8-bit players you need Mad Assembler[^3] (mads) available in your path.
-All tools have been tested on 32-bit and 64-bit Linux, going back as far as Debian 7 ("wheezy"), 32-bit and 64-bit Windows Cygwin, and 32-bit and 64-bit Windows MinGW/MSYS2.
+All tools have been tested on 32-bit and 64-bit Linux, going back as far as Debian 7 ("wheezy"), 32-bit and 64-bit Windows Cygwin, 32-bit and 64-bit Windows MinGW/MSYS2,
+and 64-bit macOS, both x86_64 and arm64.
 Each directory contains its own README.md with sometimes more detailed instructions, a short usage example, and the help output listing all of its options.
 The following lines need to be present in your "~/.gitconfig" to see binary differences for the involved files in git.
 `[diff "hex"]`
