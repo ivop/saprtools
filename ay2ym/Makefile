@@ -10,7 +10,7 @@ ay2ym: main.c z80.c
 	$(CC) $(CFLAGS) $(STATIC) -o $@ $^
 
 clean:
-	rm -f ay2ym *.o *~
+	rm -f ay2ym ay2ym.exe *.o *~
 
 distclean: clean
 	rm -f *.ym

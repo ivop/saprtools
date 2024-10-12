@@ -89,7 +89,7 @@ OTHER_CLEAN += GPATH GRTAGS GTAGS
 
 .PHONY: clean
 clean:
-	$(QUIET_RM)$(RM) $(ALL_OBJ) $(ALL_DEP) $(OTHER_CLEAN)
+	$(QUIET_RM)$(RM) $(ALL_OBJ) $(ALL_DEP) $(OTHER_CLEAN) *.exe lib/m68k/*.exe lib/example/*.exe
 
 V             = @
 Q             = $(V:1=)

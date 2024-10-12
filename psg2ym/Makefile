@@ -10,7 +10,7 @@ psg2ym: main.c
 	$(CC) $(STATIC) $(CFLAGS) -o $@ $< -lm
 
 clean:
-	rm -f psg2ym *~ */*~
+	rm -f psg2ym psg2ym.exe *~ */*~
 
 distclean: clean
 	rm -f *.ym

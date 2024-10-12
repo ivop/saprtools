@@ -14,7 +14,7 @@ vgm2ym: main.c $(ZLIB)
 	$(CC) $(STATIC) $(CFLAGS) -o vgm2ym main.c -lm $(ZLIB)
 
 clean:
-	rm -f vgm2ym *~ */*~
+	rm -f vgm2ym vgm2ym.exe *~ */*~
 
 distclean: clean
 	rm -f *.ym

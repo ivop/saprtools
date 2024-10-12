@@ -21,7 +21,7 @@ $(LIB):
 	+make -C libpsgplay HOST_CC=$(CC) CC=cc lib/psgplay/libpsgplay.a
 
 clean:
-	rm -f *~ sndh2ym
+	rm -f *~ sndh2ym sndh2ym.exe
 	make -C libpsgplay clean
 
 distclean: clean
