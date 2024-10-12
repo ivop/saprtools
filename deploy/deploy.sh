@@ -93,5 +93,7 @@ if [ -n "$ZIP" ] ; then
     zip -9r "$BASE/saprtools-$1-$DATE.zip" *
 else
     tar cvzf saprtools-$1-$DATE.tar.gz -C "$DEPLOY" "$(basename "$COLLECT")"
+    tar cvjf saprtools-$1-$DATE.tar.bz2 -C "$DEPLOY" "$(basename "$COLLECT")"
+    tar cvJf saprtools-$1-$DATE.tar.xz -C "$DEPLOY" "$(basename "$COLLECT")"
 fi
 rm -rf "$COLLECT"
