@@ -18,7 +18,7 @@ sndh2ym: $(SRC) $(LIB)
 	$(CC) $(STATIC) $(CFLAGS) -o sndh2ym $(SRC) $(LIB) -lm
 
 $(LIB):
-	+make -C libpsgplay HOST_CC=$(CC) CC=cc lib/psgplay/libpsgplay.a
+	+make -C libpsgplay HOST_CC="$(CC)" CC=cc lib/psgplay/libpsgplay.a
 
 clean:
 	rm -f *~ sndh2ym sndh2ym.exe
