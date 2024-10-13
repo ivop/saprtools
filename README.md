@@ -9,7 +9,7 @@
 
 Tools for creating or manipulating Atari 8-bit SAP-R files.
 
-Binary releases for Windows and Linux are [here](https://github.com/ivop/saprtools/releases).
+Binary releases for Linux, Windows, and macOS are [here](https://github.com/ivop/saprtools/releases).
 
 ### Contents
 
