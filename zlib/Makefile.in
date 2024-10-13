@@ -361,7 +361,7 @@ zconf: $(SRCDIR)zconf.h.in
 
 mostlyclean: clean
 clean:
-	rm -f *.o *.lo *~ \
+	rm -f *.o *.lo *~ *.exe \
 	   example$(EXE) minigzip$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
 	   example64$(EXE) minigzip64$(EXE) \
 	   infcover \
