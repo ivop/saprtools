@@ -25,8 +25,11 @@ fi
 unset MSYSTEM
 unset EXE
 unset ZIP
+unset DMG
 unset CYGDLL
 STATIC="-static -s"
+DEPLOY_AR=ar
+DEPLOY_RANLIB=ranlib
 
 case "$1" in
     linux32)
@@ -76,7 +79,7 @@ case "$1" in
         DEPLOY_AR=x86_64-apple-darwin20.2-ar
         DEPLOY_RANLIB=x86_64-apple-darwin20.2-ranlib
         STATIC=
-        ZIP=true
+        DMG=true
         ;;
     macos-arm64)
         DEPLOY_CC=arm64-apple-darwin20.2-cc
@@ -86,7 +89,7 @@ case "$1" in
         DEPLOY_AR=arm64-apple-darwin20.2-ar
         DEPLOY_RANLIB=arm64-apple-darwin20.2-ranlib
         STATIC=
-        ZIP=true
+        DMG=true
         ;;
     *)
         echo "unknown target '$1'"
@@ -113,6 +116,8 @@ fi
 if [ -n "$ZIP" ] ; then
     cd "$COLLECT"
     zip -9r "$BASE/saprtools-$1-$DATE.zip" *
+elif [ -n "$DMG" ] ; then
+    :
 else
     tar cvzf saprtools-$1-$DATE.tar.gz -C "$DEPLOY" "$(basename "$COLLECT")"
     tar cvjf saprtools-$1-$DATE.tar.bz2 -C "$DEPLOY" "$(basename "$COLLECT")"
