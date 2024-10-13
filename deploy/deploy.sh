@@ -117,10 +117,12 @@ if [ -n "$ZIP" ] ; then
     cd "$COLLECT"
     zip -9r "$BASE/saprtools-$1-$DATE.zip" *
 elif [ -n "$DMG" ] ; then
-    :
+    genisoimage -r -apple -probe -o saprtools-$1-$DATE.iso "$COLLECT"
+    dmg saprtools-$1-$DATE.iso saprtools-$1-$DATE.dmg
+    rm -f saprtools-$1-$DATE.iso
 else
     tar cvzf saprtools-$1-$DATE.tar.gz -C "$DEPLOY" "$(basename "$COLLECT")"
     tar cvjf saprtools-$1-$DATE.tar.bz2 -C "$DEPLOY" "$(basename "$COLLECT")"
     tar cvJf saprtools-$1-$DATE.tar.xz -C "$DEPLOY" "$(basename "$COLLECT")"
 fi
-rm -rf "$COLLECT"
+#rm -rf "$COLLECT"
