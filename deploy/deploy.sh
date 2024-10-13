@@ -26,6 +26,7 @@ unset MSYSTEM
 unset EXE
 unset ZIP
 unset CYGDLL
+STATIC="-static -s"
 
 case "$1" in
     linux32)
@@ -67,13 +68,34 @@ case "$1" in
         ZIP=true
         MSYSTEM=mingw64
         ;;
+    macos-x86_64)
+        DEPLOY_CC=x86_64-apple-darwin20.2-cc
+        DEPLOY_CXX=x86_64-apple-darwin20.2-c++
+        MADS=mads-bullseye-i386
+        CONVERT=convert.sh
+        DEPLOY_AR=x86_64-apple-darwin20.2-ar
+        DEPLOY_RANLIB=x86_64-apple-darwin20.2-ranlib
+        STATIC=
+        ZIP=true
+        ;;
+    macos-arm64)
+        DEPLOY_CC=arm64-apple-darwin20.2-cc
+        DEPLOY_CXX=arm64-apple-darwin20.2-c++
+        MADS=mads-bullseye-i386
+        CONVERT=convert.sh
+        DEPLOY_AR=arm64-apple-darwin20.2-ar
+        DEPLOY_RANLIB=arm64-apple-darwin20.2-ranlib
+        STATIC=
+        ZIP=true
+        ;;
     *)
         echo "unknown target '$1'"
         exit 1
         ;;
 esac
 
-export DEPLOY_CC DEPLOY_CXX MSYSTEM EXE COLLECT
+export DEPLOY_CC DEPLOY_CXX MSYSTEM EXE COLLECT STATIC DEPLOY_AR DEPLOY_RANLIB
+export MACOSX_DEPLOYMENT_TARGET=10.15
 deploy/build.sh
 
 cp -a player/asm "$COLLECT"

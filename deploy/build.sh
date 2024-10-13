@@ -7,12 +7,17 @@
 BASE=`pwd`
 DEPLOY="$BASE"/deploy
 
-echo "BUILDING SAPRTOOLS"
+printf "\nBUILDING SAPRTOOLS\n\n"
 
 make distclean
-make -j`nproc` all STATIC="-static -s" CC="${DEPLOY_CC}" CXX="${DEPLOY_CXX}"
+make -j`nproc` all \
+    STATIC="$STATIC" \
+    CC="${DEPLOY_CC}" \
+    CXX="${DEPLOY_CXX}" \
+    AR="${DEPLOY_AR}" \
+    RANLIB="${DEPLOY_RANLIB}"
 
-echo "COLLECT FILES FOR DISTRIBUTION"
+printf "\nCOLLECT FILES FOR DISTRIBUTION\n\n"
 
 rm -rf "$COLLECT"
 mkdir -p "$COLLECT"
