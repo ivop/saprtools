@@ -74,7 +74,7 @@ case "$1" in
     macos-x86_64)
         DEPLOY_CC=x86_64-apple-darwin20.2-cc
         DEPLOY_CXX=x86_64-apple-darwin20.2-c++
-        MADS=mads-bullseye-i386
+        MADS=mads-macos-x86_64
         CONVERT=convert.sh
         DEPLOY_AR=x86_64-apple-darwin20.2-ar
         DEPLOY_RANLIB=x86_64-apple-darwin20.2-ranlib
@@ -84,7 +84,7 @@ case "$1" in
     macos-arm64)
         DEPLOY_CC=arm64-apple-darwin20.2-cc
         DEPLOY_CXX=arm64-apple-darwin20.2-c++
-        MADS=mads-bullseye-i386
+        MADS=mads-macos-arm64
         CONVERT=convert.sh
         DEPLOY_AR=arm64-apple-darwin20.2-ar
         DEPLOY_RANLIB=arm64-apple-darwin20.2-ranlib
