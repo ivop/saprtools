@@ -125,4 +125,4 @@ else
     tar cvjf saprtools-$1-$DATE.tar.bz2 -C "$DEPLOY" "$(basename "$COLLECT")"
     tar cvJf saprtools-$1-$DATE.tar.xz -C "$DEPLOY" "$(basename "$COLLECT")"
 fi
-#rm -rf "$COLLECT"
+rm -rf "$COLLECT"
