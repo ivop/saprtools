@@ -14,7 +14,7 @@ static void usage(void) {
 "   -h                  display help\n"
 "   -s reg=val[,..]     set channel to fixed value, comma separeted list\n"
 "                           register = [0..8]\n"
-"                           valalue  = [0..255] (decimal, octal, or hexadecimal)\n"
+"                           value    = [0..255] (decimal, octal, or hexadecimal)\n"
 );
 }
 
