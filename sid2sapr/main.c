@@ -1018,6 +1018,11 @@ adjust_nonsawf:
                     sid2pokey(xorder[2], &pokey[0], NO_SAW, hpf_down);
                     if ((pokey[1] & 0xf0) == 0xa0) {
                         pokey[4] = pokey[0];
+                        if (hpf_volume < 1.0) {
+                            uint8_t v = pokey[1] & 0x0f;
+                            v = round((double) v * hpf_volume);
+                            pokey[1] = (pokey[1] & 0xf0) | v;
+                        }
                         if (hpfilter >= 3) {
                             uint8_t v = (pokey[1] & 0x0f) >> 1;
                             pokey[5] = (pokey[1] & 0xf0) | v; // vol 50%
