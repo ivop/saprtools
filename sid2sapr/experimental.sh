@@ -148,8 +148,6 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-stereo && make player50-stereo
 mv player.xex experimental/exp-lightforce-stereo-hpf.xex
 
-#fi
-
 # TRY OUT SAPR2SAPR combining mono and stereo
 
 # create STEREO left/right SAPR files with full 32-bit HPF on right Pokey
@@ -168,6 +166,16 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Cybernoid II (HPF Mix)" "Jeroen Tel" > songname.txt
 make compress-stereo && make player50-stereo
 mv player.xex experimental/exp-cybernoid2-stereo-mono-mix-hpf.xex
+
+#fi
+
+./sid2sapr -x 2 -p12 -E0.8 -F 1 -D -b buzzy sid/R-Type.sid
+./sid2sapr -x 1 -p12 -s -F 3 -g 10 -D -b softbass sid/R-Type.sid
+../sapr2sapr/sapr2sapr -s 6=0,7=0 output.sapr left.sapr
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "R-Type (HPF Mix)" "Chris Huelsbeck & Ramiro Vaca" > songname.txt
+make compress-stereo && make player50-stereo
+mv player.xex experimental/exp-rtype-stereo-mono-mix-hpf.xex
 
 # clear for further tests
 rm -f songname.txt
