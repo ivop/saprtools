@@ -1,20 +1,20 @@
-CC ?= gcc
-CFLAGS ?= -O2 -Wall
-
+CFLAGS=-O0 -g3 -march=native -Wall -Wextra -Wno-unused-parameter
 CFLAGS += $$(pkg-config --cflags sdl)
-LIBS += $$(pkg-config --libs sdl)
+LIBS=mzpokeysnd.a $$(pkg-config --libs sdl) -lm
 
-CFLAGS += -Ilibatari800/src/libatari800/
-LIBS += libatari800/src/libatari800.a
+all: saprplay mzpokeysnd.a
 
-LIBS += -lm
+mzpokeysnd.a: mzpokeysnd.o remez.o
+	$(AR) rcs $@ $^
 
-saprplay: main.c libatari800/src/libatari800.a
-	$(CC) -o saprplay main.c $(CFLAGS) $(LIBS)
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-libatari800/src/libatari800.a:
-	./build-libatari800.sh
+saprplay: mzpokeysnd.a main.o
+	$(CC) -o $@ $^ $(LIBS)
+
+%: %.c
+	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
-	rm -f *~ saprplay
-
+	rm -f saprplay *.o *.a *~

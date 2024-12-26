@@ -1106,7 +1106,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
 
             int bb = channel * 10 + aa;
             if (!written[bb]) {
-                if (aa != 7)            // do not count wave data writes
+                if (aa != 7)   //XXX fix, 6?  // do not count wave data writes
                     written[bb]++;
             } else {
                 if (force_new) {
