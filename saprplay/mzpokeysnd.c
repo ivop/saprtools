@@ -1,25 +1,21 @@
-
 /*
  * mzpokeysnd.c - POKEY sound chip emulation, v1.6
  *
- * Copyright (C) 2002 Michael Borisov, Krzystof Nikiel
- * Copyright (C) 2002-2014 Atari800 development team (see DOC/CREDITS)
+ * Copyright (C) 2002-218 Michael Borisov, Krzystof Nikiel,
+ *                        Perry McFarlane, Petr Stehlík
  *
- * This file is part of the Atari800 emulator project which emulates
- * the Atari 400, 800, 800XL, 130XE, and 5200 8-bit computers.
- *
- * Atari800 is free software; you can redistribute it and/or modify
+ * mozpokeysnd is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * Atari800 is distributed in the hope that it will be useful,
+ * mozpokeysnd is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Atari800; if not, write to the Free Software Foundation,
+ * along with mozpokeysnd; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
@@ -1491,167 +1487,7 @@ static void Update_pokey_sound_mz(UWORD addr, UBYTE val, UBYTE chip,
     }
 }
 
-/**************************************************************
-           Master gain and DC offset calculation
-                 by Michael Borisov
-
- In order to use the available 8-bit or 16-bit dynamic range
- to full extent, reducing the influence of quantization
- noise while simultaneously avoiding overflows, gain
- and DC offset should be set to appropriate value.
-
- All Pokey-generated sounds have maximal amplitude of 15.
- When all four channels sound simultaneously and in the
- same phase, amplidudes would add up to 60.
-
- If Pokey is generating a 'pure tone', it always has a DC
- offset of half its amplitude. For other signals (produced
- by poly generators) DC offset varies, but it is always near
- to half amplitude and never exceeds this value.
-
- In case that pure tone base frequency is outside of audible
- range (ultrasound frequency for high sample rates and above-
- Nyquist frequency for low sample rates), to speed up the engine,
- the generator is stopped while having only DC offset on the
- output (half of corresponding AUDV value). In order that this
- DC offset can be always represented as integer, AUDV values
- are multiplied by 2 when the generator works.
-
- Therefore maximum integer value before resampling filters
- would be 60*2 = 120 while having maximum DC offset of 60.
- Resampling does not change the DC offset, therefore we may
- subtract it from the signal either before or after resampling.
- In mzpokeysnd, DC offset is subtracted after resampling, however
- for better understanding in further measurements I assume
- subtracting DC before. So, input range for the resampler
- becomes [-60 .. 60].
-
- Resampling filter removes some harmonics from the signal as if
- the rectangular wave was Fourier transformed forth-and-back,
- while zeroing all harmonics above cutoff frequency. In case
- of high-frequency pure tone (above samplerate/8), only first
- harmonic of the Fourier transofm will remain. As it
- is known, Fourier-transform of the rectangular function of
- amplitude 1 has first oscillation component of amplitude 4/M_PI.
- Therefore, maximum sample values for filtered rectangular
- signal may exceed the amplitude  of rectangular signal
- by up to 4/M_PI times.
-
- Since our range before resampler is -60 .. 60, taking into
- account mentioned effect with band limiting, range of values
- on the resampler output appears to be in the following bounds:
- [-60*4/M_PI .. 60*4/M_PI]
-
- In order to map this into signed 8-bit range [-128 .. 127], we
- should multiply the resampler output by 127/60/4*M_PI.
-
- As it is common for sound hardware to have 8-bit sound unsigned,
- additional DC offset of 128 must be added.
-
- For 16-bit case the output range is [-32768 .. 32767], and
- we should multiply the resampler output by 32767/60/4*M_PI
-
- To make some room for numerical errors, filter ripples and
- quantization noise, so that they do not cause overflows in
- quantization, dynamic range is reduced in mzpokeysnd by
- multiplying the output amplitude with 0.95, reserving 5%
- of the total range for such effects, which is about 0.51db.
-
- Mentioned gain and DC values were tested with 17kHz audio
- playing synchronously on 4 channels, which showed to be
- utilizing 95% of the sample values range.
-
- Since any other gain value will be not optimal, I removed
- user gain setting and hard-coded the gain into mzpokeysnd
-
- ---
-
- A note from Piotr Fusik:
- I've added support for the key click sound generated by GTIA. Its
- volume seems to be pretty much like 8 on single POKEY's channel.
- So, the volumes now can sum up to 136 (4 channels * 15 * 2
- + 8 * 2 for GTIA), not 120.
-
- A note from Mark Grebe:
- I've added back in the console and sio sounds from the old
- pokey version.  So, now the volumes can sum up to 152
- (4 channesl * 15 * 2 + 8 * 4 for old sound), not 120 or 136.
- ******************************************************************/
-
-
-/******************************************************************
-          Quantization effects and dithering
-              by Michael Borisov
-
- Quantization error in the signal has an expectation value of half
- the LSB, when the rounding is performed properly. Sometimes they
- express quantization error as a random function with even
- distribution over the range [-0.5 to 0.5]. Spectrum of this function
- is flat, because it's a white noise.
-
- Power of a discrete signal (including noise) is calculated as
- mean square of its samples. For the mentioned above noise
- this is approximately 0.33. Therefore, in decibels for 8-bit case,
- our noise will have power of 10*log10(0.33/256/256) = -53dB
-
- Because noise is white, this power of -53dB will be evenly
- distributed over the whole signal band upto Nyquist frequency.
- The larger the band is (higher sampling frequency), less
- is the quantisation noise floor. For 8000Hz noise floor is
- 10*log10(0.33/256/256/4000) = -89dB/Hz, and for 44100Hz noise
- floor is 10*log10(0.33/256/256/22050) = -96.4dB/Hz.
- This shows that higher sampling rates are better in sense of
- quantization noise. Moreover, as large part of quantization noise
- in case of 44100Hz will fall into ultrasound and hi-frequency
- area 10-20kHz where human ear is less sensitive, this will
- show up as great improvement in quantization noise performance
- compared to 8000Hz.
-
- I was plotting spectral analysis for sounds produced by mzpokeysnd
- to check these measures. And it showed up that in 8-bit case
- there is no expected flat noise floor of -89db/Hz for 8000Hz,
- but some distortion spectral peaks had higher amplitude than
- the aliasing peaks in 16-bit case. This was a proof to another
- statement which says that quantization noise tends to become
- correlated with the signal. Correlation is especially strong
- for simple signals generated by Pokey. Correlation means that
- the noise power of -53db is no longer evenly distributed
- across the whole frequency range, but concentrates in larger
- peaks at locations which depend on the Pokey signal.
-
- To decorrelate quantization distortion and make it again
- white noise, which would improve the sound spectrum, since
- the maximum distortion peaks will have less amplitude,
- dithering is used. Another white noise is added to the signal
- before quantization. Since this added noise is not correlated
- with the signal, it shows itself as a flat noise floor.
- Quantization noise now tries to correlate with the dithering
- noise, but this does not lead to appearance of sharp
- spectral peaks any more :)
-
- Another thing is that for listening, white noise is better than
- distortion. This is because human hearing has some 'noise
- reduction' system which makes it easier to percept sounds
- on the white noise background.
-
- From the other point of view, if a signal has high and low
- spectral peaks, it is desirable that there is no distortion
- component with peaks of amplitude comparable to those of
- the true signal. Otherwise, perception of background low-
- amplitude signals will be disrupted. That's why they say
- that dithering extends dynamic range.
-
- Dithering does not eliminate correlation of quantization noise
- completely. Degree of reduction of this effect depends on
- the dithering noise power. The higher is dithering noise,
- the more quantization noise is decorrelated. But this also
- leads to increase of noise percepted by the listener. So, an
- optimum value should be selected. My experiments show that
- unbiased rand() noise of amplitude 0.25 LSB is doing well.
-
- Test spectral pictures for 8-bit sound, 8kHz sampling rate,
- dithered, show a noise floor of approx. -87dB/Hz.
- ******************************************************************/
+/* See mzpokeysnd.txt for details */
 
 #define MAX_SAMPLE 152
 
