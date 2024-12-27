@@ -2,7 +2,7 @@
 /*
  * mzpokeysnd.c - POKEY sound chip emulation, v1.6
  *
- * Copyright (C) 2002 Michael Borisov
+ * Copyright (C) 2002 Michael Borisov, Krzystof Nikiel
  * Copyright (C) 2002-2014 Atari800 development team (see DOC/CREDITS)
  *
  * This file is part of the Atari800 emulator project which emulates
@@ -37,7 +37,6 @@ int Atari800_tv_mode = Atari800_TV_PAL;
 #define Atari800_FPS_PAL 49.8607597
 #define Atari800_FPS_NTSC 59.9227434
 
-//void (*POKEYSND_GenerateSync)(unsigned int num_ticks);
 void (*POKEYSND_Update_ptr)(UWORD addr, UBYTE val, UBYTE chip, UBYTE gain);
 void (*POKEYSND_Process_ptr)(void *sndbuffer, int sndn);
 
@@ -239,344 +238,6 @@ static struct {
     double s16;
     double s8;
 } volume;
-
-/* Forward declarations for ResetPokeyState */
-
-static int readout0_normal(PokeyState * ps);
-static void event0_pure(PokeyState * ps, int p5v, int p4v, int p917v);
-
-static int readout1_normal(PokeyState * ps);
-static void event1_pure(PokeyState * ps, int p5v, int p4v, int p917v);
-
-static int readout2_normal(PokeyState * ps);
-static void event2_pure(PokeyState * ps, int p5v, int p4v, int p917v);
-
-static int readout3_normal(PokeyState * ps);
-static void event3_pure(PokeyState * ps, int p5v, int p4v, int p917v);
-
-static void ResetPokeyState(PokeyState * ps) {
-    /* Poly positions */
-    ps->poly4pos = 0;
-    ps->poly5pos = 0;
-    ps->poly9pos = 0;
-    ps->poly17pos = 0;
-
-    /* Change queue */
-    ps->ovola = 0;
-    ps->qebeg = 0;
-    ps->qeend = 0;
-
-    /* Global Pokey controls */
-    ps->mdivk = 28;
-
-    ps->selpoly9 = 0;
-    ps->c0_hf = 0;
-    ps->c1_f0 = 0;
-    ps->c2_hf = 0;
-    ps->c3_f2 = 0;
-
-    /* SKCTL for two-tone mode */
-    ps->skctl = 0;
-
-    ps->outvol_all = 0;
-    ps->forcero = 0;
-
-    /* Channel 0 state */
-    ps->readout_0 = readout0_normal;
-    ps->event_0 = event0_pure;
-
-    ps->c0divpos = 1000;
-    ps->c0divstart = 1000;
-    ps->c0divstart_p = 1000;
-    ps->c0diva = 255;
-
-    ps->c0t1 = 0;
-    ps->c0t2 = 0;
-    ps->c0t3 = 0;
-
-    ps->c0sw1 = 0;
-    ps->c0sw2 = 0;
-    ps->c0sw3 = 0;
-    ps->c0sw4 = 0;
-    ps->c0vo = 1;
-
-    ps->vol0 = 0;
-
-    ps->outvol_0 = 0;
-
-
-    /* Channel 1 state */
-    ps->readout_1 = readout1_normal;
-    ps->event_1 = event1_pure;
-
-    ps->c1divpos = 1000;
-    ps->c1divstart = 1000;
-    ps->c1diva = 255;
-
-    ps->c1t1 = 0;
-    ps->c1t2 = 0;
-    ps->c1t3 = 0;
-
-    ps->c1sw1 = 0;
-    ps->c1sw2 = 0;
-    ps->c1sw3 = 0;
-    ps->c1sw4 = 0;
-    ps->c1vo = 1;
-
-    ps->vol1 = 0;
-
-    ps->outvol_1 = 0;
-
-    /* Channel 2 state */
-    ps->readout_2 = readout2_normal;
-    ps->event_2 = event2_pure;
-
-    ps->c2divpos = 1000;
-    ps->c2divstart = 1000;
-    ps->c2divstart_p = 1000;
-    ps->c2diva = 255;
-
-    ps->c2t1 = 0;
-    ps->c2t2 = 0;
-
-    ps->c2sw1 = 0;
-    ps->c2sw2 = 0;
-    ps->c2sw3 = 0;
-
-    ps->c2vo = 0;
-
-    ps->vol2 = 0;
-
-    ps->outvol_2 = 0;
-
-    /* Channel 3 state */
-    ps->readout_3 = readout3_normal;
-    ps->event_3 = event3_pure;
-
-    ps->c3divpos = 1000;
-    ps->c3divstart = 1000;
-    ps->c3diva = 255;
-
-    ps->c3t1 = 0;
-    ps->c3t2 = 0;
-
-    ps->c3sw1 = 0;
-    ps->c3sw2 = 0;
-    ps->c3sw3 = 0;
-
-    ps->c3vo = 0;
-
-    ps->vol3 = 0;
-
-    ps->outvol_3 = 0;
-
-    /* GTIA speaker */
-    ps->speaker = 0;
-}
-
-static double read_resam_all(PokeyState * ps) {
-    int i = ps->qebeg;
-    qev_t avol, bvol;
-    double sum;
-
-    if (ps->qebeg == ps->qeend) {
-        return ps->ovola * filter_data[0];      /* if no events in the queue */
-    }
-
-    avol = ps->ovola;
-    sum = 0;
-
-    /* Separate two loop cases, for wrap-around and without */
-    if (ps->qeend < ps->qebeg) {        /* With wrap */
-        while (i < filter_size) {
-            bvol = ps->qev[i];
-            sum += (avol - bvol) * filter_data[ps->curtick - ps->qet[i]];
-            avol = bvol;
-            ++i;
-        }
-        i = 0;
-    }
-
-    /* without wrap */
-    while (i < ps->qeend) {
-        bvol = ps->qev[i];
-        sum += (avol - bvol) * filter_data[ps->curtick - ps->qet[i]];
-        avol = bvol;
-        ++i;
-    }
-
-    sum += avol * filter_data[0];
-    return sum;
-}
-
-#if 0
-/* linear interpolation of filter data */
-static double interp_filter_data(int pos, double frac) {
-    if (pos + 1 >= filter_size) {
-        return 0.0;
-    }
-    return (frac) * filter_data[pos + 1] + (1 - frac) * (filter_data[pos] -
-                                                         filter_data
-                                                         [filter_size - 1]);
-}
-#endif
-#if 0
-/* returns the filtered output sample value using an interpolated filter */
-
-/* frac is the fractional distance of the output sample point between
- * input sample values */
-static double interp_read_resam_all(PokeyState * ps, double frac) {
-    int i = ps->qebeg;
-    qev_t avol, bvol;
-    double sum;
-
-    if (ps->qebeg == ps->qeend) {
-        return ps->ovola * interp_filter_data(0, frac); /* if no events in the queue */
-    }
-
-    avol = ps->ovola;
-    sum = 0;
-
-    /* Separate two loop cases, for wrap-around and without */
-    if (ps->qeend < ps->qebeg) {        /* With wrap */
-        while (i < filter_size) {
-            bvol = ps->qev[i];
-            sum +=
-                (avol - bvol) * interp_filter_data(ps->curtick - ps->qet[i],
-                                                   frac);
-            avol = bvol;
-            ++i;
-        }
-        i = 0;
-    }
-
-    /* without wrap */
-    while (i < ps->qeend) {
-        bvol = ps->qev[i];
-        sum +=
-            (avol - bvol) * interp_filter_data(ps->curtick - ps->qet[i], frac);
-        avol = bvol;
-        ++i;
-    }
-
-    sum += avol * interp_filter_data(0, frac);
-
-    return sum;
-}
-#endif
-
-static void add_change(PokeyState * ps, qev_t a) {
-    ps->qev[ps->qeend] = a;
-    ps->qet[ps->qeend] = ps->curtick;   /*0; */
-    ++ps->qeend;
-    if (ps->qeend >= filter_size)
-        ps->qeend = 0;
-}
-
-static void bump_qe_subticks(PokeyState * ps, int subticks) {
-    /* Remove too old events from the queue while bumping */
-    int i = ps->qebeg;
-
-    /* we must avoid curtick overflow in a 32-bit int, will happen in 20 min */
-    static const int tickoverflowlimit = 1000000000;
-
-    ps->curtick += subticks;
-    if (ps->curtick > tickoverflowlimit) {
-        ps->curtick -= tickoverflowlimit / 2;
-        for (i = 0; i < filter_size; i++) {
-            if (ps->qet[i] > tickoverflowlimit / 2) {
-                ps->qet[i] -= tickoverflowlimit / 2;
-            }
-        }
-    }
-
-
-    if (ps->qeend < ps->qebeg) {        /* Loop with wrap */
-        while (i < filter_size) {
-            /*ps->qet[i] += subticks; */
-            if (ps->curtick - ps->qet[i] >= filter_size - 1) {
-                ps->ovola = ps->qev[i];
-                ++ps->qebeg;
-                if (ps->qebeg >= filter_size)
-                    ps->qebeg = 0;
-            } else {
-                return;
-            }
-            ++i;
-        }
-        i = 0;
-    }
-    /* loop without wrap */
-    while (i < ps->qeend) {
-        /*ps->qet[i] += subticks; */
-        if (ps->curtick - ps->qet[i] >= filter_size - 1) {
-            ps->ovola = ps->qev[i];
-            ++ps->qebeg;
-            if (ps->qebeg >= filter_size)
-                ps->qebeg = 0;
-        } else {
-            return;
-        }
-        ++i;
-    }
-}
-
-
-
-static void build_poly4(void) {
-    unsigned char c;
-    unsigned char i;
-    unsigned char poly4 = 1;
-
-    for (i = 0; i < 15; i++) {
-        poly4tbl[i] = ~poly4;
-        c = ((poly4 >> 2) & 1) ^ ((poly4 >> 3) & 1);
-        poly4 = ((poly4 << 1) & 15) + c;
-    }
-}
-
-static void build_poly5(void) {
-    unsigned char c;
-    unsigned char i;
-    unsigned char poly5 = 1;
-
-    for (i = 0; i < 31; i++) {
-        poly5tbl[i] = ~poly5;   /* Inversion! Attention! */
-        c = ((poly5 >> 2) ^ (poly5 >> 4)) & 1;
-        poly5 = ((poly5 << 1) & 31) + c;
-    }
-}
-
-static void build_poly17(void) {
-    unsigned int c;
-    unsigned int i;
-    unsigned int poly17 = 1;
-
-    for (i = 0; i < 131071; i++) {
-        poly17tbl[i] = (unsigned char)poly17;
-        c = ((poly17 >> 11) ^ (poly17 >> 16)) & 1;
-        poly17 = ((poly17 << 1) & 131071) + c;
-    }
-}
-
-static void build_poly9(void) {
-    unsigned int c;
-    unsigned int i;
-    unsigned int poly9 = 1;
-
-    for (i = 0; i < 511; i++) {
-        poly9tbl[i] = (unsigned char)poly9;
-        c = ((poly9 >> 3) ^ (poly9 >> 8)) & 1;
-        poly9 = ((poly9 << 1) & 511) + c;
-    }
-}
-
-static void advance_polies(PokeyState * ps, int tacts) {
-    ps->poly4pos = (tacts + ps->poly4pos) % 15;
-    ps->poly5pos = (tacts + ps->poly5pos) % 31;
-    ps->poly17pos = (tacts + ps->poly17pos) % 131071;
-    ps->poly9pos = (tacts + ps->poly9pos) % 511;
-}
 
 /***********************************
    READ OUTPUT 0
@@ -825,6 +486,272 @@ static void event3_p917_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
     ps->c1t3 = ps->c1t2;
 }
 
+static void ResetPokeyState(PokeyState * ps) {
+    /* Poly positions */
+    ps->poly4pos = 0;
+    ps->poly5pos = 0;
+    ps->poly9pos = 0;
+    ps->poly17pos = 0;
+
+    /* Change queue */
+    ps->ovola = 0;
+    ps->qebeg = 0;
+    ps->qeend = 0;
+
+    /* Global Pokey controls */
+    ps->mdivk = 28;
+
+    ps->selpoly9 = 0;
+    ps->c0_hf = 0;
+    ps->c1_f0 = 0;
+    ps->c2_hf = 0;
+    ps->c3_f2 = 0;
+
+    /* SKCTL for two-tone mode */
+    ps->skctl = 0;
+
+    ps->outvol_all = 0;
+    ps->forcero = 0;
+
+    /* Channel 0 state */
+    ps->readout_0 = readout0_normal;
+    ps->event_0 = event0_pure;
+
+    ps->c0divpos = 1000;
+    ps->c0divstart = 1000;
+    ps->c0divstart_p = 1000;
+    ps->c0diva = 255;
+
+    ps->c0t1 = 0;
+    ps->c0t2 = 0;
+    ps->c0t3 = 0;
+
+    ps->c0sw1 = 0;
+    ps->c0sw2 = 0;
+    ps->c0sw3 = 0;
+    ps->c0sw4 = 0;
+    ps->c0vo = 1;
+
+    ps->vol0 = 0;
+
+    ps->outvol_0 = 0;
+
+
+    /* Channel 1 state */
+    ps->readout_1 = readout1_normal;
+    ps->event_1 = event1_pure;
+
+    ps->c1divpos = 1000;
+    ps->c1divstart = 1000;
+    ps->c1diva = 255;
+
+    ps->c1t1 = 0;
+    ps->c1t2 = 0;
+    ps->c1t3 = 0;
+
+    ps->c1sw1 = 0;
+    ps->c1sw2 = 0;
+    ps->c1sw3 = 0;
+    ps->c1sw4 = 0;
+    ps->c1vo = 1;
+
+    ps->vol1 = 0;
+
+    ps->outvol_1 = 0;
+
+    /* Channel 2 state */
+    ps->readout_2 = readout2_normal;
+    ps->event_2 = event2_pure;
+
+    ps->c2divpos = 1000;
+    ps->c2divstart = 1000;
+    ps->c2divstart_p = 1000;
+    ps->c2diva = 255;
+
+    ps->c2t1 = 0;
+    ps->c2t2 = 0;
+
+    ps->c2sw1 = 0;
+    ps->c2sw2 = 0;
+    ps->c2sw3 = 0;
+
+    ps->c2vo = 0;
+
+    ps->vol2 = 0;
+
+    ps->outvol_2 = 0;
+
+    /* Channel 3 state */
+    ps->readout_3 = readout3_normal;
+    ps->event_3 = event3_pure;
+
+    ps->c3divpos = 1000;
+    ps->c3divstart = 1000;
+    ps->c3diva = 255;
+
+    ps->c3t1 = 0;
+    ps->c3t2 = 0;
+
+    ps->c3sw1 = 0;
+    ps->c3sw2 = 0;
+    ps->c3sw3 = 0;
+
+    ps->c3vo = 0;
+
+    ps->vol3 = 0;
+
+    ps->outvol_3 = 0;
+
+    /* GTIA speaker */
+    ps->speaker = 0;
+}
+
+static double read_resam_all(PokeyState * ps) {
+    int i = ps->qebeg;
+    qev_t avol, bvol;
+    double sum;
+
+    if (ps->qebeg == ps->qeend) {
+        return ps->ovola * filter_data[0];      /* if no events in the queue */
+    }
+
+    avol = ps->ovola;
+    sum = 0;
+
+    /* Separate two loop cases, for wrap-around and without */
+    if (ps->qeend < ps->qebeg) {        /* With wrap */
+        while (i < filter_size) {
+            bvol = ps->qev[i];
+            sum += (avol - bvol) * filter_data[ps->curtick - ps->qet[i]];
+            avol = bvol;
+            ++i;
+        }
+        i = 0;
+    }
+
+    /* without wrap */
+    while (i < ps->qeend) {
+        bvol = ps->qev[i];
+        sum += (avol - bvol) * filter_data[ps->curtick - ps->qet[i]];
+        avol = bvol;
+        ++i;
+    }
+
+    sum += avol * filter_data[0];
+    return sum;
+}
+
+static void add_change(PokeyState * ps, qev_t a) {
+    ps->qev[ps->qeend] = a;
+    ps->qet[ps->qeend] = ps->curtick;   /*0; */
+    ++ps->qeend;
+    if (ps->qeend >= filter_size)
+        ps->qeend = 0;
+}
+
+static void bump_qe_subticks(PokeyState * ps, int subticks) {
+    /* Remove too old events from the queue while bumping */
+    int i = ps->qebeg;
+
+    /* we must avoid curtick overflow in a 32-bit int, will happen in 20 min */
+    static const int tickoverflowlimit = 1000000000;
+
+    ps->curtick += subticks;
+    if (ps->curtick > tickoverflowlimit) {
+        ps->curtick -= tickoverflowlimit / 2;
+        for (i = 0; i < filter_size; i++) {
+            if (ps->qet[i] > tickoverflowlimit / 2) {
+                ps->qet[i] -= tickoverflowlimit / 2;
+            }
+        }
+    }
+
+
+    if (ps->qeend < ps->qebeg) {        /* Loop with wrap */
+        while (i < filter_size) {
+            /*ps->qet[i] += subticks; */
+            if (ps->curtick - ps->qet[i] >= filter_size - 1) {
+                ps->ovola = ps->qev[i];
+                ++ps->qebeg;
+                if (ps->qebeg >= filter_size)
+                    ps->qebeg = 0;
+            } else {
+                return;
+            }
+            ++i;
+        }
+        i = 0;
+    }
+    /* loop without wrap */
+    while (i < ps->qeend) {
+        /*ps->qet[i] += subticks; */
+        if (ps->curtick - ps->qet[i] >= filter_size - 1) {
+            ps->ovola = ps->qev[i];
+            ++ps->qebeg;
+            if (ps->qebeg >= filter_size)
+                ps->qebeg = 0;
+        } else {
+            return;
+        }
+        ++i;
+    }
+}
+
+static void build_poly4(void) {
+    unsigned char c;
+    unsigned char i;
+    unsigned char poly4 = 1;
+
+    for (i = 0; i < 15; i++) {
+        poly4tbl[i] = ~poly4;
+        c = ((poly4 >> 2) & 1) ^ ((poly4 >> 3) & 1);
+        poly4 = ((poly4 << 1) & 15) + c;
+    }
+}
+
+static void build_poly5(void) {
+    unsigned char c;
+    unsigned char i;
+    unsigned char poly5 = 1;
+
+    for (i = 0; i < 31; i++) {
+        poly5tbl[i] = ~poly5;   /* Inversion! Attention! */
+        c = ((poly5 >> 2) ^ (poly5 >> 4)) & 1;
+        poly5 = ((poly5 << 1) & 31) + c;
+    }
+}
+
+static void build_poly17(void) {
+    unsigned int c;
+    unsigned int i;
+    unsigned int poly17 = 1;
+
+    for (i = 0; i < 131071; i++) {
+        poly17tbl[i] = (unsigned char)poly17;
+        c = ((poly17 >> 11) ^ (poly17 >> 16)) & 1;
+        poly17 = ((poly17 << 1) & 131071) + c;
+    }
+}
+
+static void build_poly9(void) {
+    unsigned int c;
+    unsigned int i;
+    unsigned int poly9 = 1;
+
+    for (i = 0; i < 511; i++) {
+        poly9tbl[i] = (unsigned char)poly9;
+        c = ((poly9 >> 3) ^ (poly9 >> 8)) & 1;
+        poly9 = ((poly9 << 1) & 511) + c;
+    }
+}
+
+static void advance_polies(PokeyState * ps, int tacts) {
+    ps->poly4pos = (tacts + ps->poly4pos) % 15;
+    ps->poly5pos = (tacts + ps->poly5pos) % 31;
+    ps->poly17pos = (tacts + ps->poly17pos) % 131071;
+    ps->poly9pos = (tacts + ps->poly9pos) % 511;
+}
+
 static void advance_ticks(PokeyState * ps, int ticks) {
     int ta, tbe, tbe0, tbe1, tbe2, tbe3;
     int p5v, p4v, p917v;
@@ -1066,8 +993,6 @@ static void Update_pokey_sound_mz(UWORD addr, UBYTE val, UBYTE chip,
 /*                                                                           */
 /*****************************************************************************/
 
-//static void generate_sync(unsigned int num_ticks);
-
 static void init_syncsound(void) {
     double samples_per_frame =
         (double)POKEYSND_playback_freq / (Atari800_tv_mode ==
@@ -1077,7 +1002,6 @@ static void init_syncsound(void) {
 
     ticks_per_sample = (double)ticks_per_frame / samples_per_frame;
     samp_pos = 0.0;
-//    POKEYSND_GenerateSync = generate_sync;
 }
 
 int MZPOKEYSND_Init(ULONG freq17, int playback_freq, UBYTE num_pokeys,
@@ -1782,55 +1706,3 @@ static void mzpokeysnd_process_16(void *sndbuffer, int sndn) {
         nsam -= num_cur_pokeys;
     }
 }
-
-#if 0
-static void generate_sync(unsigned int num_ticks) {
-    double new_samp_pos;
-    unsigned int ticks;
-    UBYTE *buffer = POKEYSND_process_buffer + POKEYSND_process_buffer_fill;
-    UBYTE *buffer_end = POKEYSND_process_buffer + POKEYSND_process_buffer_length;
-    int i;
-
-    for (;;) {
-        double int_part;
-
-        new_samp_pos = samp_pos + ticks_per_sample;
-        new_samp_pos = modf(new_samp_pos, &int_part);
-        ticks = (unsigned int)int_part;
-        if (ticks > num_ticks) {
-            samp_pos -= num_ticks;
-            break;
-        }
-        if (buffer >= buffer_end)
-            break;
-
-        samp_pos = new_samp_pos;
-        num_ticks -= ticks;
-
-        for (i = 0; i < num_cur_pokeys; ++i) {
-            /* advance pokey to the new position and produce a sample */
-            advance_ticks(pokey_states + i, ticks);
-            if (POKEYSND_snd_flags & POKEYSND_BIT16) {
-                *((SWORD *) buffer) =
-                    (SWORD)
-                    floor(interp_read_resam_all(pokey_states + i, samp_pos)
-                          * (volume.s16 / 2 / MAX_SAMPLE / 4 * M_PI * 0.95)
-                          + 0.5 + 0.5 * rand() / RAND_MAX - 0.25);
-                buffer += 2;
-            } else
-                *buffer++ =
-                    (UBYTE)
-                    floor(interp_read_resam_all(pokey_states + i, samp_pos)
-                          * (volume.s8 / 2 / MAX_SAMPLE / 4 * M_PI * 0.95)
-                          + 128 + 0.5 + 0.5 * rand() / RAND_MAX - 0.25);
-        }
-    }
-
-    POKEYSND_process_buffer_fill = buffer - POKEYSND_process_buffer;
-    if (num_ticks > 0) {
-        /* remaining ticks */
-        for (i = 0; i < num_cur_pokeys; ++i)
-            advance_ticks(pokey_states + i, num_ticks);
-    }
-}
-#endif
