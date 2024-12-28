@@ -968,72 +968,6 @@ static int remez_filter_table(double resamp_rate,       /* output_rate/input_rat
     return size;
 }
 
-static void mzpokeysnd_process_8(void *sndbuffer, int sndn);
-static void mzpokeysnd_process_16(void *sndbuffer, int sndn);
-static void Update_pokey_sound_mz(UWORD addr, UBYTE val, UBYTE chip,
-                                  UBYTE gain);
-
-/*****************************************************************************/
-/* Module:  MZPOKEYSND_Init()                                                */
-/* Purpose: to handle the power-up initialization functions                  */
-/*          these functions should only be executed on a cold-restart        */
-/*                                                                           */
-/* Authors: Michael Borisov, Krzystof Nikiel                                 */
-/*                                                                           */
-/* Inputs:  freq17 - the value for the '1.79MHz' Pokey audio clock           */
-/*          playback_freq - the playback frequency in samples per second     */
-/*          num_pokeys - specifies the number of pokey chips to be emulated  */
-/*                                                                           */
-/* Outputs: Adjusts local globals - no return value                          */
-/*                                                                           */
-/*****************************************************************************/
-
-static void init_syncsound(void) {
-    double samples_per_frame =
-        (double)POKEYSND_playback_freq / (Atari800_tv_mode ==
-                                          Atari800_TV_PAL ? Atari800_FPS_PAL :
-                                          Atari800_FPS_NTSC);
-    unsigned int ticks_per_frame = Atari800_tv_mode * 114;
-
-    ticks_per_sample = (double)ticks_per_frame / samples_per_frame;
-    samp_pos = 0.0;
-}
-
-int MZPOKEYSND_Init(ULONG freq17, int playback_freq, UBYTE num_pokeys,
-                    int flags, int quality) {
-    double cutoff;
-
-    snd_quality = quality;
-
-    POKEYSND_Update_ptr = Update_pokey_sound_mz;
-    POKEYSND_Process_ptr = (flags & POKEYSND_BIT16) ? mzpokeysnd_process_16 :
-                                                      mzpokeysnd_process_8;
-
-    pokey_frq =
-            (int)(((double)pokey_frq_ideal / POKEYSND_playback_freq) + 0.5)
-            * POKEYSND_playback_freq;
-    filter_size =
-                remez_filter_table((double)POKEYSND_playback_freq / pokey_frq,
-                               &cutoff, quality);
-    audible_frq = (int)(cutoff * pokey_frq);
-
-    build_poly4();
-    build_poly5();
-    build_poly9();
-    build_poly17();
-
-    ResetPokeyState(pokey_states);
-    ResetPokeyState(pokey_states + 1);
-    num_cur_pokeys = num_pokeys;
-
-    init_syncsound();
-    volume.s8 = POKEYSND_volume * 0xff / 256.0;
-    volume.s16 = POKEYSND_volume * 0xffff / 256.0;
-
-    return 0;                   /* OK */
-}
-
-
 static void Update_readout_0(PokeyState * ps) {
     if (ps->c0vo)
         ps->readout_0 = readout0_vo;
@@ -1342,6 +1276,62 @@ static void Update_c3stop(PokeyState * ps) {
     ps->outvol_3 = ps->readout_3(ps);
 }
 
+/* See mzpokeysnd.txt for details */
+
+#define MAX_SAMPLE 152
+
+static void mzpokeysnd_process_8(void *sndbuffer, int sndn) {
+    int i;
+    int nsam = sndn;
+    UBYTE *buffer = (UBYTE *) sndbuffer;
+
+    if (num_cur_pokeys < 1)
+        return;                 /* module was not initialized */
+
+    /* if there are two pokeys, then the signal is stereo
+       we assume even sndn */
+    while (nsam >= (int)num_cur_pokeys) {
+        buffer[0] = (UBYTE) floor(generate_sample(pokey_states)
+                                  * (255.0 / 2 / MAX_SAMPLE / 4 * M_PI *
+                                     0.95) + 128 + 0.5 +
+                                  0.5 * rand() / RAND_MAX - 0.25);
+        for (i = 1; i < num_cur_pokeys; i++) {
+            buffer[i] = (UBYTE) floor(generate_sample(pokey_states + i)
+                                      * (255.0 / 2 / MAX_SAMPLE / 4 * M_PI *
+                                         0.95) + 128 + 0.5 +
+                                      0.5 * rand() / RAND_MAX - 0.25);
+        }
+        buffer += num_cur_pokeys;
+        nsam -= num_cur_pokeys;
+    }
+}
+
+static void mzpokeysnd_process_16(void *sndbuffer, int sndn) {
+    int i;
+    int nsam = sndn;
+    SWORD *buffer = (SWORD *) sndbuffer;
+
+    if (num_cur_pokeys < 1)
+        return;                 /* module was not initialized */
+
+    /* if there are two pokeys, then the signal is stereo
+       we assume even sndn */
+    while (nsam >= (int)num_cur_pokeys) {
+        buffer[0] = (SWORD) floor(generate_sample(pokey_states)
+                                  * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
+                                     0.95) + 0.5 + 0.5 * rand() / RAND_MAX -
+                                  0.25);
+        for (i = 1; i < num_cur_pokeys; i++) {
+            buffer[i] = (SWORD) floor(generate_sample(pokey_states + i)
+                                      * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
+                                         0.95) + 0.5 +
+                                      0.5 * rand() / RAND_MAX - 0.25);
+        }
+        buffer += num_cur_pokeys;
+        nsam -= num_cur_pokeys;
+    }
+}
+
 /*****************************************************************************/
 /* Function: Update_pokey_sound_mz()                                         */
 /*                                                                           */
@@ -1486,58 +1476,62 @@ static void Update_pokey_sound_mz(UWORD addr, UBYTE val, UBYTE chip,
     }
 }
 
-/* See mzpokeysnd.txt for details */
+/*****************************************************************************/
+/* Module:  MZPOKEYSND_Init()                                                */
+/* Purpose: to handle the power-up initialization functions                  */
+/*          these functions should only be executed on a cold-restart        */
+/*                                                                           */
+/* Authors: Michael Borisov, Krzystof Nikiel                                 */
+/*                                                                           */
+/* Inputs:  freq17 - the value for the '1.79MHz' Pokey audio clock           */
+/*          playback_freq - the playback frequency in samples per second     */
+/*          num_pokeys - specifies the number of pokey chips to be emulated  */
+/*                                                                           */
+/* Outputs: Adjusts local globals - no return value                          */
+/*                                                                           */
+/*****************************************************************************/
 
-#define MAX_SAMPLE 152
+static void init_syncsound(void) {
+    double samples_per_frame =
+        (double)POKEYSND_playback_freq / (Atari800_tv_mode ==
+                                          Atari800_TV_PAL ? Atari800_FPS_PAL :
+                                          Atari800_FPS_NTSC);
+    unsigned int ticks_per_frame = Atari800_tv_mode * 114;
 
-static void mzpokeysnd_process_8(void *sndbuffer, int sndn) {
-    int i;
-    int nsam = sndn;
-    UBYTE *buffer = (UBYTE *) sndbuffer;
-
-    if (num_cur_pokeys < 1)
-        return;                 /* module was not initialized */
-
-    /* if there are two pokeys, then the signal is stereo
-       we assume even sndn */
-    while (nsam >= (int)num_cur_pokeys) {
-        buffer[0] = (UBYTE) floor(generate_sample(pokey_states)
-                                  * (255.0 / 2 / MAX_SAMPLE / 4 * M_PI *
-                                     0.95) + 128 + 0.5 +
-                                  0.5 * rand() / RAND_MAX - 0.25);
-        for (i = 1; i < num_cur_pokeys; i++) {
-            buffer[i] = (UBYTE) floor(generate_sample(pokey_states + i)
-                                      * (255.0 / 2 / MAX_SAMPLE / 4 * M_PI *
-                                         0.95) + 128 + 0.5 +
-                                      0.5 * rand() / RAND_MAX - 0.25);
-        }
-        buffer += num_cur_pokeys;
-        nsam -= num_cur_pokeys;
-    }
+    ticks_per_sample = (double)ticks_per_frame / samples_per_frame;
+    samp_pos = 0.0;
 }
 
-static void mzpokeysnd_process_16(void *sndbuffer, int sndn) {
-    int i;
-    int nsam = sndn;
-    SWORD *buffer = (SWORD *) sndbuffer;
+int MZPOKEYSND_Init(ULONG freq17, int playback_freq, UBYTE num_pokeys,
+                    int flags, int quality) {
+    double cutoff;
 
-    if (num_cur_pokeys < 1)
-        return;                 /* module was not initialized */
+    snd_quality = quality;
 
-    /* if there are two pokeys, then the signal is stereo
-       we assume even sndn */
-    while (nsam >= (int)num_cur_pokeys) {
-        buffer[0] = (SWORD) floor(generate_sample(pokey_states)
-                                  * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
-                                     0.95) + 0.5 + 0.5 * rand() / RAND_MAX -
-                                  0.25);
-        for (i = 1; i < num_cur_pokeys; i++) {
-            buffer[i] = (SWORD) floor(generate_sample(pokey_states + i)
-                                      * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
-                                         0.95) + 0.5 +
-                                      0.5 * rand() / RAND_MAX - 0.25);
-        }
-        buffer += num_cur_pokeys;
-        nsam -= num_cur_pokeys;
-    }
+    POKEYSND_Update_ptr = Update_pokey_sound_mz;
+    POKEYSND_Process_ptr = (flags & POKEYSND_BIT16) ? mzpokeysnd_process_16 :
+                                                      mzpokeysnd_process_8;
+
+    pokey_frq =
+            (int)(((double)pokey_frq_ideal / POKEYSND_playback_freq) + 0.5)
+            * POKEYSND_playback_freq;
+    filter_size =
+                remez_filter_table((double)POKEYSND_playback_freq / pokey_frq,
+                               &cutoff, quality);
+    audible_frq = (int)(cutoff * pokey_frq);
+
+    build_poly4();
+    build_poly5();
+    build_poly9();
+    build_poly17();
+
+    ResetPokeyState(pokey_states);
+    ResetPokeyState(pokey_states + 1);
+    num_cur_pokeys = num_pokeys;
+
+    init_syncsound();
+    volume.s8 = POKEYSND_volume * 0xff / 256.0;
+    volume.s16 = POKEYSND_volume * 0xffff / 256.0;
+
+    return 0;                   /* OK */
 }
