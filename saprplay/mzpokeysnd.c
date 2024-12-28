@@ -1068,7 +1068,7 @@ static void Update_c3stop(PokeyState * ps) {
 //
 // See mzpokeysnd.txt for details
 //
-#define MAX_SAMPLE 152
+#define MAX_SAMPLE 120
 
 static void mzpokeysnd_process_8(void *sndbuffer, int sndn) {
     int i;
