@@ -234,253 +234,163 @@ static struct {
     double s8;
 } volume;
 
-/***********************************
-   READ OUTPUT 0
-  ************************************/
-
-static int readout0_vo(PokeyState * ps) {
-    return ps->vol0;
-}
+// READ OUTPUTS ************************************************************
+//
+static int readout0_vo(PokeyState *ps) { return ps->vol0; }
+static int readout1_vo(PokeyState *ps) { return ps->vol1; }
+static int readout2_vo(PokeyState *ps) { return ps->vol2; }
+static int readout3_vo(PokeyState *ps) { return ps->vol3; }
 
 static int readout0_hipass(PokeyState * ps) {
-    if (ps->c0t2 ^ ps->c0t3)
-        return ps->vol0;
-    else
-        return 0;
+    return (ps->c0t2 ^ ps->c0t3) ? ps->vol0 : 0;
+}
+static int readout1_hipass(PokeyState * ps) {
+    return (ps->c1t2 ^ ps->c1t3) ? ps->vol1 : 0;
 }
 
 static int readout0_normal(PokeyState * ps) {
-    if (ps->c0t2)
-        return ps->vol0;
-    else
-        return 0;
+    return (ps->c0t2) ? ps->vol0 : 0;
 }
-
-/***********************************
-   READ OUTPUT 1
-  ************************************/
-
-static int readout1_vo(PokeyState * ps) {
-    return ps->vol1;
-}
-
-static int readout1_hipass(PokeyState * ps) {
-    if (ps->c1t2 ^ ps->c1t3)
-        return ps->vol1;
-    else
-        return 0;
-}
-
 static int readout1_normal(PokeyState * ps) {
-    if (ps->c1t2)
-        return ps->vol1;
-    else
-        return 0;
+    return (ps->c1t2) ? ps->vol1 : 0;
 }
-
-/***********************************
-   READ OUTPUT 2
-  ************************************/
-
-static int readout2_vo(PokeyState * ps) {
-    return ps->vol2;
-}
-
 static int readout2_normal(PokeyState * ps) {
-    if (ps->c2t2)
-        return ps->vol2;
-    else
-        return 0;
+    return (ps->c2t2) ? ps->vol2 : 0;
 }
-
-/***********************************
-   READ OUTPUT 3
-  ************************************/
-
-static int readout3_vo(PokeyState * ps) {
-    return ps->vol3;
-}
-
 static int readout3_normal(PokeyState * ps) {
-    if (ps->c3t2)
-        return ps->vol3;
-    else
-        return 0;
+    return (ps->c3t2) ? ps->vol3 : 0;
 }
 
-
-/***********************************
-   EVENT CHANNEL 0
-  ************************************/
-
+// CHANNEL EVENTS **********************************************************
+//
+// PURE TONE EVENTS ********************************************************
+//
 static void event0_pure(PokeyState * ps, int p5v, int p4v, int p917v) {
     ps->c0t2 = !ps->c0t2;
     ps->c0t1 = p5v;
 }
-
-static void event0_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c0t1)
-        ps->c0t2 = !ps->c0t2;
-    ps->c0t1 = p5v;
-}
-
-static void event0_p4(PokeyState * ps, int p5v, int p4v, int p917v) {
-    ps->c0t2 = p4v;
-    ps->c0t1 = p5v;
-}
-
-static void event0_p917(PokeyState * ps, int p5v, int p4v, int p917v) {
-    ps->c0t2 = p917v;
-    ps->c0t1 = p5v;
-}
-
-static void event0_p4_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c0t1)
-        ps->c0t2 = p4v;
-    ps->c0t1 = p5v;
-}
-
-static void event0_p917_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c0t1)
-        ps->c0t2 = p917v;
-    ps->c0t1 = p5v;
-}
-
-/***********************************
-   EVENT CHANNEL 1
-  ************************************/
-
 static void event1_pure(PokeyState * ps, int p5v, int p4v, int p917v) {
     ps->c1t2 = !ps->c1t2;
     ps->c1t1 = p5v;
 }
-
-static void event1_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c1t1)
-        ps->c1t2 = !ps->c1t2;
-    ps->c1t1 = p5v;
+static void event2_pure(PokeyState * ps, int p5v, int p4v, int p917v) {
+    ps->c2t2 = !ps->c2t2;
+    ps->c2t1 = p5v;
+    ps->c0t3 = ps->c0t2; /* high-pass clock for channel 0 */
+}
+static void event3_pure(PokeyState * ps, int p5v, int p4v, int p917v) {
+    ps->c3t2 = !ps->c3t2;
+    ps->c3t1 = p5v;
+    ps->c1t3 = ps->c1t2; /* high-pass clock for channel 1 */
 }
 
+// POLY4 EVENTS ************************************************************
+//
+static void event0_p4(PokeyState * ps, int p5v, int p4v, int p917v) {
+    ps->c0t2 = p4v;
+    ps->c0t1 = p5v;
+}
 static void event1_p4(PokeyState * ps, int p5v, int p4v, int p917v) {
     ps->c1t2 = p4v;
     ps->c1t1 = p5v;
 }
+static void event2_p4(PokeyState * ps, int p5v, int p4v, int p917v) {
+    ps->c2t2 = p4v;
+    ps->c2t1 = p5v;
+    ps->c0t3 = ps->c0t2; /* high-pass clock for channel 0 */
+}
+static void event3_p4(PokeyState * ps, int p5v, int p4v, int p917v) {
+    ps->c3t2 = p4v;
+    ps->c3t1 = p5v;
+    ps->c1t3 = ps->c1t2; /* high-pass clock for channel 1 */
+}
 
+// POLY5 EVENTS ************************************************************
+//
+static void event0_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
+    if (ps->c0t1) ps->c0t2 = !ps->c0t2;
+    ps->c0t1 = p5v;
+}
+static void event1_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
+    if (ps->c1t1) ps->c1t2 = !ps->c1t2;
+    ps->c1t1 = p5v;
+}
+static void event2_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
+    if (ps->c2t1) ps->c2t2 = !ps->c2t2;
+    ps->c2t1 = p5v;
+    ps->c0t3 = ps->c0t2; /* high-pass clock for channel 0 */
+}
+static void event3_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
+    if (ps->c3t1) ps->c3t2 = !ps->c3t2;
+    ps->c3t1 = p5v;
+    ps->c1t3 = ps->c1t2; /* high-pass clock for channel 1 */
+}
+
+// POLY9/POLY17 EVENTS *****************************************************
+//
+static void event0_p917(PokeyState * ps, int p5v, int p4v, int p917v) {
+    ps->c0t2 = p917v;
+    ps->c0t1 = p5v;
+}
 static void event1_p917(PokeyState * ps, int p5v, int p4v, int p917v) {
     ps->c1t2 = p917v;
     ps->c1t1 = p5v;
 }
-
-static void event1_p4_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c1t1)
-        ps->c1t2 = p4v;
-    ps->c1t1 = p5v;
-}
-
-static void event1_p917_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c1t1)
-        ps->c1t2 = p917v;
-    ps->c1t1 = p5v;
-}
-
-/***********************************
-   EVENT CHANNEL 2
-  ************************************/
-
-static void event2_pure(PokeyState * ps, int p5v, int p4v, int p917v) {
-    ps->c2t2 = !ps->c2t2;
-    ps->c2t1 = p5v;
-    /* high-pass clock for channel 0 */
-    ps->c0t3 = ps->c0t2;
-}
-
-static void event2_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c2t1)
-        ps->c2t2 = !ps->c2t2;
-    ps->c2t1 = p5v;
-    /* high-pass clock for channel 0 */
-    ps->c0t3 = ps->c0t2;
-}
-
-static void event2_p4(PokeyState * ps, int p5v, int p4v, int p917v) {
-    ps->c2t2 = p4v;
-    ps->c2t1 = p5v;
-    /* high-pass clock for channel 0 */
-    ps->c0t3 = ps->c0t2;
-}
-
 static void event2_p917(PokeyState * ps, int p5v, int p4v, int p917v) {
     ps->c2t2 = p917v;
     ps->c2t1 = p5v;
-    /* high-pass clock for channel 0 */
-    ps->c0t3 = ps->c0t2;
+    ps->c0t3 = ps->c0t2; /* high-pass clock for channel 0 */
 }
-
-static void event2_p4_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c2t1)
-        ps->c2t2 = p4v;
-    ps->c2t1 = p5v;
-    /* high-pass clock for channel 0 */
-    ps->c0t3 = ps->c0t2;
-}
-
-static void event2_p917_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c2t1)
-        ps->c2t2 = p917v;
-    ps->c2t1 = p5v;
-    /* high-pass clock for channel 0 */
-    ps->c0t3 = ps->c0t2;
-}
-
-/***********************************
-   EVENT CHANNEL 3
-  ************************************/
-
-static void event3_pure(PokeyState * ps, int p5v, int p4v, int p917v) {
-    ps->c3t2 = !ps->c3t2;
-    ps->c3t1 = p5v;
-    /* high-pass clock for channel 1 */
-    ps->c1t3 = ps->c1t2;
-}
-
-static void event3_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c3t1)
-        ps->c3t2 = !ps->c3t2;
-    ps->c3t1 = p5v;
-    /* high-pass clock for channel 1 */
-    ps->c1t3 = ps->c1t2;
-}
-
-static void event3_p4(PokeyState * ps, int p5v, int p4v, int p917v) {
-    ps->c3t2 = p4v;
-    ps->c3t1 = p5v;
-    /* high-pass clock for channel 1 */
-    ps->c1t3 = ps->c1t2;
-}
-
 static void event3_p917(PokeyState * ps, int p5v, int p4v, int p917v) {
     ps->c3t2 = p917v;
     ps->c3t1 = p5v;
-    /* high-pass clock for channel 1 */
-    ps->c1t3 = ps->c1t2;
+    ps->c1t3 = ps->c1t2; /* high-pass clock for channel 1 */
 }
 
+// POLY4/POLY5 EVENTS ******************************************************
+//
+static void event0_p4_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
+    if (ps->c0t1) ps->c0t2 = p4v;
+    ps->c0t1 = p5v;
+}
+static void event1_p4_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
+    if (ps->c1t1) ps->c1t2 = p4v;
+    ps->c1t1 = p5v;
+}
+static void event2_p4_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
+    if (ps->c2t1) ps->c2t2 = p4v;
+    ps->c2t1 = p5v;
+    ps->c0t3 = ps->c0t2; /* high-pass clock for channel 0 */
+}
 static void event3_p4_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c3t1)
-        ps->c3t2 = p4v;
+    if (ps->c3t1) ps->c3t2 = p4v;
     ps->c3t1 = p5v;
-    /* high-pass clock for channel 1 */
-    ps->c1t3 = ps->c1t2;
+    ps->c1t3 = ps->c1t2; /* high-pass clock for channel 1 */
 }
 
+// POLY9/POLY17/POLY5 EVENTS ***********************************************
+//
+static void event0_p917_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
+    if (ps->c0t1) ps->c0t2 = p917v;
+    ps->c0t1 = p5v;
+}
+static void event1_p917_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
+    if (ps->c1t1) ps->c1t2 = p917v;
+    ps->c1t1 = p5v;
+}
+static void event2_p917_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
+    if (ps->c2t1) ps->c2t2 = p917v;
+    ps->c2t1 = p5v;
+    ps->c0t3 = ps->c0t2; /* high-pass clock for channel 0 */
+}
 static void event3_p917_p5(PokeyState * ps, int p5v, int p4v, int p917v) {
-    if (ps->c3t1)
-        ps->c3t2 = p917v;
+    if (ps->c3t1) ps->c3t2 = p917v;
     ps->c3t1 = p5v;
-    /* high-pass clock for channel 1 */
-    ps->c1t3 = ps->c1t2;
+    ps->c1t3 = ps->c1t2; /* high-pass clock for channel 1 */
 }
 
+// RESET POKEY *************************************************************
+//
 static void ResetPokeyState(PokeyState * ps) {
     /* Poly positions */
     ps->poly4pos = 0;
@@ -512,69 +422,37 @@ static void ResetPokeyState(PokeyState * ps) {
     ps->readout_0 = readout0_normal;
     ps->event_0 = event0_pure;
 
-    ps->c0divpos = 1000;
-    ps->c0divstart = 1000;
-    ps->c0divstart_p = 1000;
+    ps->c0divpos = ps->c0divstart = ps->c0divstart_p = 1000;
     ps->c0diva = 255;
 
-    ps->c0t1 = 0;
-    ps->c0t2 = 0;
-    ps->c0t3 = 0;
-
-    ps->c0sw1 = 0;
-    ps->c0sw2 = 0;
-    ps->c0sw3 = 0;
-    ps->c0sw4 = 0;
-    ps->c0vo = 1;
-
-    ps->vol0 = 0;
-
-    ps->outvol_0 = 0;
-
+    ps->c0t1  = ps->c0t2  = ps->c0t3  = 0;
+    ps->c0sw1 = ps->c0sw2 = ps->c0sw3 = ps->c0sw4 = 0;
+    ps->c0vo  = 1;
+    ps->vol0  = ps->outvol_0 = 0;
 
     /* Channel 1 state */
     ps->readout_1 = readout1_normal;
     ps->event_1 = event1_pure;
 
-    ps->c1divpos = 1000;
-    ps->c1divstart = 1000;
+    ps->c1divpos = ps->c1divstart = 1000;
     ps->c1diva = 255;
 
-    ps->c1t1 = 0;
-    ps->c1t2 = 0;
-    ps->c1t3 = 0;
-
-    ps->c1sw1 = 0;
-    ps->c1sw2 = 0;
-    ps->c1sw3 = 0;
-    ps->c1sw4 = 0;
-    ps->c1vo = 1;
-
-    ps->vol1 = 0;
-
-    ps->outvol_1 = 0;
+    ps->c1t1  = ps->c1t2  = ps->c1t3  = 0;
+    ps->c1sw1 = ps->c1sw2 = ps->c1sw3 = ps->c1sw4 = 0;
+    ps->c1vo  = 1;
+    ps->vol1  = ps->outvol_1 = 0;
 
     /* Channel 2 state */
     ps->readout_2 = readout2_normal;
     ps->event_2 = event2_pure;
 
-    ps->c2divpos = 1000;
-    ps->c2divstart = 1000;
-    ps->c2divstart_p = 1000;
+    ps->c2divpos = ps->c2divstart = ps->c2divstart_p = 1000;
     ps->c2diva = 255;
 
-    ps->c2t1 = 0;
-    ps->c2t2 = 0;
-
-    ps->c2sw1 = 0;
-    ps->c2sw2 = 0;
-    ps->c2sw3 = 0;
-
-    ps->c2vo = 0;
-
-    ps->vol2 = 0;
-
-    ps->outvol_2 = 0;
+    ps->c2t1  = ps->c2t2  = 0;
+    ps->c2sw1 = ps->c2sw2 = ps->c2sw3 = 0;
+    ps->c2vo  = 0;
+    ps->vol2  = ps->outvol_2 = 0;
 
     /* Channel 3 state */
     ps->readout_3 = readout3_normal;
@@ -584,23 +462,17 @@ static void ResetPokeyState(PokeyState * ps) {
     ps->c3divstart = 1000;
     ps->c3diva = 255;
 
-    ps->c3t1 = 0;
-    ps->c3t2 = 0;
-
-    ps->c3sw1 = 0;
-    ps->c3sw2 = 0;
-    ps->c3sw3 = 0;
-
-    ps->c3vo = 0;
-
-    ps->vol3 = 0;
-
-    ps->outvol_3 = 0;
+    ps->c3t1  = ps->c3t2  = 0;
+    ps->c3sw1 = ps->c3sw2 = ps->c3sw3 = 0;
+    ps->c3vo  = 0;
+    ps->vol3  = ps->outvol_3 = 0;
 
     /* GTIA speaker */
     ps->speaker = 0;
 }
 
+// EVENT QUEUE HANDLING ****************************************************
+//
 static double read_resam_all(PokeyState * ps) {
     int i = ps->qebeg;
     qev_t avol, bvol;
@@ -624,8 +496,7 @@ static double read_resam_all(PokeyState * ps) {
         i = 0;
     }
 
-    /* without wrap */
-    while (i < ps->qeend) {
+    while (i < ps->qeend) {             /* without wrap */
         bvol = ps->qev[i];
         sum += (avol - bvol) * filter_data[ps->curtick - ps->qet[i]];
         avol = bvol;
@@ -661,7 +532,6 @@ static void bump_qe_subticks(PokeyState * ps, int subticks) {
         }
     }
 
-
     if (ps->qeend < ps->qebeg) {        /* Loop with wrap */
         while (i < filter_size) {
             /*ps->qet[i] += subticks; */
@@ -677,8 +547,8 @@ static void bump_qe_subticks(PokeyState * ps, int subticks) {
         }
         i = 0;
     }
-    /* loop without wrap */
-    while (i < ps->qeend) {
+
+    while (i < ps->qeend) {             /* loop without wrap */
         /*ps->qet[i] += subticks; */
         if (ps->curtick - ps->qet[i] >= filter_size - 1) {
             ps->ovola = ps->qev[i];
@@ -692,6 +562,8 @@ static void bump_qe_subticks(PokeyState * ps, int subticks) {
     }
 }
 
+// PRE-CALCULATE POLY'S ****************************************************
+//
 static void build_poly4(void) {
     unsigned char c;
     unsigned char i;
@@ -740,11 +612,13 @@ static void build_poly9(void) {
     }
 }
 
+// ADVANCEMENT AND SAMPLE GENERATION ***************************************
+//
 static void advance_polies(PokeyState * ps, int tacts) {
-    ps->poly4pos = (tacts + ps->poly4pos) % 15;
-    ps->poly5pos = (tacts + ps->poly5pos) % 31;
+    ps->poly4pos  = (tacts + ps->poly4pos)  % 15;
+    ps->poly5pos  = (tacts + ps->poly5pos)  % 31;
     ps->poly17pos = (tacts + ps->poly17pos) % 131071;
-    ps->poly9pos = (tacts + ps->poly9pos) % 511;
+    ps->poly9pos  = (tacts + ps->poly9pos)  % 511;
 }
 
 static void advance_ticks(PokeyState * ps, int ticks) {
@@ -759,8 +633,8 @@ static void advance_ticks(PokeyState * ps, int ticks) {
 
     int need = 0;
 
-    if (ticks <= 0)
-        return;
+    if (ticks <= 0) return;
+
     if (ps->forcero) {
         ps->forcero = 0;
         outvol_new =
@@ -780,17 +654,12 @@ static void advance_ticks(PokeyState * ps, int ticks) {
 
         tbe = ticks + 1;
 
-        if (tbe0 < tbe)
-            tbe = tbe0;
-        if (tbe1 < tbe)
-            tbe = tbe1;
-        if (tbe2 < tbe)
-            tbe = tbe2;
-        if (tbe3 < tbe)
-            tbe = tbe3;
+        if (tbe0 < tbe) tbe = tbe0;
+        if (tbe1 < tbe) tbe = tbe1;
+        if (tbe2 < tbe) tbe = tbe2;
+        if (tbe3 < tbe) tbe = tbe3;
 
-        if (tbe > ticks)
-            ta = ticks;
+        if (tbe > ticks) ta = ticks;
         else {
             ta = tbe;
             need = 1;
@@ -809,10 +678,8 @@ static void advance_ticks(PokeyState * ps, int ticks) {
         if (need) {
             p5v = poly5tbl[ps->poly5pos] & 1;
             p4v = poly4tbl[ps->poly4pos] & 1;
-            if (ps->selpoly9)
-                p917v = poly9tbl[ps->poly9pos] & 1;
-            else
-                p917v = poly17tbl[ps->poly17pos] & 1;
+            if (ps->selpoly9) p917v = poly9tbl[ps->poly9pos] & 1;
+            else              p917v = poly17tbl[ps->poly17pos] & 1;
 
             if (ta == tbe0) {
                 ps->event_0(ps, p5v, p4v, p917v);
@@ -822,8 +689,7 @@ static void advance_ticks(PokeyState * ps, int ticks) {
             if (ta == tbe1) {
                 ps->event_1(ps, p5v, p4v, p917v);
                 ps->c1divpos = ps->c1divstart;
-                if (ps->c1_f0)
-                    ps->c0divpos = ps->c0divstart_p;
+                if (ps->c1_f0) ps->c0divpos = ps->c0divstart_p;
                 need1 = 1;
                 /*two-tone filter */
                 /*use if send break is on and two-tone mode is on */
@@ -838,31 +704,20 @@ static void advance_ticks(PokeyState * ps, int ticks) {
                 ps->event_2(ps, p5v, p4v, p917v);
                 ps->c2divpos = ps->c2divstart;
                 need2 = 1;
-                if (ps->c0sw4)
-                    need0 = 1;
+                if (ps->c0sw4) need0 = 1;
             }
             if (ta == tbe3) {
                 ps->event_3(ps, p5v, p4v, p917v);
                 ps->c3divpos = ps->c3divstart;
-                if (ps->c3_f2)
-                    ps->c2divpos = ps->c2divstart_p;
+                if (ps->c3_f2) ps->c2divpos = ps->c2divstart_p;
                 need3 = 1;
-                if (ps->c1sw4)
-                    need1 = 1;
+                if (ps->c1sw4) need1 = 1;
             }
 
-            if (need0) {
-                ps->outvol_0 = ps->readout_0(ps);
-            }
-            if (need1) {
-                ps->outvol_1 = ps->readout_1(ps);
-            }
-            if (need2) {
-                ps->outvol_2 = ps->readout_2(ps);
-            }
-            if (need3) {
-                ps->outvol_3 = ps->readout_3(ps);
-            }
+            if (need0) ps->outvol_0 = ps->readout_0(ps);
+            if (need1) ps->outvol_1 = ps->readout_1(ps);
+            if (need2) ps->outvol_2 = ps->readout_2(ps);
+            if (need3) ps->outvol_3 = ps->readout_3(ps);
 
             outvol_new =
                 pokeymix[ps->outvol_0 + ps->outvol_1 + ps->outvol_2 +
@@ -883,11 +738,9 @@ static double generate_sample(PokeyState * ps) {
     return read_resam_all(ps);
 }
 
-/******************************************
- filter table generator by Krzysztof Nikiel
- ******************************************/
-
-static int remez_filter_table(double resamp_rate,       /* output_rate/input_rate */
+// FILTER TABLE GENERATOR **************************************************
+//
+static int remez_filter_table(double resamp_rate, /* output_rate/input_rate */
                               double *cutoff, int quality) {
     int i;
     static const int orders[] = { 600, 800, 1000, 1200 };
@@ -968,122 +821,90 @@ static int remez_filter_table(double resamp_rate,       /* output_rate/input_rat
     return size;
 }
 
+// UPDATE READOUT AND EVENT CALLBACKS **************************************
+//
 static void Update_readout_0(PokeyState * ps) {
-    if (ps->c0vo)
-        ps->readout_0 = readout0_vo;
-    else if (ps->c0sw4)
-        ps->readout_0 = readout0_hipass;
-    else
-        ps->readout_0 = readout0_normal;
+         if (ps->c0vo)  ps->readout_0 = readout0_vo;
+    else if (ps->c0sw4) ps->readout_0 = readout0_hipass;
+    else                ps->readout_0 = readout0_normal;
 }
 
 static void Update_readout_1(PokeyState * ps) {
-    if (ps->c1vo)
-        ps->readout_1 = readout1_vo;
-    else if (ps->c1sw4)
-        ps->readout_1 = readout1_hipass;
-    else
-        ps->readout_1 = readout1_normal;
+         if (ps->c1vo)  ps->readout_1 = readout1_vo;
+    else if (ps->c1sw4) ps->readout_1 = readout1_hipass;
+    else                ps->readout_1 = readout1_normal;
 }
 
 static void Update_readout_2(PokeyState * ps) {
-    if (ps->c2vo)
-        ps->readout_2 = readout2_vo;
-    else
-        ps->readout_2 = readout2_normal;
+    if (ps->c2vo) ps->readout_2 = readout2_vo;
+    else          ps->readout_2 = readout2_normal;
 }
 
 static void Update_readout_3(PokeyState * ps) {
-    if (ps->c3vo)
-        ps->readout_3 = readout3_vo;
-    else
-        ps->readout_3 = readout3_normal;
+    if (ps->c3vo) ps->readout_3 = readout3_vo;
+    else          ps->readout_3 = readout3_normal;
 }
 
 static void Update_event0(PokeyState * ps) {
     if (ps->c0sw3) {
-        if (ps->c0sw2)
-            ps->event_0 = event0_pure;
+        if (ps->c0sw2)     ps->event_0 = event0_pure;
         else {
-            if (ps->c0sw1)
-                ps->event_0 = event0_p4;
-            else
-                ps->event_0 = event0_p917;
+            if (ps->c0sw1) ps->event_0 = event0_p4;
+            else           ps->event_0 = event0_p917;
         }
     } else {
-        if (ps->c0sw2)
-            ps->event_0 = event0_p5;
+        if (ps->c0sw2)     ps->event_0 = event0_p5;
         else {
-            if (ps->c0sw1)
-                ps->event_0 = event0_p4_p5;
-            else
-                ps->event_0 = event0_p917_p5;
+            if (ps->c0sw1) ps->event_0 = event0_p4_p5;
+            else           ps->event_0 = event0_p917_p5;
         }
     }
 }
 
 static void Update_event1(PokeyState * ps) {
     if (ps->c1sw3) {
-        if (ps->c1sw2)
-            ps->event_1 = event1_pure;
+        if (ps->c1sw2)     ps->event_1 = event1_pure;
         else {
-            if (ps->c1sw1)
-                ps->event_1 = event1_p4;
-            else
-                ps->event_1 = event1_p917;
+            if (ps->c1sw1) ps->event_1 = event1_p4;
+            else           ps->event_1 = event1_p917;
         }
     } else {
-        if (ps->c1sw2)
-            ps->event_1 = event1_p5;
+        if (ps->c1sw2)     ps->event_1 = event1_p5;
         else {
-            if (ps->c1sw1)
-                ps->event_1 = event1_p4_p5;
-            else
-                ps->event_1 = event1_p917_p5;
+            if (ps->c1sw1) ps->event_1 = event1_p4_p5;
+            else           ps->event_1 = event1_p917_p5;
         }
     }
 }
 
 static void Update_event2(PokeyState * ps) {
     if (ps->c2sw3) {
-        if (ps->c2sw2)
-            ps->event_2 = event2_pure;
+        if (ps->c2sw2)     ps->event_2 = event2_pure;
         else {
-            if (ps->c2sw1)
-                ps->event_2 = event2_p4;
-            else
-                ps->event_2 = event2_p917;
+            if (ps->c2sw1) ps->event_2 = event2_p4;
+            else           ps->event_2 = event2_p917;
         }
     } else {
-        if (ps->c2sw2)
-            ps->event_2 = event2_p5;
+        if (ps->c2sw2)     ps->event_2 = event2_p5;
         else {
-            if (ps->c2sw1)
-                ps->event_2 = event2_p4_p5;
-            else
-                ps->event_2 = event2_p917_p5;
+            if (ps->c2sw1) ps->event_2 = event2_p4_p5;
+            else           ps->event_2 = event2_p917_p5;
         }
     }
 }
 
 static void Update_event3(PokeyState * ps) {
     if (ps->c3sw3) {
-        if (ps->c3sw2)
-            ps->event_3 = event3_pure;
+        if (ps->c3sw2)     ps->event_3 = event3_pure;
         else {
-            if (ps->c3sw1)
-                ps->event_3 = event3_p4;
-            else
-                ps->event_3 = event3_p917;
+            if (ps->c3sw1) ps->event_3 = event3_p4;
+            else           ps->event_3 = event3_p917;
         }
     } else {
-        if (ps->c3sw2)
-            ps->event_3 = event3_p5;
+        if (ps->c3sw2)     ps->event_3 = event3_p5;
         else {
-            if (ps->c3sw1)
-                ps->event_3 = event3_p4_p5;
-            else
-                ps->event_3 = event3_p917_p5;
+            if (ps->c3sw1) ps->event_3 = event3_p4_p5;
+            else           ps->event_3 = event3_p917_p5;
         }
     }
 }
@@ -1098,10 +919,8 @@ static void Update_c0divstart(PokeyState * ps) {
             ps->c0divstart_p = (ps->c0diva + 1) * ps->mdivk;
         }
     } else {
-        if (ps->c0_hf)
-            ps->c0divstart = ps->c0diva + 4;
-        else
-            ps->c0divstart = (ps->c0diva + 1) * ps->mdivk;
+        if (ps->c0_hf) ps->c0divstart =  ps->c0diva + 4;
+        else           ps->c0divstart = (ps->c0diva + 1) * ps->mdivk;
     }
 }
 
@@ -1125,10 +944,8 @@ static void Update_c2divstart(PokeyState * ps) {
             ps->c2divstart_p = (ps->c2diva + 1) * ps->mdivk;
         }
     } else {
-        if (ps->c2_hf)
-            ps->c2divstart = ps->c2diva + 4;
-        else
-            ps->c2divstart = (ps->c2diva + 1) * ps->mdivk;
+        if (ps->c2_hf) ps->c2divstart =  ps->c2diva + 4;
+        else           ps->c2divstart = (ps->c2diva + 1) * ps->mdivk;
     }
 }
 
@@ -1160,91 +977,63 @@ static void Update_audctl(PokeyState * ps, unsigned char val) {
     nc3_f2 = (val & 0x08) != 0;
     nc0sw4 = (val & 0x04) != 0;
     nc1sw4 = (val & 0x02) != 0;
-    if (val & 0x01)
-        new_divk = 114;
-    else
-        new_divk = 28;
 
-    if (new_divk != ps->mdivk) {
-        recalc0 = recalc1 = recalc2 = recalc3 = 1;
-    }
-    if (nc1_f0 != ps->c1_f0) {
-        recalc0 = recalc1 = 1;
-    }
-    if (nc3_f2 != ps->c3_f2) {
-        recalc2 = recalc3 = 1;
-    }
+    if (val & 0x01) new_divk = 114;
+    else            new_divk = 28;
+
+    if (new_divk != ps->mdivk) recalc0 = recalc1 = recalc2 = recalc3 = 1;
+    if (nc1_f0 != ps->c1_f0)   recalc0 = recalc1 = 1;
+    if (nc3_f2 != ps->c3_f2)   recalc2 = recalc3 = 1;
+
     if (nc0_hf != ps->c0_hf) {
         recalc0 = 1;
-        if (nc1_f0)
-            recalc1 = 1;
+        if (nc1_f0) recalc1 = 1;
     }
     if (nc2_hf != ps->c2_hf) {
         recalc2 = 1;
-        if (nc3_f2)
-            recalc3 = 1;
+        if (nc3_f2) recalc3 = 1;
     }
 
     if (recalc0) {
-        if (ps->c0_hf)
-            cnt0 = ps->c0divpos;
-        else
-            cnt0 = ps->c0divpos / ps->mdivk;
+        if (ps->c0_hf) cnt0 = ps->c0divpos;
+        else           cnt0 = ps->c0divpos / ps->mdivk;
     }
     if (recalc1) {
         if (ps->c1_f0) {
-            if (ps->c0_hf)
-                cnt1 = ps->c1divpos / 256;
-            else
-                cnt1 = ps->c1divpos / 256 / ps->mdivk;
-        } else {
-            cnt1 = ps->c1divpos / ps->mdivk;
-        }
+            if (ps->c0_hf) cnt1 = ps->c1divpos / 256;
+            else           cnt1 = ps->c1divpos / 256 / ps->mdivk;
+        } else             cnt1 = ps->c1divpos / ps->mdivk;
     }
     if (recalc2) {
-        if (ps->c2_hf)
-            cnt2 = ps->c2divpos;
-        else
-            cnt2 = ps->c2divpos / ps->mdivk;
+        if (ps->c2_hf) cnt2 = ps->c2divpos;
+        else           cnt2 = ps->c2divpos / ps->mdivk;
     }
     if (recalc3) {
         if (ps->c3_f2) {
-            if (ps->c2_hf)
-                cnt3 = ps->c3divpos / 256;
-            else
-                cnt3 = ps->c3divpos / 256 / ps->mdivk;
+            if (ps->c2_hf) cnt3 = ps->c3divpos / 256;
+            else           cnt3 = ps->c3divpos / 256 / ps->mdivk;
         }
     }
 
     if (recalc0) {
-        if (nc0_hf)
-            ps->c0divpos = cnt0;
-        else
-            ps->c0divpos = cnt0 * new_divk;
+        if (nc0_hf) ps->c0divpos = cnt0;
+        else        ps->c0divpos = cnt0 * new_divk;
     }
     if (recalc1) {
         if (nc1_f0) {
-            if (nc0_hf)
-                ps->c1divpos = cnt1 * 256 + cnt0;
-            else
-                ps->c1divpos = (cnt1 * 256 + cnt0) * new_divk;
-        } else {
-            ps->c1divpos = cnt1 * new_divk;
-        }
+            if (nc0_hf) ps->c1divpos =  cnt1 * 256 + cnt0;
+            else        ps->c1divpos = (cnt1 * 256 + cnt0) * new_divk;
+        } else          ps->c1divpos =  cnt1 * new_divk;
     }
 
     if (recalc2) {
-        if (nc2_hf)
-            ps->c2divpos = cnt2;
-        else
-            ps->c2divpos = cnt2 * new_divk;
+        if (nc2_hf) ps->c2divpos = cnt2;
+        else        ps->c2divpos = cnt2 * new_divk;
     }
     if (recalc3) {
         if (nc3_f2) {
-            if (nc2_hf)
-                ps->c3divpos = cnt3 * 256 + cnt2;
-            else
-                ps->c3divpos = (cnt3 * 256 + cnt2) * new_divk;
+            if (nc2_hf) ps->c3divpos =  cnt3 * 256 + cnt2;
+            else        ps->c3divpos = (cnt3 * 256 + cnt2) * new_divk;
         }
     }
 
@@ -1262,7 +1051,6 @@ static void Update_skctl(PokeyState * ps, unsigned char val) {
     ps->skctl = val;
 }
 
-/* if using nonlinear mixing, don't stop ultrasounds */
 static void Update_c0stop(PokeyState * ps) {
     ps->outvol_0 = ps->readout_0(ps);
 }
@@ -1276,8 +1064,10 @@ static void Update_c3stop(PokeyState * ps) {
     ps->outvol_3 = ps->readout_3(ps);
 }
 
-/* See mzpokeysnd.txt for details */
-
+// GENERATE 8-BIT OR 16-BIT SAMPLED OUTPUT *********************************
+//
+// See mzpokeysnd.txt for details
+//
 #define MAX_SAMPLE 152
 
 static void mzpokeysnd_process_8(void *sndbuffer, int sndn) {
