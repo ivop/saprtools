@@ -42,18 +42,6 @@ static const double pokeymix[61] = { /* Nonlinear POKEY mixing */
     120.000000
 };
 
-#define SND_FILTER_SIZE  2048
-#define NPOKEYS 2
-
-static int num_cur_pokeys = 0;
-static int playback_freq = 44100;
-
-/* Filter */
-static int pokey_freq = 1773447;
-static int filter_size;
-static double filter_data[SND_FILTER_SIZE];
-
-/* Poly tables */
 static int poly4tbl[15];
 static int poly5tbl[31];
 static unsigned char poly17tbl[131071];
@@ -63,12 +51,9 @@ struct stPokeyState;
 
 typedef int (*readout_t)(struct stPokeyState * ps);
 typedef void (*event_t)(struct stPokeyState * ps, int p5v, int p4v, int p917v);
+typedef double qev_t; /* Change queue event value type */
 
-/* Change queue event value type */
-typedef double qev_t;
-
-/* State variables for single Pokey Chip */
-typedef struct stPokeyState {
+typedef struct stPokeyState { /* State variables for single Pokey Chip */
     int curtick;
     /* Poly positions */
     int poly4pos;
@@ -197,6 +182,15 @@ typedef struct stPokeyState {
 } PokeyState;
 
 PokeyState pokey_states[NPOKEYS];
+
+#define SND_FILTER_SIZE  2048
+#define NPOKEYS 2
+
+static int num_cur_pokeys = 0;
+static int playback_freq = 44100;
+static int pokey_freq = 1773447;
+static int filter_size;
+static double filter_data[SND_FILTER_SIZE];
 
 // READ OUTPUTS ************************************************************
 //
@@ -1060,7 +1054,7 @@ void MZPOKEY_Process(void *sndbuffer, int sndn) {
     }
 }
 
-// API: UPDATE *************************************************************
+// API: UPDATE REGISTER ****************************************************
 //
 // addr     Pokey register (0-15)
 // val      new value
@@ -1218,7 +1212,7 @@ int MZPOKEY_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
 
     ResetPokeyState(pokey_states);
     ResetPokeyState(pokey_states + 1);
-    num_cur_pokeys = num_pokeys;
+    num_cur_pokeys = num_pokeys == 1 ? 1 : 2;
 
     return 0; // OK
 }
