@@ -181,10 +181,9 @@ typedef struct stPokeyState { /* State variables for single Pokey Chip */
 
 } PokeyState;
 
-PokeyState pokey_states[NPOKEYS];
+PokeyState pokey_states[2];     // fixed to max. 2 Pokeys (stereo)
 
 #define SND_FILTER_SIZE  2048
-#define NPOKEYS 2
 
 static int num_cur_pokeys = 0;
 static int playback_freq = 44100;
