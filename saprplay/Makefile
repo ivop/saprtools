@@ -1,4 +1,5 @@
-CFLAGS=-O0 -g3 -march=native -Wall -Wextra -Wno-unused-parameter
+CFLAGS=-O3 -Wall -Wextra -Wno-unused-parameter
+#CFLAGS=-O0 -g3 -Wall -Wextra -Wno-unused-parameter
 CFLAGS += $$(pkg-config --cflags sdl)
 LIBS=mzpokeysnd.a $$(pkg-config --libs sdl) -lm
 
