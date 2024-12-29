@@ -1,16 +1,16 @@
 #include <stdio.h>
 #include <SDL.h>
 #include <stdbool.h>
-#include "mzpokeysnd.h"
+#include "mzpokey.h"
 
 static char *sapr, *endsapr;
 static bool play = true;
 
-void fill_audio(void *udata, Uint8 *stream, int len) {
+static void fill_audio(void *udata, Uint8 *stream, int len) {
     for (int i=0; i<=8; i++) {
-        MZPOKEYSND_Update(i, *sapr++, 0);
+        MZPOKEY_Update(i, *sapr++, 0);
     }
-    MZPOKEYSND_Process(stream, len/2);
+    MZPOKEY_Process(stream, len/2);
     if (sapr == endsapr) exit(0);
 }
 
@@ -57,8 +57,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    MZPOKEYSND_Init(1773447, 44100, 1, 0);
-    MZPOKEYSND_Update(POKEY_OFFSET_SKCTL, 3, 0);
+    MZPOKEY_Init(1773447, 44100, 1, 0);
+    MZPOKEY_Update(POKEY_OFFSET_SKCTL, 3, 0);
 
     SDL_AudioSpec wanted;
 

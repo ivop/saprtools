@@ -1,9 +1,9 @@
 #pragma once
 #include <stdint.h>
 
-void MZPOKEYSND_Update(uint16_t addr, uint8_t val, uint8_t chip);
-void MZPOKEYSND_Process(void *sndbuffer, int sndn);
-int MZPOKEYSND_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
+void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip);
+void MZPOKEY_Process(void *sndbuffer, int sndn);
+int MZPOKEY_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
                     int quality);
 
 #define POKEY_OFFSET_AUDF1  0x00

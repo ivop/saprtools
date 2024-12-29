@@ -1,5 +1,5 @@
 /*
- * mzpokeysnd.c - POKEY sound chip emulation, v1.6
+ * mzpokey.c - POKEY sound chip emulation, v1.6
  *
  * Copyright (C) 2002-218 Michael Borisov, Krzystof Nikiel, Perry McFarlane,
  *                        Petr Stehlík, Piotr Fusik
@@ -20,7 +20,7 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include "mzpokeysnd.h"
+#include "mzpokey.h"
 #include "remez.h"
 
 int POKEYSND_playback_freq = 44100;
@@ -82,9 +82,6 @@ typedef void (*event_t)(struct stPokeyState * ps, int p5v, int p4v, int p917v);
 
 /* Change queue event value type */
 typedef double qev_t;
-
-static double ticks_per_sample;
-static double samp_pos;
 
 /* State variables for single Pokey Chip */
 typedef struct stPokeyState {
@@ -1047,13 +1044,16 @@ static void Update_c3stop(PokeyState * ps) {
     ps->outvol_3 = ps->readout_3(ps);
 }
 
-// GENERATE 16-BIT SAMPLED OUTPUT ******************************************
+// API: PROCESS - GENERATE 16-BIT SAMPLED OUTPUT ***************************
 //
-// See mzpokeysnd.txt for details
+// sndbuffer    pointer to buffer
+// sndn         length of request in _samples_
+//
+// See mzpokey.txt for details
 //
 #define MAX_SAMPLE 120
 
-void MZPOKEYSND_Process(void *sndbuffer, int sndn) {
+void MZPOKEY_Process(void *sndbuffer, int sndn) {
     int i;
     int nsam = sndn;
     int16_t *buffer = (int16_t *) sndbuffer;
@@ -1079,13 +1079,13 @@ void MZPOKEYSND_Process(void *sndbuffer, int sndn) {
     }
 }
 
-/*****************************************************************************/
-/* Inputs:  addr - the address of the parameter to be changed                */
-/*          val - the new value to be placed in the specified address        */
-/*          chip - chip # for stereo                                         */
-/*                                                                           */
-
-void MZPOKEYSND_Update(uint16_t addr, uint8_t val, uint8_t chip) {
+// API: UPDATE *************************************************************
+//
+// addr     Pokey register (0-15)
+// val      new value
+// chip     0 (mono, left) or 1 (stereo right)
+//
+void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
     PokeyState *ps = pokey_states + chip;
 
     switch (addr & 0x0f) {
@@ -1215,34 +1215,15 @@ void MZPOKEYSND_Update(uint16_t addr, uint8_t val, uint8_t chip) {
     }
 }
 
-/*****************************************************************************/
-/* Module:  MZPOKEYSND_Init()                                                */
-/* Purpose: to handle the power-up initialization functions                  */
-/*          these functions should only be executed on a cold-restart        */
-/*                                                                           */
-/* Authors: Michael Borisov, Krzystof Nikiel                                 */
-/*                                                                           */
-/* Inputs:  freq17 - the value for the '1.79MHz' Pokey audio clock           */
-/*          playback_freq - the playback frequency in samples per second     */
-/*          num_pokeys - specifies the number of pokey chips to be emulated  */
-/*                                                                           */
-/* Outputs: Adjusts local globals - no return value                          */
-/*                                                                           */
-/*****************************************************************************/
-
-static void init_syncsound(void) {
-    double samples_per_frame =
-        (double)POKEYSND_playback_freq / (Atari800_tv_mode ==
-                                          Atari800_TV_PAL ? Atari800_FPS_PAL :
-                                          Atari800_FPS_NTSC);
-    unsigned int ticks_per_frame = Atari800_tv_mode * 114;
-
-    ticks_per_sample = (double)ticks_per_frame / samples_per_frame;
-    samp_pos = 0.0;
-}
-
-int MZPOKEYSND_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
-                    int quality) {
+// API: INIT ***************************************************************
+//
+// freq17           Pokey Frequency in Hertz, e.g. 1773447 Hz for PAL
+// playback_freq    playback frequency, e.g. 44100 Hz
+// num_pokeys       1 (mono) or 2 (stereo)
+// quality          0, 1, or 2 (Remez Filter quality)
+//
+int MZPOKEY_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
+                 int quality) {
     double cutoff;
 
     pokey_frq =
@@ -1261,8 +1242,6 @@ int MZPOKEYSND_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
     ResetPokeyState(pokey_states);
     ResetPokeyState(pokey_states + 1);
     num_cur_pokeys = num_pokeys;
-
-    init_syncsound();
 
     return 0; // OK
 }
