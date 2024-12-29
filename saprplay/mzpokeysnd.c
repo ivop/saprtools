@@ -71,9 +71,6 @@ static int audible_frq;
 
 static const int pokey_frq_ideal = 1789790;     /* Hz - True */
 
-/* Flags and quality */
-static int snd_quality = 0;
-
 /* Poly tables */
 static int poly4tbl[15];
 static int poly5tbl[31];
@@ -1252,10 +1249,8 @@ static void init_syncsound(void) {
 }
 
 int MZPOKEYSND_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
-                    int flags, int quality) {
+                    int quality) {
     double cutoff;
-
-    snd_quality = quality;
 
     pokey_frq =
             (int)(((double)pokey_frq_ideal / POKEYSND_playback_freq) + 0.5)

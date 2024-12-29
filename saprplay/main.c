@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    MZPOKEYSND_Init(1773447, 44100, 1, 0, 0);
+    MZPOKEYSND_Init(1773447, 44100, 1, 0);
     MZPOKEYSND_Update(POKEY_OFFSET_SKCTL, 3, 0);
 
     SDL_AudioSpec wanted;
