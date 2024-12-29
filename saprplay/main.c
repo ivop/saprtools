@@ -11,7 +11,8 @@ static void fill_audio(void *udata, Uint8 *stream, int len) {
     for (int i=0; i<=8; i++) {
         mzpokey_write_register(mzp, i, *sapr++, 0);
     }
-    mzpokey_process_int16(mzp, stream, len/sizeof(int16_t));
+    //mzpokey_process_int16(mzp, stream, len/sizeof(int16_t));
+    mzpokey_process_float(mzp, stream, len/sizeof(float));
     if (sapr == endsapr) exit(0);
 }
 
@@ -68,7 +69,8 @@ int main(int argc, char **argv) {
     SDL_AudioSpec wanted;
 
     wanted.freq = 44100;
-    wanted.format = AUDIO_S16SYS;
+    //wanted.format = AUDIO_S16SYS;
+    wanted.format = AUDIO_F32SYS;
     wanted.channels = 1;
     wanted.samples = 882;               // one 50Hz frame @ 44100
     wanted.callback = fill_audio;

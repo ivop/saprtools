@@ -1,7 +1,7 @@
 CFLAGS=-O3 -Wall -Wextra -Wno-unused-parameter
 #CFLAGS=-O0 -g3 -Wall -Wextra -Wno-unused-parameter
-CFLAGS += $$(pkg-config --cflags sdl)
-LIBS=mzpokey.a $$(pkg-config --libs sdl) -lm
+CFLAGS += $$(pkg-config --cflags sdl2)
+LIBS=mzpokey.a $$(pkg-config --libs sdl2) -lm
 SRC_FILES=mzpokey.c remez.c main.c
 
 all: saprplay mzpokey.a

@@ -21,3 +21,7 @@ void mzpokey_write_register(struct mzpokey_context *mzp,
 void mzpokey_process_int16(struct mzpokey_context *mzp,
                            void *sndbuffer,
                            int sndn);
+
+void mzpokey_process_float(struct mzpokey_context *mzp,
+                           void *sndbuffer,
+                           int sndn);

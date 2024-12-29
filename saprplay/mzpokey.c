@@ -1010,7 +1010,7 @@ static void Update_c3stop(PokeyState * ps) {
     ps->outvol_3 = ps->readout_3(ps);
 }
 
-// API: PROCESS - GENERATE 16-BIT SAMPLED OUTPUT ***************************
+// API: PROCESS - GENERATE SAMPLED OUTPUT **********************************
 //
 // sndbuffer    pointer to buffer
 // sndn         length of request in _samples_
@@ -1022,7 +1022,7 @@ static void Update_c3stop(PokeyState * ps) {
 void mzpokey_process_int16(struct mzpokey_context *mzp,
                                                 void *sndbuffer, int sndn) {
     int nsam = sndn;
-    int16_t *buffer = (int16_t *) sndbuffer;
+    int16_t *buffer = sndbuffer;
 
     if (mzp->num_cur_pokeys < 1)
         return;                 /* module was not initialized */
@@ -1031,14 +1031,34 @@ void mzpokey_process_int16(struct mzpokey_context *mzp,
        we assume even sndn */
     while (nsam >= (int)mzp->num_cur_pokeys) {
         buffer[0] = floor(generate_sample(mzp, mzp->pokey_states)
-                                  * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
-                                     0.95) + 0.5 + 0.5 * rand() / RAND_MAX -
-                                  0.25);
+                            * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI * 0.95)
+                            + 0.5 + 0.5 * rand() / RAND_MAX - 0.25);
         for (int i = 1; i < mzp->num_cur_pokeys; i++) {
             buffer[i] = floor(generate_sample(mzp, mzp->pokey_states + i)
-                                      * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
-                                         0.95) + 0.5 +
-                                      0.5 * rand() / RAND_MAX - 0.25);
+                            * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI * 0.95)
+                            + 0.5 + 0.5 * rand() / RAND_MAX - 0.25);
+        }
+        buffer += mzp->num_cur_pokeys;
+        nsam -= mzp->num_cur_pokeys;
+    }
+}
+
+void mzpokey_process_float(struct mzpokey_context *mzp,
+                                                void *sndbuffer, int sndn) {
+    int nsam = sndn;
+    float *buffer = sndbuffer;
+
+    if (mzp->num_cur_pokeys < 1)
+        return;                 /* module was not initialized */
+
+    /* if there are two pokeys, then the signal is stereo
+       we assume even sndn */
+    while (nsam >= (int)mzp->num_cur_pokeys) {
+        buffer[0] = generate_sample(mzp, mzp->pokey_states)
+                                  / MAX_SAMPLE / 4 * M_PI * 0.95;
+        for (int i = 1; i < mzp->num_cur_pokeys; i++) {
+            buffer[i] = generate_sample(mzp, mzp->pokey_states + i)
+                                  / MAX_SAMPLE / 4 * M_PI * 0.95;
         }
         buffer += mzp->num_cur_pokeys;
         nsam -= mzp->num_cur_pokeys;
