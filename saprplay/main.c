@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     wanted.freq = 44100;
     wanted.format = AUDIO_S16SYS;
     wanted.channels = 1;
-    wanted.samples = 882*2;               // one 50Hz frame @ 44100
+    wanted.samples = 882;               // one 50Hz frame @ 44100
     wanted.callback = fill_audio;
     wanted.userdata = NULL;
 
@@ -81,6 +81,14 @@ int main(int argc, char **argv) {
 
     SDL_PauseAudio(0);
 
-    while(play)
+    while(play) {
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+            switch (e.type) {
+            case SDL_QUIT:
+                return 0;
+            }
+        }
         SDL_Delay(100);
+    }
 }
