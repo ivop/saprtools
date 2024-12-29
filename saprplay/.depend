@@ -1,0 +1,3 @@
+mzpokey.o: mzpokey.c mzpokey.h remez.h
+remez.o: remez.c remez.h
+main.o: main.c mzpokey.h

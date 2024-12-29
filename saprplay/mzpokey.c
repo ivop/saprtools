@@ -182,15 +182,6 @@ typedef struct stPokeyState { /* State variables for single Pokey Chip */
     int filter_size;
 } PokeyState;
 
-#if 0
-PokeyState pokey_states[2];     // fixed to max. 2 Pokeys (stereo)
-static int num_cur_pokeys = 0;
-static int playback_freq = 44100;
-static int pokey_freq = 1773447;
-static int filter_size;
-static double filter_data[SND_FILTER_SIZE];
-#endif
-
 #define SND_FILTER_SIZE  2048
 
 struct mzpokey_context {
