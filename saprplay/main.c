@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     }
 
     mzpokey_init(1773447, 44100, 1, 0);
-    mzpokey_write_register(POKEY_OFFSET_SKCTL, 3, 0);
+    mzpokey_write_register(SKCTL, 3, 0);
 
     SDL_AudioSpec wanted;
 
