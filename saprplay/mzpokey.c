@@ -178,21 +178,29 @@ typedef struct stPokeyState { /* State variables for single Pokey Chip */
 
     int outvol_3;
 
-    /* GTIA speaker */
-
-    int speaker;
-
+    /* copy of filter_size */
+    int filter_size;
 } PokeyState;
 
+#if 0
 PokeyState pokey_states[2];     // fixed to max. 2 Pokeys (stereo)
-
-#define SND_FILTER_SIZE  2048
-
 static int num_cur_pokeys = 0;
 static int playback_freq = 44100;
 static int pokey_freq = 1773447;
 static int filter_size;
 static double filter_data[SND_FILTER_SIZE];
+#endif
+
+#define SND_FILTER_SIZE  2048
+
+struct mzpokey_context {
+    PokeyState pokey_states[2];     // fixed to max. 2 Pokeys (stereo)
+    int num_cur_pokeys;
+    int playback_freq;
+    int pokey_freq;
+    int filter_size;
+    double filter_data[SND_FILTER_SIZE];
+};
 
 // READ OUTPUTS ************************************************************
 //
@@ -426,20 +434,17 @@ static void ResetPokeyState(PokeyState * ps) {
     ps->c3sw1 = ps->c3sw2 = ps->c3sw3 = 0;
     ps->c3vo  = 0;
     ps->vol3  = ps->outvol_3 = 0;
-
-    /* GTIA speaker */
-    ps->speaker = 0;
 }
 
 // EVENT QUEUE HANDLING ****************************************************
 //
-static double read_resam_all(PokeyState * ps) {
+static double read_resam_all(struct mzpokey_context *mzp, PokeyState * ps) {
     int i = ps->qebeg;
     qev_t avol, bvol;
     double sum;
 
     if (ps->qebeg == ps->qeend) {
-        return ps->ovola * filter_data[0];      /* if no events in the queue */
+        return ps->ovola * mzp->filter_data[0]; /* if no events in the queue */
     }
 
     avol = ps->ovola;
@@ -447,9 +452,9 @@ static double read_resam_all(PokeyState * ps) {
 
     /* Separate two loop cases, for wrap-around and without */
     if (ps->qeend < ps->qebeg) {        /* With wrap */
-        while (i < filter_size) {
+        while (i < mzp->filter_size) {
             bvol = ps->qev[i];
-            sum += (avol - bvol) * filter_data[ps->curtick - ps->qet[i]];
+            sum += (avol - bvol) * mzp->filter_data[ps->curtick - ps->qet[i]];
             avol = bvol;
             ++i;
         }
@@ -458,12 +463,12 @@ static double read_resam_all(PokeyState * ps) {
 
     while (i < ps->qeend) {             /* without wrap */
         bvol = ps->qev[i];
-        sum += (avol - bvol) * filter_data[ps->curtick - ps->qet[i]];
+        sum += (avol - bvol) * mzp->filter_data[ps->curtick - ps->qet[i]];
         avol = bvol;
         ++i;
     }
 
-    sum += avol * filter_data[0];
+    sum += avol * mzp->filter_data[0];
     return sum;
 }
 
@@ -471,7 +476,7 @@ static void add_change(PokeyState * ps, qev_t a) {
     ps->qev[ps->qeend] = a;
     ps->qet[ps->qeend] = ps->curtick;   /*0; */
     ++ps->qeend;
-    if (ps->qeend >= filter_size)
+    if (ps->qeend >= ps->filter_size)
         ps->qeend = 0;
 }
 
@@ -485,7 +490,7 @@ static void bump_qe_subticks(PokeyState * ps, int subticks) {
     ps->curtick += subticks;
     if (ps->curtick > tickoverflowlimit) {
         ps->curtick -= tickoverflowlimit / 2;
-        for (i = 0; i < filter_size; i++) {
+        for (i = 0; i < ps->filter_size; i++) {
             if (ps->qet[i] > tickoverflowlimit / 2) {
                 ps->qet[i] -= tickoverflowlimit / 2;
             }
@@ -493,12 +498,12 @@ static void bump_qe_subticks(PokeyState * ps, int subticks) {
     }
 
     if (ps->qeend < ps->qebeg) {        /* Loop with wrap */
-        while (i < filter_size) {
+        while (i < ps->filter_size) {
             /*ps->qet[i] += subticks; */
-            if (ps->curtick - ps->qet[i] >= filter_size - 1) {
+            if (ps->curtick - ps->qet[i] >= ps->filter_size - 1) {
                 ps->ovola = ps->qev[i];
                 ++ps->qebeg;
-                if (ps->qebeg >= filter_size)
+                if (ps->qebeg >= ps->filter_size)
                     ps->qebeg = 0;
             } else {
                 return;
@@ -510,10 +515,10 @@ static void bump_qe_subticks(PokeyState * ps, int subticks) {
 
     while (i < ps->qeend) {             /* loop without wrap */
         /*ps->qet[i] += subticks; */
-        if (ps->curtick - ps->qet[i] >= filter_size - 1) {
+        if (ps->curtick - ps->qet[i] >= ps->filter_size - 1) {
             ps->ovola = ps->qev[i];
             ++ps->qebeg;
-            if (ps->qebeg >= filter_size)
+            if (ps->qebeg >= ps->filter_size)
                 ps->qebeg = 0;
         } else {
             return;
@@ -591,7 +596,7 @@ static void advance_ticks(PokeyState * ps, int ticks) {
         ps->forcero = 0;
         outvol_new =
             pokeymix[ps->outvol_0 + ps->outvol_1 + ps->outvol_2 +
-                     ps->outvol_3 + ps->speaker];
+                     ps->outvol_3];
         if (outvol_new != ps->outvol_all) {
             ps->outvol_all = outvol_new;
             add_change(ps, outvol_new);
@@ -673,7 +678,7 @@ static void advance_ticks(PokeyState * ps, int ticks) {
 
             outvol_new =
                 pokeymix[ps->outvol_0 + ps->outvol_1 + ps->outvol_2 +
-                         ps->outvol_3 + ps->speaker];
+                         ps->outvol_3];
             if (outvol_new != ps->outvol_all) {
                 ps->outvol_all = outvol_new;
                 add_change(ps, outvol_new);
@@ -682,14 +687,15 @@ static void advance_ticks(PokeyState * ps, int ticks) {
     }
 }
 
-static double generate_sample(PokeyState * ps) {
-    advance_ticks(ps, pokey_freq / playback_freq);
-    return read_resam_all(ps);
+static double generate_sample(struct mzpokey_context *mzp, PokeyState * ps) {
+    advance_ticks(ps, mzp->pokey_freq / mzp->playback_freq);
+    return read_resam_all(mzp, ps);
 }
 
 // FILTER TABLE GENERATOR **************************************************
 //
-static int remez_filter_table(double resamp_rate, /* output_rate/input_rate */
+static int remez_filter_table(struct mzpokey_context *mzp,
+                              double resamp_rate, /* output_rate/input_rate */
                               double *cutoff, int quality) {
     int i;
     static const int orders[] = { 600, 800, 1000, 1200 };
@@ -749,23 +755,23 @@ static int remez_filter_table(double resamp_rate, /* output_rate/input_rate */
 
     bands[1] *= (double)interlevel;
     bands[2] *= (double)interlevel;
-    REMEZ_CreateFilter(filter_data, (size / interlevel) + 1, 2, bands, desired,
-                       weights, REMEZ_BANDPASS);
+    REMEZ_CreateFilter(mzp->filter_data, (size / interlevel) + 1, 2, bands,
+                       desired, weights, REMEZ_BANDPASS);
     for (i = size - interlevel; i >= 0; i -= interlevel) {
         int s;
-        double h1 = filter_data[i / interlevel];
-        double h2 = filter_data[i / interlevel + 1];
+        double h1 = mzp->filter_data[i / interlevel];
+        double h2 = mzp->filter_data[i / interlevel + 1];
 
         for (s = 0; s < interlevel; s++) {
             double d = (double)s * step;
 
-            filter_data[i + s] = (h1 * (1.0 - d) + h2 * d) * step;
+            mzp->filter_data[i + s] = (h1 * (1.0 - d) + h2 * d) * step;
         }
     }
 
     /* compute reversed cumulative sum table */
     for (i = size - 2; i >= 0; i--)
-        filter_data[i] += filter_data[i + 1];
+        mzp->filter_data[i] += mzp->filter_data[i + 1];
 
     return size;
 }
@@ -1022,29 +1028,28 @@ static void Update_c3stop(PokeyState * ps) {
 //
 #define MAX_SAMPLE 120
 
-void mzpokey_process(void *sndbuffer, int sndn) {
-    int i;
+void mzpokey_process(struct mzpokey_context *mzp, void *sndbuffer, int sndn) {
     int nsam = sndn;
     int16_t *buffer = (int16_t *) sndbuffer;
 
-    if (num_cur_pokeys < 1)
+    if (mzp->num_cur_pokeys < 1)
         return;                 /* module was not initialized */
 
     /* if there are two pokeys, then the signal is stereo
        we assume even sndn */
-    while (nsam >= (int)num_cur_pokeys) {
-        buffer[0] = (int16_t) floor(generate_sample(pokey_states)
+    while (nsam >= (int)mzp->num_cur_pokeys) {
+        buffer[0] = (int16_t) floor(generate_sample(mzp, mzp->pokey_states)
                                   * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
                                      0.95) + 0.5 + 0.5 * rand() / RAND_MAX -
                                   0.25);
-        for (i = 1; i < num_cur_pokeys; i++) {
-            buffer[i] = (int16_t) floor(generate_sample(pokey_states + i)
+        for (int i = 1; i < mzp->num_cur_pokeys; i++) {
+            buffer[i] = (int16_t) floor(generate_sample(mzp, mzp->pokey_states + i)
                                       * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
                                          0.95) + 0.5 +
                                       0.5 * rand() / RAND_MAX - 0.25);
         }
-        buffer += num_cur_pokeys;
-        nsam -= num_cur_pokeys;
+        buffer += mzp->num_cur_pokeys;
+        nsam -= mzp->num_cur_pokeys;
     }
 }
 
@@ -1054,8 +1059,11 @@ void mzpokey_process(void *sndbuffer, int sndn) {
 // val      new value
 // chip     0 (mono, left) or 1 (stereo right)
 //
-void mzpokey_write_register(enum pokey_register reg, uint8_t val, uint8_t chip) {
-    PokeyState *ps = pokey_states + chip;
+void mzpokey_write_register(struct mzpokey_context *mzp,
+                            enum pokey_register reg,
+                            uint8_t val, uint8_t chip) {
+    if (chip > 1) chip = 1;
+    PokeyState *ps = mzp->pokey_states + chip;
 
     switch (reg & 0x0f) {
     case AUDF1:
@@ -1184,20 +1192,28 @@ void mzpokey_write_register(enum pokey_register reg, uint8_t val, uint8_t chip) 
     }
 }
 
-// API: INIT ***************************************************************
+// API: CREATE CONTEXT STRUCTURE  ******************************************
 //
 // freq17           Pokey Frequency in Hertz, e.g. 1773447 Hz for PAL
 // playback_freq    playback frequency, e.g. 44100 Hz
 // num_pokeys       1 (mono) or 2 (stereo)
 // quality          0, 1, or 2 (Remez Filter quality)
 //
-int mzpokey_init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
-                 int quality) {
-    double cutoff;
 
-    pokey_freq = freq17;
-    filter_size = remez_filter_table((double)playback_freq / pokey_freq,
-                               &cutoff, quality);
+struct mzpokey_context *mzpokey_create(int pokey_freq,
+                                       int playback_freq,
+                                       int num_pokeys,
+                                       int quality) {
+    double cutoff;
+    struct mzpokey_context *mzp = calloc(1, sizeof(struct mzpokey_context));
+    if (!mzp) return NULL;
+    
+    mzp->pokey_freq = pokey_freq;
+    mzp->playback_freq = playback_freq;
+
+    mzp->filter_size = remez_filter_table(mzp,
+                                          (double)playback_freq / pokey_freq,
+                                                            &cutoff, quality);
 
     if (!polys_built) {     // generate only once for first context
         build_poly4();
@@ -1207,9 +1223,12 @@ int mzpokey_init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
         polys_built = true;
     }
 
-    ResetPokeyState(pokey_states);
-    ResetPokeyState(pokey_states + 1);
-    num_cur_pokeys = num_pokeys == 1 ? 1 : 2;
+    ResetPokeyState(mzp->pokey_states);
+    ResetPokeyState(mzp->pokey_states + 1);
 
-    return 0; // OK
+    mzp->pokey_states[0].filter_size = mzp->filter_size;
+    mzp->pokey_states[1].filter_size = mzp->filter_size;
+
+    mzp->num_cur_pokeys = num_pokeys == 1 ? 1 : 2;
+    return mzp;
 }

@@ -3,14 +3,15 @@
 #include <stdbool.h>
 #include "mzpokey.h"
 
+static struct mzpokey_context *mzp;
 static char *sapr, *endsapr;
 static bool play = true;
 
 static void fill_audio(void *udata, Uint8 *stream, int len) {
     for (int i=0; i<=8; i++) {
-        mzpokey_write_register(i, *sapr++, 0);
+        mzpokey_write_register(mzp, i, *sapr++, 0);
     }
-    mzpokey_process(stream, len/2);
+    mzpokey_process(mzp, stream, len/2);
     if (sapr == endsapr) exit(0);
 }
 
@@ -57,8 +58,12 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    mzpokey_init(1773447, 44100, 1, 0);
-    mzpokey_write_register(SKCTL, 3, 0);
+    mzp = mzpokey_create(1773447, 44100, 1, 0);
+    if (!mzp) {
+        printf("error: unable to create mzpokey context\n");
+        return 1;
+    }
+    mzpokey_write_register(mzp, SKCTL, 3, 0);
 
     SDL_AudioSpec wanted;
 
