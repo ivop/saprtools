@@ -12,7 +12,7 @@ mzpokeysnd.a: mzpokeysnd.o remez.o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 saprplay: mzpokeysnd.a main.o
-	$(CC) -o $@ $^ $(LIBS)
+	$(CC) -s -o $@ $^ $(LIBS)
 
 %: %.c
 	$(CC) $(CFLAGS) -o $@ $<
