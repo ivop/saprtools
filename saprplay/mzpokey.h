@@ -8,13 +8,16 @@ enum pokey_register {
     AUDCTL, STIMER, SKCTL = 15
 };
 
-struct mzpokey_context *mzpokey_create(int pokey_freq,
-                                       int playback_freq,
-                                       int num_pokeys,
-                                       int quality);
+struct mzpokey_context *mzpokey_create(int pokey_frequency,
+                                       int playback_frequency,
+                                       int number_of_pokeys,
+                                       int filter_quality);
 
 void mzpokey_write_register(struct mzpokey_context *mzp,
                             enum pokey_register reg,
-                            uint8_t val, uint8_t chip);
+                            uint8_t value,
+                            uint8_t chip);
 
-void mzpokey_process(struct mzpokey_context *mzp, void *sndbuffer, int sndn);
+void mzpokey_process_int16(struct mzpokey_context *mzp,
+                           void *sndbuffer,
+                           int sndn);

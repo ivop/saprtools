@@ -11,7 +11,7 @@ static void fill_audio(void *udata, Uint8 *stream, int len) {
     for (int i=0; i<=8; i++) {
         mzpokey_write_register(mzp, i, *sapr++, 0);
     }
-    mzpokey_process(mzp, stream, len/sizeof(int16_t));
+    mzpokey_process_int16(mzp, stream, len/sizeof(int16_t));
     if (sapr == endsapr) exit(0);
 }
 

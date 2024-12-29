@@ -1019,7 +1019,8 @@ static void Update_c3stop(PokeyState * ps) {
 //
 #define MAX_SAMPLE 120
 
-void mzpokey_process(struct mzpokey_context *mzp, void *sndbuffer, int sndn) {
+void mzpokey_process_int16(struct mzpokey_context *mzp,
+                                                void *sndbuffer, int sndn) {
     int nsam = sndn;
     int16_t *buffer = (int16_t *) sndbuffer;
 
@@ -1029,12 +1030,12 @@ void mzpokey_process(struct mzpokey_context *mzp, void *sndbuffer, int sndn) {
     /* if there are two pokeys, then the signal is stereo
        we assume even sndn */
     while (nsam >= (int)mzp->num_cur_pokeys) {
-        buffer[0] = (int16_t) floor(generate_sample(mzp, mzp->pokey_states)
+        buffer[0] = floor(generate_sample(mzp, mzp->pokey_states)
                                   * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
                                      0.95) + 0.5 + 0.5 * rand() / RAND_MAX -
                                   0.25);
         for (int i = 1; i < mzp->num_cur_pokeys; i++) {
-            buffer[i] = (int16_t) floor(generate_sample(mzp, mzp->pokey_states + i)
+            buffer[i] = floor(generate_sample(mzp, mzp->pokey_states + i)
                                       * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
                                          0.95) + 0.5 +
                                       0.5 * rand() / RAND_MAX - 0.25);
