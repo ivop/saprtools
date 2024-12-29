@@ -1,14 +1,8 @@
 #pragma once
 #include <stdint.h>
 
-extern int POKEYSND_volume;
-extern uint8_t *POKEYSND_process_buffer;
-extern unsigned int POKEYSND_process_buffer_length;
-extern unsigned int POKEYSND_process_buffer_fill;
-extern int POKEYSND_snd_flags;
-
-extern void (*POKEYSND_Update_ptr)(uint16_t addr, uint8_t val, uint8_t chip, uint8_t gain);
-extern void (*POKEYSND_Process_ptr)(void *sndbuffer, int sndn);
+void MZPOKEYSND_Update(uint16_t addr, uint8_t val, uint8_t chip);
+void MZPOKEYSND_Process(void *sndbuffer, int sndn);
 int MZPOKEYSND_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
                         int flags, int quality);
 
@@ -27,8 +21,6 @@ int MZPOKEYSND_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
 #define POKEY_OFFSET_SEROUT 0x0d
 #define POKEY_OFFSET_IRQEN  0x0e
 #define POKEY_OFFSET_SKCTL  0x0f
-
-#define POKEYSND_BIT16  1
 
 #ifdef __GNUC__
     #define UNUSED          __attribute__((unused))

@@ -8,9 +8,9 @@ static bool play = true;
 
 void fill_audio(void *udata, Uint8 *stream, int len) {
     for (int i=0; i<=8; i++) {
-        POKEYSND_Update_ptr(i, *sapr++, 0, 1);
+        MZPOKEYSND_Update(i, *sapr++, 0);
     }
-    POKEYSND_Process_ptr(stream, len/2);
+    MZPOKEYSND_Process(stream, len/2);
     if (sapr == endsapr) exit(0);
 }
 
@@ -57,8 +57,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    MZPOKEYSND_Init(1773447, 44100, 1, POKEYSND_BIT16, 0);
-    POKEYSND_Update_ptr(POKEY_OFFSET_SKCTL, 3, 0, 1);
+    MZPOKEYSND_Init(1773447, 44100, 1, 0, 0);
+    MZPOKEYSND_Update(POKEY_OFFSET_SKCTL, 3, 0);
 
     SDL_AudioSpec wanted;
 

@@ -32,14 +32,7 @@ int Atari800_tv_mode = Atari800_TV_PAL;
 #define Atari800_FPS_PAL 49.8607597
 #define Atari800_FPS_NTSC 59.9227434
 
-void (*POKEYSND_Update_ptr)(uint16_t addr, uint8_t val, uint8_t chip, uint8_t gain);
-void (*POKEYSND_Process_ptr)(void *sndbuffer, int sndn);
-
-int POKEYSND_volume = 0x100;
-uint8_t *POKEYSND_process_buffer;
-unsigned int POKEYSND_process_buffer_length;
-unsigned int POKEYSND_process_buffer_fill;
-int POKEYSND_snd_flags = POKEYSND_BIT16;
+static int POKEYSND_volume = 0x100;
 
 static const double pokeymix[61] = { /* Nonlinear POKEY mixing */
     0.000000, 5.169146, 10.157015, 15.166247,
@@ -1064,39 +1057,13 @@ static void Update_c3stop(PokeyState * ps) {
     ps->outvol_3 = ps->readout_3(ps);
 }
 
-// GENERATE 8-BIT OR 16-BIT SAMPLED OUTPUT *********************************
+// GENERATE 16-BIT SAMPLED OUTPUT ******************************************
 //
 // See mzpokeysnd.txt for details
 //
 #define MAX_SAMPLE 120
 
-static void mzpokeysnd_process_8(void *sndbuffer, int sndn) {
-    int i;
-    int nsam = sndn;
-    uint8_t *buffer = (uint8_t *) sndbuffer;
-
-    if (num_cur_pokeys < 1)
-        return;                 /* module was not initialized */
-
-    /* if there are two pokeys, then the signal is stereo
-       we assume even sndn */
-    while (nsam >= (int)num_cur_pokeys) {
-        buffer[0] = (uint8_t) floor(generate_sample(pokey_states)
-                                  * (255.0 / 2 / MAX_SAMPLE / 4 * M_PI *
-                                     0.95) + 128 + 0.5 +
-                                  0.5 * rand() / RAND_MAX - 0.25);
-        for (i = 1; i < num_cur_pokeys; i++) {
-            buffer[i] = (uint8_t) floor(generate_sample(pokey_states + i)
-                                      * (255.0 / 2 / MAX_SAMPLE / 4 * M_PI *
-                                         0.95) + 128 + 0.5 +
-                                      0.5 * rand() / RAND_MAX - 0.25);
-        }
-        buffer += num_cur_pokeys;
-        nsam -= num_cur_pokeys;
-    }
-}
-
-static void mzpokeysnd_process_16(void *sndbuffer, int sndn) {
+void MZPOKEYSND_Process(void *sndbuffer, int sndn) {
     int i;
     int nsam = sndn;
     int16_t *buffer = (int16_t *) sndbuffer;
@@ -1123,20 +1090,12 @@ static void mzpokeysnd_process_16(void *sndbuffer, int sndn) {
 }
 
 /*****************************************************************************/
-/* Function: Update_pokey_sound_mz()                                         */
-/*                                                                           */
 /* Inputs:  addr - the address of the parameter to be changed                */
 /*          val - the new value to be placed in the specified address        */
 /*          chip - chip # for stereo                                         */
-/*          gain - specified as an 8-bit fixed point number - use 1 for no   */
-/*                 amplification (output is multiplied by gain)              */
 /*                                                                           */
-/* Outputs: Adjusts local globals - no return value                          */
-/*                                                                           */
-/*****************************************************************************/
 
-static void Update_pokey_sound_mz(uint16_t addr, uint8_t val, uint8_t chip,
-                                  uint8_t gain) {
+void MZPOKEYSND_Update(uint16_t addr, uint8_t val, uint8_t chip) {
     PokeyState *ps = pokey_states + chip;
 
     switch (addr & 0x0f) {
@@ -1298,10 +1257,6 @@ int MZPOKEYSND_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
 
     snd_quality = quality;
 
-    POKEYSND_Update_ptr = Update_pokey_sound_mz;
-    POKEYSND_Process_ptr = (flags & POKEYSND_BIT16) ? mzpokeysnd_process_16 :
-                                                      mzpokeysnd_process_8;
-
     pokey_frq =
             (int)(((double)pokey_frq_ideal / POKEYSND_playback_freq) + 0.5)
             * POKEYSND_playback_freq;
@@ -1323,5 +1278,5 @@ int MZPOKEYSND_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
     volume.s8 = POKEYSND_volume * 0xff / 256.0;
     volume.s16 = POKEYSND_volume * 0xffff / 256.0;
 
-    return 0;                   /* OK */
+    return 0; // OK
 }
