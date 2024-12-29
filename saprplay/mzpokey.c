@@ -1067,7 +1067,7 @@ void mzpokey_process_float(struct mzpokey_context *mzp,
 
 // API: WRITE REGISTER *****************************************************
 //
-// addr     Pokey register (0-15)
+// reg      Pokey register (0-15)
 // val      new value
 // chip     0 (mono, left) or 1 (stereo right)
 //
