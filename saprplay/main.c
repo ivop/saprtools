@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     SDL_AudioSpec wanted;
 
     wanted.freq = 44100;
-    wanted.format = AUDIO_S16;
+    wanted.format = AUDIO_S16SYS;
     wanted.channels = 1;
     wanted.samples = 882*2;               // one 50Hz frame @ 44100
     wanted.callback = fill_audio;
