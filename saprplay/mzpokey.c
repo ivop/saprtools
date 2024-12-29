@@ -23,15 +23,6 @@
 #include "mzpokey.h"
 #include "remez.h"
 
-int POKEYSND_playback_freq = 44100;
-
-#define Atari800_TV_PAL 312
-#define Atari800_TV_NTSC 262
-int Atari800_tv_mode = Atari800_TV_PAL;
-
-#define Atari800_FPS_PAL 49.8607597
-#define Atari800_FPS_NTSC 59.9227434
-
 static const double pokeymix[61] = { /* Nonlinear POKEY mixing */
     0.000000, 5.169146, 10.157015, 15.166247,
     20.073793, 24.927443, 29.728237, 34.495266,
@@ -54,20 +45,13 @@ static const double pokeymix[61] = { /* Nonlinear POKEY mixing */
 #define SND_FILTER_SIZE  2048
 #define NPOKEYS 2
 
-/* M_PI was not defined in MSVC headers */
-#ifndef M_PI
-#    define M_PI 3.141592653589793
-#endif
-
 static int num_cur_pokeys = 0;
+static int playback_freq = 44100;
 
 /* Filter */
-static int pokey_frq;           /* Hz - for easier resampling */
+static int pokey_freq = 1773447;
 static int filter_size;
 static double filter_data[SND_FILTER_SIZE];
-static int audible_frq;
-
-static const int pokey_frq_ideal = 1789790;     /* Hz - True */
 
 /* Poly tables */
 static int poly4tbl[15];
@@ -711,10 +695,7 @@ static void advance_ticks(PokeyState * ps, int ticks) {
 }
 
 static double generate_sample(PokeyState * ps) {
-    /*unsigned long ta = (subticks+pokey_frq)/POKEYSND_playback_freq;
-       subticks = (subticks+pokey_frq)%POKEYSND_playback_freq; */
-
-    advance_ticks(ps, pokey_frq / POKEYSND_playback_freq);
+    advance_ticks(ps, pokey_freq / playback_freq);
     return read_resam_all(ps);
 }
 
@@ -1226,13 +1207,9 @@ int MZPOKEY_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
                  int quality) {
     double cutoff;
 
-    pokey_frq =
-            (int)(((double)pokey_frq_ideal / POKEYSND_playback_freq) + 0.5)
-            * POKEYSND_playback_freq;
-    filter_size =
-                remez_filter_table((double)POKEYSND_playback_freq / pokey_frq,
+    pokey_freq = freq17;
+    filter_size = remez_filter_table((double)playback_freq / pokey_freq,
                                &cutoff, quality);
-    audible_frq = (int)(cutoff * pokey_frq);
 
     build_poly4();
     build_poly5();
