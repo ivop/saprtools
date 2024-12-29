@@ -1046,6 +1046,7 @@ adjust_nonsawf:
                     //  it becomes a bass note (dist C or softbass)
                         pokey[8] = 0;
                         sid2pokey(xorder[2], &pokey[0], NO_SAW, NOTRANSP);
+                        goto adjust_nonsawf;
                     }
                 } else {
                     pokey[8] = 0x28;    // join 3+4, 3 @ high clock
