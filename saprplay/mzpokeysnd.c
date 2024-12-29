@@ -32,8 +32,6 @@ int Atari800_tv_mode = Atari800_TV_PAL;
 #define Atari800_FPS_PAL 49.8607597
 #define Atari800_FPS_NTSC 59.9227434
 
-static int POKEYSND_volume = 0x100;
-
 static const double pokeymix[61] = { /* Nonlinear POKEY mixing */
     0.000000, 5.169146, 10.157015, 15.166247,
     20.073793, 24.927443, 29.728237, 34.495266,
@@ -218,11 +216,6 @@ typedef struct stPokeyState {
 } PokeyState;
 
 PokeyState pokey_states[NPOKEYS];
-
-static struct {
-    double s16;
-    double s8;
-} volume;
 
 // READ OUTPUTS ************************************************************
 //
@@ -1270,8 +1263,6 @@ int MZPOKEYSND_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
     num_cur_pokeys = num_pokeys;
 
     init_syncsound();
-    volume.s8 = POKEYSND_volume * 0xff / 256.0;
-    volume.s16 = POKEYSND_volume * 0xffff / 256.0;
 
     return 0; // OK
 }
