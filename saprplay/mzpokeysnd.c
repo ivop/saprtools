@@ -32,11 +32,11 @@ int Atari800_tv_mode = Atari800_TV_PAL;
 #define Atari800_FPS_PAL 49.8607597
 #define Atari800_FPS_NTSC 59.9227434
 
-void (*POKEYSND_Update_ptr)(UWORD addr, UBYTE val, UBYTE chip, UBYTE gain);
+void (*POKEYSND_Update_ptr)(uint16_t addr, uint8_t val, uint8_t chip, uint8_t gain);
 void (*POKEYSND_Process_ptr)(void *sndbuffer, int sndn);
 
 int POKEYSND_volume = 0x100;
-UBYTE *POKEYSND_process_buffer;
+uint8_t *POKEYSND_process_buffer;
 unsigned int POKEYSND_process_buffer_length;
 unsigned int POKEYSND_process_buffer_fill;
 int POKEYSND_snd_flags = POKEYSND_BIT16;
@@ -1073,7 +1073,7 @@ static void Update_c3stop(PokeyState * ps) {
 static void mzpokeysnd_process_8(void *sndbuffer, int sndn) {
     int i;
     int nsam = sndn;
-    UBYTE *buffer = (UBYTE *) sndbuffer;
+    uint8_t *buffer = (uint8_t *) sndbuffer;
 
     if (num_cur_pokeys < 1)
         return;                 /* module was not initialized */
@@ -1081,12 +1081,12 @@ static void mzpokeysnd_process_8(void *sndbuffer, int sndn) {
     /* if there are two pokeys, then the signal is stereo
        we assume even sndn */
     while (nsam >= (int)num_cur_pokeys) {
-        buffer[0] = (UBYTE) floor(generate_sample(pokey_states)
+        buffer[0] = (uint8_t) floor(generate_sample(pokey_states)
                                   * (255.0 / 2 / MAX_SAMPLE / 4 * M_PI *
                                      0.95) + 128 + 0.5 +
                                   0.5 * rand() / RAND_MAX - 0.25);
         for (i = 1; i < num_cur_pokeys; i++) {
-            buffer[i] = (UBYTE) floor(generate_sample(pokey_states + i)
+            buffer[i] = (uint8_t) floor(generate_sample(pokey_states + i)
                                       * (255.0 / 2 / MAX_SAMPLE / 4 * M_PI *
                                          0.95) + 128 + 0.5 +
                                       0.5 * rand() / RAND_MAX - 0.25);
@@ -1099,7 +1099,7 @@ static void mzpokeysnd_process_8(void *sndbuffer, int sndn) {
 static void mzpokeysnd_process_16(void *sndbuffer, int sndn) {
     int i;
     int nsam = sndn;
-    SWORD *buffer = (SWORD *) sndbuffer;
+    int16_t *buffer = (int16_t *) sndbuffer;
 
     if (num_cur_pokeys < 1)
         return;                 /* module was not initialized */
@@ -1107,12 +1107,12 @@ static void mzpokeysnd_process_16(void *sndbuffer, int sndn) {
     /* if there are two pokeys, then the signal is stereo
        we assume even sndn */
     while (nsam >= (int)num_cur_pokeys) {
-        buffer[0] = (SWORD) floor(generate_sample(pokey_states)
+        buffer[0] = (int16_t) floor(generate_sample(pokey_states)
                                   * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
                                      0.95) + 0.5 + 0.5 * rand() / RAND_MAX -
                                   0.25);
         for (i = 1; i < num_cur_pokeys; i++) {
-            buffer[i] = (SWORD) floor(generate_sample(pokey_states + i)
+            buffer[i] = (int16_t) floor(generate_sample(pokey_states + i)
                                       * (65535.0 / 2 / MAX_SAMPLE / 4 * M_PI *
                                          0.95) + 0.5 +
                                       0.5 * rand() / RAND_MAX - 0.25);
@@ -1135,8 +1135,8 @@ static void mzpokeysnd_process_16(void *sndbuffer, int sndn) {
 /*                                                                           */
 /*****************************************************************************/
 
-static void Update_pokey_sound_mz(UWORD addr, UBYTE val, UBYTE chip,
-                                  UBYTE gain) {
+static void Update_pokey_sound_mz(uint16_t addr, uint8_t val, uint8_t chip,
+                                  uint8_t gain) {
     PokeyState *ps = pokey_states + chip;
 
     switch (addr & 0x0f) {
@@ -1292,7 +1292,7 @@ static void init_syncsound(void) {
     samp_pos = 0.0;
 }
 
-int MZPOKEYSND_Init(ULONG freq17, int playback_freq, UBYTE num_pokeys,
+int MZPOKEYSND_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
                     int flags, int quality) {
     double cutoff;
 
