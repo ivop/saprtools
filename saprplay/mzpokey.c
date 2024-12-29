@@ -19,6 +19,8 @@
  */
 
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <math.h>
 #include "mzpokey.h"
 #include "remez.h"
@@ -42,10 +44,11 @@ static const double pokeymix[61] = { /* Nonlinear POKEY mixing */
     120.000000
 };
 
-static int poly4tbl[15];
-static int poly5tbl[31];
-static unsigned char poly17tbl[131071];
-static int poly9tbl[511];
+static bool polys_built;
+static uint8_t poly4tbl[15];
+static uint8_t poly5tbl[31];
+static uint8_t poly17tbl[131071];
+static uint8_t poly9tbl[511];
 
 struct stPokeyState;
 
@@ -522,11 +525,9 @@ static void bump_qe_subticks(PokeyState * ps, int subticks) {
 // PRE-CALCULATE POLY'S ****************************************************
 //
 static void build_poly4(void) {
-    unsigned char c;
-    unsigned char i;
-    unsigned char poly4 = 1;
+    uint8_t c, poly4 = 1;
 
-    for (i = 0; i < 15; i++) {
+    for (int i = 0; i < 15; i++) {
         poly4tbl[i] = ~poly4;
         c = ((poly4 >> 2) & 1) ^ ((poly4 >> 3) & 1);
         poly4 = ((poly4 << 1) & 15) + c;
@@ -534,11 +535,9 @@ static void build_poly4(void) {
 }
 
 static void build_poly5(void) {
-    unsigned char c;
-    unsigned char i;
-    unsigned char poly5 = 1;
+    uint8_t c, poly5 = 1;
 
-    for (i = 0; i < 31; i++) {
+    for (int i = 0; i < 31; i++) {
         poly5tbl[i] = ~poly5;   /* Inversion! Attention! */
         c = ((poly5 >> 2) ^ (poly5 >> 4)) & 1;
         poly5 = ((poly5 << 1) & 31) + c;
@@ -546,11 +545,9 @@ static void build_poly5(void) {
 }
 
 static void build_poly17(void) {
-    unsigned int c;
-    unsigned int i;
-    unsigned int poly17 = 1;
+    uint32_t c, poly17 = 1;
 
-    for (i = 0; i < 131071; i++) {
+    for (int i = 0; i < 131071; i++) {
         poly17tbl[i] = (unsigned char)poly17;
         c = ((poly17 >> 11) ^ (poly17 >> 16)) & 1;
         poly17 = ((poly17 << 1) & 131071) + c;
@@ -558,11 +555,9 @@ static void build_poly17(void) {
 }
 
 static void build_poly9(void) {
-    unsigned int c;
-    unsigned int i;
-    unsigned int poly9 = 1;
+    uint32_t c, poly9 = 1;
 
-    for (i = 0; i < 511; i++) {
+    for (int i = 0; i < 511; i++) {
         poly9tbl[i] = (unsigned char)poly9;
         c = ((poly9 >> 3) ^ (poly9 >> 8)) & 1;
         poly9 = ((poly9 << 1) & 511) + c;
@@ -1204,10 +1199,13 @@ int MZPOKEY_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
     filter_size = remez_filter_table((double)playback_freq / pokey_freq,
                                &cutoff, quality);
 
-    build_poly4();
-    build_poly5();
-    build_poly9();
-    build_poly17();
+    if (!polys_built) {     // generate only once for first context
+        build_poly4();
+        build_poly5();
+        build_poly9();
+        build_poly17();
+        polys_built = true;
+    }
 
     ResetPokeyState(pokey_states);
     ResetPokeyState(pokey_states + 1);
