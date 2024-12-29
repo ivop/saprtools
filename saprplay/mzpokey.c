@@ -1022,7 +1022,7 @@ static void Update_c3stop(PokeyState * ps) {
 //
 #define MAX_SAMPLE 120
 
-void MZPOKEY_Process(void *sndbuffer, int sndn) {
+void mzpokey_process(void *sndbuffer, int sndn) {
     int i;
     int nsam = sndn;
     int16_t *buffer = (int16_t *) sndbuffer;
@@ -1048,17 +1048,17 @@ void MZPOKEY_Process(void *sndbuffer, int sndn) {
     }
 }
 
-// API: UPDATE REGISTER ****************************************************
+// API: WRITE REGISTER *****************************************************
 //
 // addr     Pokey register (0-15)
 // val      new value
 // chip     0 (mono, left) or 1 (stereo right)
 //
-void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
+void mzpokey_write_register(enum pokey_register reg, uint8_t val, uint8_t chip) {
     PokeyState *ps = pokey_states + chip;
 
-    switch (addr & 0x0f) {
-    case POKEY_OFFSET_AUDF1:
+    switch (reg & 0x0f) {
+    case AUDF1:
         ps->c0diva = val;
         Update_c0divstart(ps);
         if (ps->c1_f0) {
@@ -1068,7 +1068,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
         Update_c0stop(ps);
         ps->forcero = 1;
         break;
-    case POKEY_OFFSET_AUDC1:
+    case AUDC1:
         ps->c0sw1 = (val & 0x40) != 0;
         ps->c0sw2 = (val & 0x20) != 0;
         ps->c0sw3 = (val & 0x80) != 0;
@@ -1079,7 +1079,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
         Update_c0stop(ps);
         ps->forcero = 1;
         break;
-    case POKEY_OFFSET_AUDF2:
+    case AUDF2:
         ps->c1diva = val;
         Update_c1divstart(ps);
         if (ps->c1_f0) {
@@ -1089,7 +1089,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
         Update_c1stop(ps);
         ps->forcero = 1;
         break;
-    case POKEY_OFFSET_AUDC2:
+    case AUDC2:
         ps->c1sw1 = (val & 0x40) != 0;
         ps->c1sw2 = (val & 0x20) != 0;
         ps->c1sw3 = (val & 0x80) != 0;
@@ -1100,7 +1100,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
         Update_c1stop(ps);
         ps->forcero = 1;
         break;
-    case POKEY_OFFSET_AUDF3:
+    case AUDF3:
         ps->c2diva = val;
         Update_c2divstart(ps);
         if (ps->c3_f2) {
@@ -1110,7 +1110,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
         Update_c2stop(ps);
         ps->forcero = 1;
         break;
-    case POKEY_OFFSET_AUDC3:
+    case AUDC3:
         ps->c2sw1 = (val & 0x40) != 0;
         ps->c2sw2 = (val & 0x20) != 0;
         ps->c2sw3 = (val & 0x80) != 0;
@@ -1121,7 +1121,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
         Update_c2stop(ps);
         ps->forcero = 1;
         break;
-    case POKEY_OFFSET_AUDF4:
+    case AUDF4:
         ps->c3diva = val;
         Update_c3divstart(ps);
         if (ps->c3_f2) {
@@ -1131,7 +1131,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
         Update_c3stop(ps);
         ps->forcero = 1;
         break;
-    case POKEY_OFFSET_AUDC4:
+    case AUDC4:
         ps->c3sw1 = (val & 0x40) != 0;
         ps->c3sw2 = (val & 0x20) != 0;
         ps->c3sw3 = (val & 0x80) != 0;
@@ -1142,7 +1142,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
         Update_c3stop(ps);
         ps->forcero = 1;
         break;
-    case POKEY_OFFSET_AUDCTL:
+    case AUDCTL:
         ps->selpoly9 = (val & 0x80) != 0;
         Update_audctl(ps, val);
         Update_readout_0(ps);
@@ -1159,7 +1159,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
         Update_c3stop(ps);
         ps->forcero = 1;
         break;
-    case POKEY_OFFSET_STIMER:
+    case STIMER:
         if (ps->c1_f0)
             ps->c0divpos = ps->c0divstart_p;
         else
@@ -1178,7 +1178,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
         ps->c2t2 = 1;
         ps->c3t2 = 1;
         break;
-    case POKEY_OFFSET_SKCTL:
+    case SKCTL:
         Update_skctl(ps, val);
         break;
     }
@@ -1191,7 +1191,7 @@ void MZPOKEY_Update(uint16_t addr, uint8_t val, uint8_t chip) {
 // num_pokeys       1 (mono) or 2 (stereo)
 // quality          0, 1, or 2 (Remez Filter quality)
 //
-int MZPOKEY_Init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
+int mzpokey_init(uint32_t freq17, int playback_freq, uint8_t num_pokeys,
                  int quality) {
     double cutoff;
 
