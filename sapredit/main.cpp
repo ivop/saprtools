@@ -1,5 +1,6 @@
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdint>
+#include <climits>
 #include <vector>
 #include <memory>
 #include <SDL.h>
@@ -27,6 +28,11 @@ protected:
 
 private:
     bool shift_down;
+    void determine_selection(int &left, int &right, int &top, int &bottom);
+    void clear_cells(void);
+    void delete_lines(void);
+    void insert_line(void);
+    void insert_line_after(void);
 };
 
 // ****************************************************************************
@@ -39,10 +45,8 @@ MyTable::MyTable(int x, int y, int w, int h, const char *l)
     row_header(1);
     row_header_width(64);
     rows(0);
-    row_height_all(16);
 
     col_header(1);
-    col_header_height(16);
     cols(9);
     col_width_all(32);
     end();
@@ -96,6 +100,57 @@ void MyTable::selrow(int row) {
     }
 }
 
+void MyTable::determine_selection(int &left, int &right, int &top, int &bottom){
+    left = top = INT_MAX;
+    right = bottom = -INT_MAX;
+    for (int r=0; r<rows(); r++) {
+        for (int c=0; c<9; c++) {
+            if (is_selected(r,c)) {
+                if (c < left)   left = c;
+                if (c > right)  right = c;
+                if (r < top)    top = r;
+                if (r > bottom) bottom = r;
+            } else {
+                if (bottom > 0) return;
+            }
+        }
+    }
+}
+
+void MyTable::clear_cells(void) {
+    int left, right, top, bottom;
+    determine_selection(left, right, top, bottom);
+    if (right < 0) return;
+    for (int r=top; r<=bottom; r++) {
+        for (int c=left; c<=right; c++) {
+            values[r][c] = 0;
+        }
+    }
+    redraw();
+}
+
+void MyTable::delete_lines(void) {
+    int left, right, top, bottom;
+    determine_selection(left, right, top, bottom);
+    if (right < 0) return;
+    values.erase(values.begin() + top, values.begin() + bottom + 1);
+    rows(values.size());
+    set_selection(-1,-1,-1,-1);
+    redraw();
+}
+
+void MyTable::insert_line(void) {
+    int left, right, top, bottom;
+    determine_selection(left, right, top, bottom);
+    if (right < 0) return;
+}
+
+void MyTable::insert_line_after(void) {
+    int left, right, top, bottom;
+    determine_selection(left, right, top, bottom);
+    if (right < 0) return;
+}
+
 int MyTable::handle(int event) {
     int ret = Fl_Table_Row::handle(event);
     int key = Fl::event_key();
@@ -109,14 +164,14 @@ int MyTable::handle(int event) {
             shift_down = true;
             return 1;
         } else if (key == FL_Delete) {
-            puts("delete line(s)");
+            delete_lines();
         } else if (key == FL_BackSpace) {
-            puts("zero cell(s)");
+            clear_cells();
         } else if (key == FL_Insert) {
             if (shift_down) {
-                puts("insert line after");
+                insert_line_after();
             } else {
-                puts("insert line");
+                insert_line();
             }
         }
         break;
