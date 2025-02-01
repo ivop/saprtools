@@ -18,11 +18,15 @@ public:
 
     vector<vector<uint8_t>> values;
 
+    int handle(int event);
     void selrow(int row);
 
 protected:
     void draw_cell(TableContext context, int R=0, int C=0, int X=0, int Y=0,
                                                            int W=0, int H=0);
+
+private:
+    bool shift_down;
 };
 
 // ****************************************************************************
@@ -30,13 +34,15 @@ protected:
 MyTable::MyTable(int x, int y, int w, int h, const char *l)
     : Fl_Table_Row(x, y, w, h, l) {
 
+    shift_down = false;
+
     row_header(1);
     row_header_width(64);
     rows(0);
-    row_height_all(20);
+    row_height_all(16);
 
     col_header(1);
-    col_header_height(20);
+    col_header_height(16);
     cols(9);
     col_width_all(32);
     end();
@@ -88,6 +94,46 @@ void MyTable::selrow(int row) {
     if (row < rows()) {
         set_selection(row,0, row, cols()-1);
     }
+}
+
+int MyTable::handle(int event) {
+    int ret = Fl_Table_Row::handle(event);
+    int key = Fl::event_key();
+    switch (event) {
+    case FL_ENTER:
+        take_focus();
+        return 1;
+        break;
+    case FL_KEYDOWN:
+        if (key == FL_Shift_L || key == FL_Shift_R) {
+            shift_down = true;
+            return 1;
+        } else if (key == FL_Delete) {
+            puts("delete line(s)");
+        } else if (key == FL_BackSpace) {
+            puts("zero cell(s)");
+        } else if (key == FL_Insert) {
+            if (shift_down) {
+                puts("insert line after");
+            } else {
+                puts("insert line");
+            }
+        }
+        break;
+    case FL_KEYUP:
+        if (key == FL_Shift_L || key == FL_Shift_R) {
+            shift_down = false;
+            return 1;
+        }
+        break;
+    case FL_FOCUS:
+    case FL_UNFOCUS:
+        return 1;
+        break;
+    default:
+        break;
+    }
+    return ret;
 }
 
 // ****************************************************************************
