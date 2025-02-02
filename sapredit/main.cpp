@@ -116,8 +116,6 @@ void MyTable::determine_selection(int &left, int &right, int &top, int &bottom){
                 if (c > right)  right = c;
                 if (r < top)    top = r;
                 if (r > bottom) bottom = r;
-            } else {
-                if (bottom > 0) return;
             }
         }
     }
@@ -145,7 +143,7 @@ void MyTable::delete_lines(void) {
     if (right < 0) return;
     values.erase(values.begin() + top, values.begin() + bottom + 1);
     rows(values.size());
-    set_selection(-1,-1,-1,-1);
+    set_selection(top,0,top,0);
     redraw();
 }
 
@@ -163,7 +161,7 @@ void MyTable::insert_line(void) {
         values.insert(values.begin() + top, { 0,0,0,0,0,0,0,0,0 });
     }
     rows(values.size());
-    set_selection(top,0,top,9);
+    set_selection(top,0,top,0);
     redraw();
 }
 
@@ -179,7 +177,7 @@ void MyTable::insert_line_after(void) {
         values.insert(values.begin() + bottom + 1, { 0,0,0,0,0,0,0,0,0 });
     }
     rows(values.size());
-    set_selection(bottom+1, 0, bottom+1, 9);
+    set_selection(bottom+1, 0, bottom+1, 0);
     redraw();
 }
 
@@ -319,8 +317,11 @@ static void PauseButtonCallback(Fl_Widget *w, void *data) {
 // ****************************************************************************
 // EDITOR WINDOW
 //
+
+#define EDITOR_HEIGHT 768
+
 SaprEditWindow::SaprEditWindow(const char *filename)
-    : Fl_Double_Window(400+256, 768) {
+    : Fl_Double_Window(400+256, EDITOR_HEIGHT) {
 
     callback(CloseSaprEditWindow, this);
     label(filename);
@@ -408,7 +409,32 @@ SaprEditWindow::SaprEditWindow(const char *filename)
     auto fwd = new Fl_Button(curx, cury, 30, 30);
     fwd->callback(FwdButtonCallback, this);
     fwd->image(fwd_img);
-    curx += 32;
+
+    curx = 400;
+    cury = 128;
+
+    auto save = new Fl_Button(curx, cury, 94, 24, "Save");
+    curx += 96;
+    auto save_as = new Fl_Button(curx, cury, 94, 24, "Save as...");
+
+    Fl_Box *tb;
+
+    const char *t[] = {
+        "Cursors - Movement",
+        "Shift + Cursors - Select",
+        "[0-9][a-z][A-Z] - edit cell",
+        "BackSpace - clear cell(s)",
+        "DEL - delete line(s)",
+        "INS - insert line",
+        "Shift+INS - insert line after"
+    };
+    curx = 400;
+    cury = EDITOR_HEIGHT - 4 - 7*20;
+    for (auto txt : t) {
+        tb = new Fl_Box(curx, cury, 256, 20, txt);
+        tb->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        cury += 20;
+    }
 
     end();
     show();
