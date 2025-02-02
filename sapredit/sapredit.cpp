@@ -174,6 +174,33 @@ void MyTable::edit_cells(int key) {
     redraw();
 }
 
+// COPY CELLS *****************************************************************
+
+void MyTable::copy_cells(void) {
+    int left, right, top, bottom;
+    paste_buffer.clear();
+    determine_selection(left, right, top, bottom);
+    if (right < 0) {
+        main_window->update_paste_buffer_stats();
+        return;
+    }
+    std::vector<int> line;
+    for (int r=top; r<=bottom; r++) {
+        line.clear();
+        for (int c=left; c<=right; c++) {
+            line.push_back(values[r][c]);
+        }
+        paste_buffer.push_back(line);
+    }
+    main_window->update_paste_buffer_stats();
+}
+
+// PASTE CELLS ****************************************************************
+
+void MyTable::paste_cells(void) {
+    puts("paste cells");
+}
+
 // HANDLE EVENTS **************************************************************
 
 int MyTable::handle(int event) {
@@ -205,12 +232,14 @@ int MyTable::handle(int event) {
                 insert_line();
                 return 1;
             }
-        } else if ((key >= '0' && key <= '9') ||
-                   (key >= 'a' && key <= 'f')) {
-            if (!ctrl_down) {
-                edit_cells(key);
-            }
+        } else if (!ctrl_down && 
+                  ((key >= '0' && key <= '9') || (key >= 'a' && key <= 'f'))) {
+            edit_cells(key);
             return 1;
+        } else if (ctrl_down && key == 'c') {
+            copy_cells();
+        } else if (ctrl_down && key == 'v') {
+            paste_cells();
         }
         break;
     case FL_KEYUP:
@@ -588,11 +617,11 @@ void MainWindow::update_paste_buffer_stats(void) {
     if (h) {
         w = paste_buffer[0].size();
     }
-    char s[32];
-    snprintf(s, 32, "%d", w);
-    wvalue->label(s);
-    snprintf(s, 32, "%d", h);
-    hvalue->label(s);
+    static char wt[16], ht[16];
+    snprintf(wt, 16, "%d", w);
+    wvalue->label(wt);
+    snprintf(ht, 16, "%d", h);
+    hvalue->label(ht);
 }
 
 // ****************************************************************************

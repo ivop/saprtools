@@ -24,6 +24,8 @@ private:
     void insert_line(void);
     void insert_line_after(void);
     void edit_cells(int key);
+    void copy_cells(void);
+    void paste_cells(void);
 };
 
 class SaprEditWindow : public Fl_Double_Window {
