@@ -264,8 +264,8 @@ public:
     SaprEditWindow(const char *filename);
     ~SaprEditWindow(void);
     MyTable *table = nullptr;
-private:
     char *filename = nullptr;
+private:
 };
 
 // ****************************************************************************
@@ -345,6 +345,41 @@ static void PauseButtonCallback(Fl_Widget *w, void *data) {
         playtable->top_row(stoppos);
         playtable = nullptr;
     }
+}
+
+// SAVE AS BUTTON *************************************************************
+
+#define SAPR_HEADER "SAP\r\nAUTHOR \"\"\r\nNAME \"\"\r\nDATE \"\"\r\nTYPE R\r\n\r\n"
+
+static void SaveAsButtonCallback(Fl_Widget *w, void *data) {
+    auto sew = (SaprEditWindow *) data;
+    char *filename = fl_file_chooser("Save as...", "*.sapr", sew->filename);
+
+    if (!filename) return;
+
+    FILE *output = fopen(filename, "wb");
+    if (!output) goto err_out;
+
+    if (fwrite(SAPR_HEADER, strlen(SAPR_HEADER), 1, output) != 1) goto err_out;
+
+    for (unsigned int r=0; r<sew->table->values.size(); r++) {
+        for (int c=0; c<9; c++) {
+            if (fputc(sew->table->values[r][c], output) < 0) goto err_out;
+        }
+    }
+    fclose(output);
+
+    fl_alert("File saved.");
+    if (sew->filename) {
+        free(sew->filename);
+    }
+    sew->filename = strdup(filename);
+    sew->label(filename);
+    return;
+
+err_out:
+    if (output) fclose(output);
+    fl_alert("Error saving file!");
 }
 
 // ****************************************************************************
@@ -446,9 +481,8 @@ SaprEditWindow::SaprEditWindow(const char *filename)
     curx = 400;
     cury = 128;
 
-    auto save = new Fl_Button(curx, cury, 94, 24, "Save");
-    curx += 96;
     auto save_as = new Fl_Button(curx, cury, 94, 24, "Save as...");
+    save_as->callback(SaveAsButtonCallback, this);
 
     Fl_Box *tb;
 
