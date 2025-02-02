@@ -385,30 +385,30 @@ SaprEditWindow::SaprEditWindow(const char *filename)
     auto pause_img = new Fl_PNG_Image("png/pause.png");
     auto fwd_img = new Fl_PNG_Image("png/fwd.png");
 
-    auto rew = new Fl_Button(curx, cury, 24, 24);
+    auto rew = new Fl_Button(curx, cury, 30, 30);
     rew->callback(RewButtonCallback, this);
     rew->image(rew_img);
-    curx += 26;
+    curx += 32;
 
-    auto play = new Fl_Button(curx, cury, 24, 24);
+    auto play = new Fl_Button(curx, cury, 30, 30);
     play->callback(PlayButtonCallback, this);
     play->image(play_img);
-    curx += 26;
+    curx += 32;
 
-    auto stop = new Fl_Button(curx, cury, 24, 24);
+    auto stop = new Fl_Button(curx, cury, 30, 30);
     stop->callback(StopButtonCallback, this);
     stop->image(stop_img);
-    curx += 26;
+    curx += 32;
 
-    auto pause = new Fl_Button(curx, cury, 24, 24);
+    auto pause = new Fl_Button(curx, cury, 30, 30);
     pause->callback(PauseButtonCallback, this);
     pause->image(pause_img);
-    curx += 26;
+    curx += 32;
 
-    auto fwd = new Fl_Button(curx, cury, 24, 24);
+    auto fwd = new Fl_Button(curx, cury, 30, 30);
     fwd->callback(FwdButtonCallback, this);
     fwd->image(fwd_img);
-    curx += 26;
+    curx += 32;
 
     end();
     show();
