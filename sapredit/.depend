@@ -1,1 +1,3 @@
-main.o: main.cpp
+sapredit.o: sapredit.cpp mzpokey.h fltk.h
+mzpokey.o: mzpokey.cpp mzpokey.h remez.h
+remez.o: remez.cpp remez.h

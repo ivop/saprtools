@@ -6,37 +6,11 @@
 #include <SDL.h>
 #include "mzpokey.h"
 #include "fltk.h"
+#include "sapredit.h"
 
 static struct mzpokey_context *mzp;
 
 using namespace std;
-
-// ****************************************************************************
-// SAP-R TABLE CLASS
-//
-class MyTable : public Fl_Table_Row {
-public:
-    MyTable(int x, int y, int w, int h, const char *l = nullptr);
-
-    vector<vector<uint8_t>> values;
-
-    int handle(int event);
-    void selrow(int row);
-
-protected:
-    void draw_cell(TableContext context, int R=0, int C=0, int X=0, int Y=0,
-                                                           int W=0, int H=0);
-
-private:
-    bool shift_down;
-    bool ctrl_down;
-    void determine_selection(int &left, int &right, int &top, int &bottom);
-    void clear_cells(void);
-    void delete_lines(void);
-    void insert_line(void);
-    void insert_line_after(void);
-    void edit_cells(int key);
-};
 
 // ****************************************************************************
 // SAP-R TABLE CONSTRUCTOR
@@ -255,18 +229,6 @@ int MyTable::handle(int event) {
     }
     return ret;
 }
-
-// ****************************************************************************
-// EDITOR WINDOW CLASS
-//
-class SaprEditWindow : public Fl_Double_Window {
-public:
-    SaprEditWindow(const char *filename);
-    ~SaprEditWindow(void);
-    MyTable *table = nullptr;
-    char *filename = nullptr;
-private:
-};
 
 // ****************************************************************************
 // EDITOR CALLBACKS
@@ -553,8 +515,28 @@ static void fill_audio(void *udata, Uint8 *stream, int len) {
 // ****************************************************************************
 // MAIN WINDOW
 //
-#define WIDTH 400
-#define HEIGHT 128
+MainWindow::MainWindow(int WIDTH, int HEIGHT, const char *l)
+    : Fl_Double_Window(WIDTH, HEIGHT, l) {
+
+    int cury = 16;
+
+    auto title = new Fl_Box(WIDTH/2-128, cury, 256, 48, "SAP-R Editor");
+    title->labelsize(48);
+    title->labelfont(FL_ITALIC | FL_BOLD);
+    title->labelcolor(fl_rgb_color(0x20,0x40,0x80));
+    cury += 48;
+
+    auto copyright = new Fl_Box(WIDTH/2-128, cury,
+                        256, 16, "Copyright © 2025 by Ivo van Poorten");
+    copyright->labelsize(12);
+    copyright->labelfont(FL_ITALIC);
+    cury += 32;
+
+    auto load = new Fl_Button(WIDTH/2-64, cury, 128, 20, "Load File");
+    load->callback(LoadFileButton, this);
+
+    end();
+}
 
 int main(int argc, char **argv) {
     mzp= mzpokey_create(1773447, 44100, 1, 0);
@@ -578,26 +560,8 @@ int main(int argc, char **argv) {
     }
     SDL_PauseAudio(0);
 
-    auto window = new Fl_Double_Window(WIDTH, HEIGHT, "SAP-R Editor");
-    int cury = 16;
-
-    auto title = new Fl_Box(WIDTH/2-128, cury, 256, 48, "SAP-R Editor");
-    title->labelsize(48);
-    title->labelfont(FL_ITALIC | FL_BOLD);
-    title->labelcolor(fl_rgb_color(0x20,0x40,0x80));
-    cury += 48;
-
-    auto copyright = new Fl_Box(WIDTH/2-128, cury,
-                        256, 16, "Copyright © 2025 by Ivo van Poorten");
-    copyright->labelsize(12);
-    copyright->labelfont(FL_ITALIC);
-    cury += 32;
-
-    auto load = new Fl_Button(WIDTH/2-64, cury, 128, 20, "Load File");
-    load->callback(LoadFileButton, window);
-
-    window->end();
-    window->show();
+    auto mw = new MainWindow(400, 128, "SAP-R Editor");
+    mw->show();
 
     return Fl::run();
 }
