@@ -9,6 +9,11 @@
 #include "fltk.h"
 #include "sapredit.h"
 
+#define VERSION_MAJOR       0
+#define VERSION_MINOR       9
+#define VERSION_SUBMINOR    0
+#define VERSION_STRING      "0.9.0"
+
 static struct mzpokey_context *mzp;
 static MainWindow *main_window;
 static std::vector<std::vector<int>> paste_buffer;
@@ -521,10 +526,12 @@ SaprEditWindow::SaprEditWindow(const char *filename)
         "BackSpace - clear cell(s)",
         "DEL - delete line(s)",
         "INS - insert line",
-        "Shift+INS - insert line after"
+        "Shift+INS - insert line after",
+        "Control-C - copy to paste buffer",
+        "Control-V - paste buffer"
     };
     curx = 400;
-    cury = EDITOR_HEIGHT - 4 - 7*20;
+    cury = EDITOR_HEIGHT - 4 - 9*20;
     for (auto txt : t) {
         tb = new Fl_Box(curx, cury, 256, 20, txt);
         tb->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
@@ -604,8 +611,8 @@ MainWindow::MainWindow(const char *l)
     title->labelcolor(fl_rgb_color(0x20,0x40,0x80));
     cury += 48;
 
-    auto copyright = new Fl_Box(w()/2-128, cury,
-                        256, 16, "Copyright © 2025 by Ivo van Poorten");
+    auto copyright = new Fl_Box(w()/2-128, cury, 256, 16,
+        "version " VERSION_STRING " / Copyright © 2025 by Ivo van Poorten");
     copyright->labelsize(12);
     copyright->labelfont(FL_ITALIC);
     cury += 32;
