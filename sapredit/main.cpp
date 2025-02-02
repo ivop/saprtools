@@ -12,7 +12,8 @@ static struct mzpokey_context *mzp;
 using namespace std;
 
 // ****************************************************************************
-
+// SAP-R TABLE CLASS
+//
 class MyTable : public Fl_Table_Row {
 public:
     MyTable(int x, int y, int w, int h, const char *l = nullptr);
@@ -36,7 +37,8 @@ private:
 };
 
 // ****************************************************************************
-
+// SAP-R TABLE CONSTRUCTOR
+//
 MyTable::MyTable(int x, int y, int w, int h, const char *l)
     : Fl_Table_Row(x, y, w, h, l) {
 
@@ -51,6 +53,8 @@ MyTable::MyTable(int x, int y, int w, int h, const char *l)
     col_width_all(32);
     end();
 }
+
+// DRAW SAP-R EDITOR WINDOW ***************************************************
 
 void MyTable::draw_cell(TableContext context, int R, int C, int X, int Y,
                                                             int W, int H) {
@@ -94,6 +98,8 @@ void MyTable::draw_cell(TableContext context, int R, int C, int X, int Y,
     return;
 }
 
+// SELECT ROW *****************************************************************
+
 void MyTable::selrow(int row) {
     if (row < rows()) {
         set_selection(row,0, row, cols()-1);
@@ -117,6 +123,8 @@ void MyTable::determine_selection(int &left, int &right, int &top, int &bottom){
     }
 }
 
+// CLEAR CELLS ****************************************************************
+
 void MyTable::clear_cells(void) {
     int left, right, top, bottom;
     determine_selection(left, right, top, bottom);
@@ -129,6 +137,8 @@ void MyTable::clear_cells(void) {
     redraw();
 }
 
+// DELETE LINES ***************************************************************
+
 void MyTable::delete_lines(void) {
     int left, right, top, bottom;
     determine_selection(left, right, top, bottom);
@@ -139,17 +149,27 @@ void MyTable::delete_lines(void) {
     redraw();
 }
 
+// INSERT EMPTY LINE **********************************************************
+
 void MyTable::insert_line(void) {
     int left, right, top, bottom;
     determine_selection(left, right, top, bottom);
     if (right < 0) return;
+    values.insert(values.begin() + top, { 0,0,0,0,0,0,0,0,0 });
+    rows(values.size());
+    set_selection(top,0,top,9);
+    redraw();
 }
+
+// INSERT EMPTY LINE AFTER ****************************************************
 
 void MyTable::insert_line_after(void) {
     int left, right, top, bottom;
     determine_selection(left, right, top, bottom);
     if (right < 0) return;
 }
+
+// HANDLE EVENTS **************************************************************
 
 int MyTable::handle(int event) {
     int ret = Fl_Table_Row::handle(event);
@@ -192,7 +212,8 @@ int MyTable::handle(int event) {
 }
 
 // ****************************************************************************
-
+// EDITOR WINDOW CLASS
+//
 class SaprEditWindow : public Fl_Double_Window {
 public:
     SaprEditWindow(const char *filename);
@@ -203,13 +224,16 @@ private:
 };
 
 // ****************************************************************************
-
+// EDITOR CALLBACKS
+//
 static void CloseSaprEditWindow(Fl_Widget *w, void *data) {
     delete w;
 }
 
 static MyTable *playtable;
 static int playpos = -1;
+
+// PLAY BUTTON ****************************************************************
 
 static void PlayButtonCallback(Fl_Widget *w, void *data) {
     auto sew = (SaprEditWindow *) data;
@@ -228,6 +252,8 @@ static void PlayButtonCallback(Fl_Widget *w, void *data) {
     playpos = start_at;
 }
 
+// REWIND BUTTON **************************************************************
+
 static void RewButtonCallback(Fl_Widget *w, void *data) {
     auto sew = (SaprEditWindow *) data;
     if (sew->table == playtable) {
@@ -239,6 +265,8 @@ static void RewButtonCallback(Fl_Widget *w, void *data) {
         sew->table->top_row(0);
     }
 }
+
+// FORWARD BUTTON *************************************************************
 
 static void FwdButtonCallback(Fl_Widget *w, void *data) {
     auto sew = (SaprEditWindow *) data;
@@ -253,12 +281,16 @@ static void FwdButtonCallback(Fl_Widget *w, void *data) {
     }
 }
 
+// STOP BUTTON ****************************************************************
+
 static void StopButtonCallback(Fl_Widget *w, void *data) {
     auto sew = (SaprEditWindow *) data;
     if (sew->table == playtable) {
         playtable = nullptr;
     }
 }
+
+// PAUSE BUTTON ***************************************************************
 
 static void PauseButtonCallback(Fl_Widget *w, void *data) {
     auto sew = (SaprEditWindow *) data;
@@ -270,6 +302,9 @@ static void PauseButtonCallback(Fl_Widget *w, void *data) {
     }
 }
 
+// ****************************************************************************
+// EDITOR WINDOW
+//
 SaprEditWindow::SaprEditWindow(const char *filename)
     : Fl_Double_Window(400+256, 768) {
 
@@ -375,7 +410,8 @@ SaprEditWindow::~SaprEditWindow(void) {
 }
 
 // ****************************************************************************
-
+// SPAWN NEW EDITOR WINDOW
+//
 void LoadFileButton(Fl_Widget *w, void *data) {
     char *filename = fl_file_chooser("Load SAP-R File", "*.sapr", nullptr);
 
@@ -407,6 +443,9 @@ static void fill_audio(void *udata, Uint8 *stream, int len) {
     mzpokey_process_float(mzp, stream, len/sizeof(float));
 }
 
+// ****************************************************************************
+// MAIN WINDOW
+//
 #define WIDTH 400
 #define HEIGHT 128
 
