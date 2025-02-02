@@ -3,6 +3,7 @@
 #include <climits>
 #include <vector>
 #include <memory>
+#include <algorithm>
 #include <SDL.h>
 #include "mzpokey.h"
 #include "fltk.h"
@@ -198,7 +199,33 @@ void MyTable::copy_cells(void) {
 // PASTE CELLS ****************************************************************
 
 void MyTable::paste_cells(void) {
-    puts("paste cells");
+    if (paste_buffer.size() == 0) return;
+    int left, right, top, bottom;
+    determine_selection(left, right, top, bottom);
+    if (right < 0) {
+        if (rows() > 0) return;     // not empty file, no selection
+        top = 0;
+        left = 0;
+    }
+
+    int srch = paste_buffer.size();
+    int srcw = paste_buffer[0].size();
+
+    for (unsigned int destr = top; ; destr++) {
+        int srcr = destr - top;
+        if (srcr >= srch) break;            // reached end of paste_buffer
+        for (unsigned int destc = left; destc <= 9; destc++) {
+            int srcc = destc - left;
+            if (srcc >= srcw) continue;     // do not paste beyond right margin
+            if (destr >= values.size()) {
+                values.push_back({ 0,0,0,0,0,0,0,0,0 });
+                rows(values.size());
+            }
+            values[destr][destc] = paste_buffer[srcr][srcc];
+        }
+    }
+    set_selection(top, left, top + srch - 1, std::clamp(left + srcw - 1, 0, 9));
+    redraw();
 }
 
 // HANDLE EVENTS **************************************************************
