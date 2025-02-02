@@ -29,11 +29,13 @@ protected:
 
 private:
     bool shift_down;
+    bool ctrl_down;
     void determine_selection(int &left, int &right, int &top, int &bottom);
     void clear_cells(void);
     void delete_lines(void);
     void insert_line(void);
     void insert_line_after(void);
+    void edit_cells(int key);
 };
 
 // ****************************************************************************
@@ -43,6 +45,7 @@ MyTable::MyTable(int x, int y, int w, int h, const char *l)
     : Fl_Table_Row(x, y, w, h, l) {
 
     shift_down = false;
+    ctrl_down = false;
 
     row_header(1);
     row_header_width(64);
@@ -181,6 +184,22 @@ void MyTable::insert_line_after(void) {
     redraw();
 }
 
+// EDIT CELL(S) ***************************************************************
+
+void MyTable::edit_cells(int key) {
+    int left, right, top, bottom;
+    determine_selection(left, right, top, bottom);
+    if (right < 0) return;
+    for (int r=top; r<=bottom; r++) {
+        for (int c=left; c<=right; c++) {
+            values[r][c] <<= 4;
+            values[r][c] += key <= '9' ? key - '0' : key - 'a' + 10;
+            values[r][c] &= 0xff;
+        }
+    }
+    redraw();
+}
+
 // HANDLE EVENTS **************************************************************
 
 int MyTable::handle(int event) {
@@ -195,21 +214,35 @@ int MyTable::handle(int event) {
         if (key == FL_Shift_L || key == FL_Shift_R) {
             shift_down = true;
             return 1;
+        } else if (key == FL_Control_L || key == FL_Control_R) {
+            ctrl_down = true;
+            return 1;
         } else if (key == FL_Delete) {
             delete_lines();
+            return 1;
         } else if (key == FL_BackSpace) {
             clear_cells();
+            return 1;
         } else if (key == FL_Insert) {
             if (shift_down) {
                 insert_line_after();
+                return 1;
             } else {
                 insert_line();
+                return 1;
             }
+        } else if ((key >= '0' && key <= '9') ||
+                   (key >= 'a' && key <= 'f')) {
+            edit_cells(key);
+            return 1;
         }
         break;
     case FL_KEYUP:
         if (key == FL_Shift_L || key == FL_Shift_R) {
             shift_down = false;
+            return 1;
+        } else if (key == FL_Control_L || key == FL_Control_R) {
+            ctrl_down = false;
             return 1;
         }
         break;
