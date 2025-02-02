@@ -37,6 +37,10 @@ private:
 
 class MainWindow : public Fl_Double_Window {
 public:
-    MainWindow(int width, int height, const char *l = nullptr);
+    MainWindow(const char *l = nullptr);
+
+    void update_paste_buffer_stats(void);
 private:
+    Fl_Box *wvalue;
+    Fl_Box *hvalue;
 };

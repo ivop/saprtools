@@ -9,8 +9,8 @@
 #include "sapredit.h"
 
 static struct mzpokey_context *mzp;
-
-using namespace std;
+static MainWindow *main_window;
+static std::vector<std::vector<int>> paste_buffer;
 
 // ****************************************************************************
 // SAP-R TABLE CONSTRUCTOR
@@ -207,7 +207,9 @@ int MyTable::handle(int event) {
             }
         } else if ((key >= '0' && key <= '9') ||
                    (key >= 'a' && key <= 'f')) {
-            edit_cells(key);
+            if (!ctrl_down) {
+                edit_cells(key);
+            }
             return 1;
         }
         break;
@@ -354,58 +356,66 @@ SaprEditWindow::SaprEditWindow(const char *filename)
     : Fl_Double_Window(400+256, EDITOR_HEIGHT) {
 
     callback(CloseSaprEditWindow, this);
-    label(filename);
 
-    FILE *input = fopen(filename, "rb");
-    if (!input) {
-        fl_alert("Failed to open '%s'\n", filename);
-        throw(0);
-    }
+    if (filename) {
+        label(filename);
 
-    fseek(input, 0, SEEK_END);
-    int filesize = ftell(input);
-    fseek(input, 0, SEEK_SET);
+        FILE *input = fopen(filename, "rb");
+        if (!input) {
+            fl_alert("Failed to open '%s'\n", filename);
+            throw(0);
+        }
 
-    uint8_t *data = (uint8_t *) malloc(filesize);
+        fseek(input, 0, SEEK_END);
+        int filesize = ftell(input);
+        fseek(input, 0, SEEK_SET);
 
-    if (!data) {
-        fl_alert("Out of memory!");
-        throw(0);
-    }
+        uint8_t *data = (uint8_t *) malloc(filesize);
 
-    if (fread(data, filesize, 1, input) != 1) {
-        fl_alert("Error reading '%s'\n", filename);
+        if (!data) {
+            fl_alert("Out of memory!");
+            throw(0);
+        }
+
+        if (fread(data, filesize, 1, input) != 1) {
+            fl_alert("Error reading '%s'\n", filename);
+            free(data);
+            throw(0);
+        }
+        fclose(input);
+
+        uint8_t *endheader = (uint8_t *) strstr((char *) data, "\r\n\r\n");
+        uint8_t *saprdata = nullptr;
+        int saprdatasize = 1;
+        if (endheader) {
+            saprdata = endheader + 4;
+            saprdatasize = filesize - (saprdata - data);
+        }
+
+        if (memcmp(data, "SAP", 3) || !saprdata || (saprdatasize % 9 != 0)) {
+            fl_alert("Not a SAP-R file!\n");
+            free(data);
+            throw(0);
+        }
+
+        table = new MyTable(8, 8, 384, 768-16);
+    
+        for (int i=0; i<saprdatasize; i += 9) {
+            table->values.push_back({saprdata[i+0], saprdata[i+1],
+                                     saprdata[i+2], saprdata[i+3],
+                                     saprdata[i+4], saprdata[i+5],
+                                     saprdata[i+6], saprdata[i+7],
+                                     saprdata[i+8]});
+            table->rows(table->values.size());
+        }
+        table->selrow(0);
+
         free(data);
-        throw(0);
+        this->filename = strdup(filename);
+    } else {
+        table = new MyTable(8, 8, 384, 768-16);
+        table->values.clear();
     }
-    fclose(input);
-
-    uint8_t *endheader = (uint8_t *) strstr((char *) data, "\r\n\r\n");
-    uint8_t *saprdata = nullptr;
-    int saprdatasize = 1;
-    if (endheader) {
-        saprdata = endheader + 4;
-        saprdatasize = filesize - (saprdata - data);
-    }
-
-    if (memcmp(data, "SAP", 3) || !saprdata || (saprdatasize % 9 != 0)) {
-        fl_alert("Not a SAP-R file!\n");
-        free(data);
-        throw(0);
-    }
-
-    table = new MyTable(8, 8, 384, 768-16);
-
-    for (int i=0; i<saprdatasize; i += 9) {
-        table->values.push_back({saprdata[i+0], saprdata[i+1], saprdata[i+2],
-                                 saprdata[i+3], saprdata[i+4], saprdata[i+5],
-                                 saprdata[i+6], saprdata[i+7], saprdata[i+8]});
-        table->rows(table->values.size());
-    }
-    table->selrow(0);
-
-    free(data);
-    this->filename = strdup(filename);
 
     int curx = 400;
     int cury = 8;
@@ -493,6 +503,14 @@ void LoadFileButton(Fl_Widget *w, void *data) {
     }
 }
 
+void EmptyFileButton(Fl_Widget *w, void *data) {
+    try {
+        new SaprEditWindow(nullptr);
+    }
+    catch(int num) {
+    }
+}
+
 // ****************************************************************************
 
 static void fill_audio(void *udata, Uint8 *stream, int len) {
@@ -515,28 +533,69 @@ static void fill_audio(void *udata, Uint8 *stream, int len) {
 // ****************************************************************************
 // MAIN WINDOW
 //
-MainWindow::MainWindow(int WIDTH, int HEIGHT, const char *l)
-    : Fl_Double_Window(WIDTH, HEIGHT, l) {
+static void MainWindowCallback(Fl_Widget *w, void *data) {
+    exit(0);
+}
+
+MainWindow::MainWindow(const char *l)
+    : Fl_Double_Window(400, 256, l) {
 
     int cury = 16;
 
-    auto title = new Fl_Box(WIDTH/2-128, cury, 256, 48, "SAP-R Editor");
+    auto title = new Fl_Box(w()/2-128, cury, 256, 48, "SAP-R Editor");
     title->labelsize(48);
     title->labelfont(FL_ITALIC | FL_BOLD);
     title->labelcolor(fl_rgb_color(0x20,0x40,0x80));
     cury += 48;
 
-    auto copyright = new Fl_Box(WIDTH/2-128, cury,
+    auto copyright = new Fl_Box(w()/2-128, cury,
                         256, 16, "Copyright © 2025 by Ivo van Poorten");
     copyright->labelsize(12);
     copyright->labelfont(FL_ITALIC);
     cury += 32;
 
-    auto load = new Fl_Button(WIDTH/2-64, cury, 128, 20, "Load File");
+    auto load = new Fl_Button(w()/2-128, cury, 126, 20, "Load File");
     load->callback(LoadFileButton, this);
 
+    auto empty = new Fl_Button(w()/2, cury, 126, 20, "New File");
+    empty->callback(EmptyFileButton, this);
+
+    cury += 64;
+
+    auto pbm = new Fl_Box(w()/2-128, cury, 256, 24, "Paste Buffer");
+    pbm->labelfont(FL_BOLD);
+
+    auto wtxt = new Fl_Box(w()/2-64, cury+32, 128, 24, "Width:");
+    wtxt->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+    auto htxt = new Fl_Box(w()/2-64, cury+64, 128, 24, "Height:");
+    htxt->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+    wvalue = new Fl_Box(w()/2, cury+32, 64, 24, "");
+    wvalue->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+
+    hvalue = new Fl_Box(w()/2, cury+64, 64, 24, "");
+    hvalue->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+
+    update_paste_buffer_stats();
+
+    callback(MainWindowCallback, this);
     end();
 }
+
+void MainWindow::update_paste_buffer_stats(void) {
+    int w = 0, h = paste_buffer.size();
+    if (h) {
+        w = paste_buffer[0].size();
+    }
+    char s[32];
+    snprintf(s, 32, "%d", w);
+    wvalue->label(s);
+    snprintf(s, 32, "%d", h);
+    hvalue->label(s);
+}
+
+// ****************************************************************************
 
 int main(int argc, char **argv) {
     mzp= mzpokey_create(1773447, 44100, 1, 0);
@@ -560,8 +619,8 @@ int main(int argc, char **argv) {
     }
     SDL_PauseAudio(0);
 
-    auto mw = new MainWindow(400, 128, "SAP-R Editor");
-    mw->show();
+    main_window = new MainWindow("SAP-R Editor");
+    main_window->show();
 
     return Fl::run();
 }
