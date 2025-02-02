@@ -154,8 +154,14 @@ void MyTable::delete_lines(void) {
 void MyTable::insert_line(void) {
     int left, right, top, bottom;
     determine_selection(left, right, top, bottom);
-    if (right < 0) return;
-    values.insert(values.begin() + top, { 0,0,0,0,0,0,0,0,0 });
+    if (right < 0) {
+        if (values.size() != 0) {
+            return;
+        }
+        values.push_back({ 0,0,0,0,0,0,0,0,0 });
+    } else {
+        values.insert(values.begin() + top, { 0,0,0,0,0,0,0,0,0 });
+    }
     rows(values.size());
     set_selection(top,0,top,9);
     redraw();
@@ -167,6 +173,14 @@ void MyTable::insert_line_after(void) {
     int left, right, top, bottom;
     determine_selection(left, right, top, bottom);
     if (right < 0) return;
+    if (bottom + 1 >= (int) values.size()) {
+        values.push_back({ 0,0,0,0,0,0,0,0,0 });
+    } else {
+        values.insert(values.begin() + bottom + 1, { 0,0,0,0,0,0,0,0,0 });
+    }
+    rows(values.size());
+    set_selection(bottom+1, 0, bottom+1, 9);
+    redraw();
 }
 
 // HANDLE EVENTS **************************************************************
