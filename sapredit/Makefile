@@ -18,7 +18,7 @@ LIBS += $(shell sdl2-config --static-libs)
 all: $(SAPREDIT)
 
 $(SAPREDIT): $(OBJ)
-	$(CXX) -flto -o $@ $^ $(LIBS)
+	$(CXX) $(STATIC) -flto -o $@ $^ $(LIBS)
 
 %.o: %.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
