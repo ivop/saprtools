@@ -11,6 +11,8 @@ public:
     int handle(int event);
     void selrow(int row);
 
+    bool audible[4];
+
 protected:
     void draw_cell(TableContext context, int R=0, int C=0, int X=0, int Y=0,
                                                            int W=0, int H=0);
@@ -34,6 +36,7 @@ public:
     ~SaprEditWindow(void);
     MyTable *table = nullptr;
     char *filename = nullptr;
+    Fl_Check_Button *audible[4];
 private:
 };
 

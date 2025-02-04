@@ -407,6 +407,15 @@ err_out:
     fl_alert("Error saving file!");
 }
 
+// AUDIBLE/MUTE BUTTONS *******************************************************
+
+static void AudibleButtonsCallback(Fl_Widget *w, void *data) {
+    auto sew = (SaprEditWindow *) data;
+    for (int c=0; c<4; c++) {
+        sew->table->audible[c] = sew->audible[c]->value();
+    }
+}
+
 // ****************************************************************************
 // EDITOR WINDOW
 //
@@ -512,6 +521,18 @@ SaprEditWindow::SaprEditWindow(const char *filename)
     fwd->image(fwd_img);
 
     curx = 400;
+    cury = 64;
+
+    for (int c=0; c<4; c++) {
+        static char s[2];
+        s[0] = '1' + c;
+        audible[c] = new Fl_Check_Button(curx+c*32, cury, 32, 24, strdup(s));
+        audible[c]->value(1);
+        audible[c]->callback(AudibleButtonsCallback, this);
+        table->audible[c] = true;
+    }
+
+    curx = 400;
     cury = 128;
 
     auto save_as = new Fl_Button(curx, cury, 94, 24, "Save as...");
@@ -578,10 +599,20 @@ void EmptyFileButton(Fl_Widget *w, void *data) {
 
 static void fill_audio(void *udata, Uint8 *stream, int len) {
     if (playtable && playpos < playtable->rows()) {
-        for (int i=0; i<9; i++) {
-            mzpokey_write_register(mzp, (pokey_register) i,
+        for (int c=0; c<4; c++) {
+            if (playtable->audible[c]) {
+                for (int i=c*2; i<(c+1)*2; i++) {
+                    mzpokey_write_register(mzp, (pokey_register) i,
                                         playtable->values[playpos][i], 0);
+                }
+            } else {
+                for (int i=c*2; i<(c+1)*2; i++) {
+                    mzpokey_write_register(mzp, (pokey_register) i, 0, 0);
+                }
+            }
         }
+        mzpokey_write_register(mzp, (pokey_register) 8,
+                                    playtable->values[playpos][8], 0);
         playpos++;
     } else if (playtable) {
         playtable = nullptr;
