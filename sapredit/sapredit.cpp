@@ -26,6 +26,7 @@ MyTable::MyTable(int x, int y, int w, int h, const char *l)
 
     shift_down = false;
     ctrl_down = false;
+    loop = false;
 
     row_header(1);
     row_header_width(64);
@@ -416,6 +417,13 @@ static void AudibleButtonsCallback(Fl_Widget *w, void *data) {
     }
 }
 
+// LOOP BUTTON ****************************************************************
+
+static void LoopButtonCallback(Fl_Widget *w, void *data) {
+    auto sew = (SaprEditWindow *) data;
+    sew->table->loop = sew->loopButton->value();
+}
+
 // ****************************************************************************
 // EDITOR WINDOW
 //
@@ -521,7 +529,7 @@ SaprEditWindow::SaprEditWindow(const char *filename)
     fwd->image(fwd_img);
 
     curx = 400;
-    cury = 64;
+    cury = 48;
 
     for (int c=0; c<4; c++) {
         static char s[2];
@@ -531,6 +539,10 @@ SaprEditWindow::SaprEditWindow(const char *filename)
         audible[c]->callback(AudibleButtonsCallback, this);
         table->audible[c] = true;
     }
+
+    cury = 96;
+    loopButton = new Fl_Check_Button(curx, cury, 64, 24, "Loop");
+    loopButton->callback(LoopButtonCallback, this);
 
     curx = 400;
     cury = 128;
@@ -614,6 +626,9 @@ static void fill_audio(void *udata, Uint8 *stream, int len) {
         mzpokey_write_register(mzp, (pokey_register) 8,
                                     playtable->values[playpos][8], 0);
         playpos++;
+        if (playpos == playtable->rows() && playtable->loop) {
+            playpos = 0;
+        }
     } else if (playtable) {
         playtable = nullptr;
     } else {

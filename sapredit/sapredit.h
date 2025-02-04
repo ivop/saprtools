@@ -12,6 +12,7 @@ public:
     void selrow(int row);
 
     bool audible[4];
+    bool loop;
 
 protected:
     void draw_cell(TableContext context, int R=0, int C=0, int X=0, int Y=0,
@@ -37,6 +38,7 @@ public:
     MyTable *table = nullptr;
     char *filename = nullptr;
     Fl_Check_Button *audible[4];
+    Fl_Check_Button *loopButton;
 private:
 };
 
