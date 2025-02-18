@@ -17,7 +17,7 @@ if [ "$#" != "1" ] ; then
     cat <<EOT
 no target specified
 usage: $0 target
-where target is one of: linux32, linux64, cygwin64, mingw32 or mingw64
+where target is one of: linux32, linux64, cygwin64, mingw32, mingw64, macos-x86_64 or macos-arm64
 EOT
     exit 1
 fi
