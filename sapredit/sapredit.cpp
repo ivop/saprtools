@@ -9,6 +9,8 @@
 #include "fltk.h"
 #include "sapredit.h"
 
+#include "icons.inc"
+
 #define VERSION_MAJOR       0
 #define VERSION_MINOR       9
 #define VERSION_SUBMINOR    0
@@ -498,11 +500,11 @@ SaprEditWindow::SaprEditWindow(const char *filename)
     int curx = 400;
     int cury = 8;
 
-    auto rew_img = new Fl_PNG_Image("png/rew.png");
-    auto play_img = new Fl_PNG_Image("png/play.png");
-    auto stop_img = new Fl_PNG_Image("png/stop.png");
-    auto pause_img = new Fl_PNG_Image("png/pause.png");
-    auto fwd_img = new Fl_PNG_Image("png/fwd.png");
+    auto rew_img = new Fl_PNG_Image(nullptr, png_rew_png, png_rew_png_len);
+    auto play_img = new Fl_PNG_Image(nullptr, png_play_png, png_play_png_len);
+    auto stop_img = new Fl_PNG_Image(nullptr, png_stop_png, png_stop_png_len);
+    auto pause_img = new Fl_PNG_Image(nullptr, png_pause_png, png_pause_png_len);
+    auto fwd_img = new Fl_PNG_Image(nullptr, png_fwd_png, png_fwd_png_len);
 
     auto rew = new Fl_Button(curx, cury, 30, 30);
     rew->callback(RewButtonCallback, this);

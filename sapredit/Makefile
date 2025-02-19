@@ -23,6 +23,13 @@ $(SAPREDIT): $(OBJ)
 %.o: %.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
+icons.inc:
+	xxd -i png/fwd.png > $@
+	xxd -i png/pause.png >> $@
+	xxd -i png/play.png >> $@
+	xxd -i png/rew.png >> $@
+	xxd -i png/stop.png >> $@
+
 clean:
 	rm -f *.o *.a *~ */*~ $(SAPREDIT) $(OBJ)
 
