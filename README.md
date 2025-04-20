@@ -98,7 +98,7 @@ The following lines need to be present in your "~/.gitconfig" to see binary diff
 
 ym2sapr, vgm2ym, sid2sapr, sndh2ym, psg2ym, and vgm2sapr are Copyright © 2023-2024 by Ivo van Poorten. Licensed under the terms of the BSD-2 license. See LICENSE for details.
 
-ay2ym is Copyright © 2024 by Ivo van Poorten, Copyright © 2001-2005 by Russell Marks, Copyright © 1994 by Ian Collier. Licensed under the terms of the GPL-2. See LICESE for details.
+ay2ym is Copyright © 2024 by Ivo van Poorten, Copyright © 2001-2005 by Russell Marks, Copyright © 1994 by Ian Collier. Licensed under the terms of the GPL-2. See LICENSE for details.
 
 lzss-sap is Copyright © 2020 by Daniel Serpell. MIT license. See LICENSE for details.  
 
