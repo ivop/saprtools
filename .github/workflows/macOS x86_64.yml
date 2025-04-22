@@ -8,6 +8,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Build and test
       run: |
         brew install fpc md5sha1sum

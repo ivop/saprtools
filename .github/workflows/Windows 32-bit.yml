@@ -14,6 +14,8 @@ jobs:
         git config --global core.eol lf
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Install Cygwin
       uses: cygwin/cygwin-install-action@master
       with:
