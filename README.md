@@ -82,6 +82,10 @@ https://github.com/ivop/saprtools/tree/main/xex/sid2sapr/mono
 
 ### Build Instructions
 
+Clone the repository with:
+
+```git clone --recurse-submodules https://github.com/ivop/saprtools```
+
 Run ```make``` in the main directory of the repository.
 Alternatively enter the directory of the converter you want to build, and type ```make```.
 To run all sample conversions, run ```make convertall```.
