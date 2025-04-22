@@ -10,6 +10,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: install packages
       run: sudo apt update && sudo apt install fp-compiler moreutils
     - name: retrieve mads
