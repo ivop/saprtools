@@ -10,6 +10,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Setup 32-bit Debian Buster chroot
       run: |
         sudo apt-get update
