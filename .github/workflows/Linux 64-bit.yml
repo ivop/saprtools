@@ -1,5 +1,4 @@
 name: Linux 64-bit
-run-name: ${{github.actor}} is testing out GitHub Actions
 on: [workflow_dispatch]
 jobs:
   build:
