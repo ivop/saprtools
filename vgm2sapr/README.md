@@ -29,4 +29,5 @@ usage: vgm2sapr [-options] file.vgm
    -f          force new frame on double write
    -p volume   pokey maximum per channel volume [default: 15]
    -m div      mute high up to pokey divisor div [default: 0]
+   -s          single Pokey output (DMG only) [default: off]
 ```

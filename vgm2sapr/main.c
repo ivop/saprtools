@@ -319,6 +319,7 @@ static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
     if (debug) fprintf(stream, __VA_ARGS__);
 
 static int mute_high = 0;
+static bool single_pokey;
 
 /* ------------------------------------------------------------------------ */
 
@@ -518,6 +519,75 @@ static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
         pokey[6] = (POK >> 8) & 0xff;
         pokey[7] = dist + volume;
     }
+}
+
+/* ------------------------------------------------------------------------ */
+
+static void dmg_to_single_pokey(struct gameboy_dmg *dmg, uint8_t *pokey,
+                                          int channel, struct vgm_header *v) {
+    struct dmg_square *s = channel ? &dmg->square2 : &dmg->square1;
+    struct dmg_wave   *w = &dmg->wave;
+    struct dmg_noise  *n = &dmg->noise;
+    struct dmg_ctrl   *c = &dmg->ctrl;
+
+    int volcodes[4] = { 0, 12, 6, 3 };
+
+    double f = 1.0;
+    int vol = 0;
+    int dist = 0xa0;
+
+    switch (channel) {
+    case 0:     /* square1 */
+    case 1:     /* square2 */
+        if (s->frequency)
+            f = v->gameboy_dmg_clock / (s->frequency * 8.0);
+        else
+            f = v->gameboy_dmg_clock;
+        if (s->enabled)
+            vol = s->volume.value;
+        break;
+    case 2:     /* wave */
+        if (w->frequency)
+            f = v->gameboy_dmg_clock / (w->frequency * 8.0 * 4.0);
+        else
+            f = v->gameboy_dmg_clock;
+        if (w->enabled)
+            vol = volcodes[w->volume_code];
+        break;
+    case 3:     /* noise */
+        if (n->frequency)
+            f = v->gameboy_dmg_clock / (n->frequency * (n->width_mode?3.5:7.5));
+        else
+            f = v->gameboy_dmg_clock;
+        if (n->enabled)
+            vol = n->volume.value;
+        dist = 0x80;
+        break;
+    default:    /* make the compiler happy */
+        break;
+    }
+
+    switch (c->left_enables[channel] + c->right_enables[channel]) {
+    case 0: vol = 0; break;
+    case 1: vol *= 0.7; break;
+    case 2: break;
+    }
+
+
+    if (f < 1.0) f = 1.0;       /* avoid divide by zero */
+
+    int POK = round((ATARI_CLOCK / 28.0 / 2.0 / f) - 1);
+
+    if (dist == 0xa0 && POK < mute_high)
+        vol = 0;
+
+    if (POK > 255) {
+        POK = find_closest_distc(buzzy, f);
+        dist = 0xc0;
+    }
+
+    pokey[0] = POK;
+    pokey[1] = dist + voltab[vol];
 }
 
 /* ------------------------------------------------------------------------ */
@@ -899,7 +969,7 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
 
     memset(pokeyL, 0, 9);
     memset(pokeyR, 0, 9);
-    if (chip != CHIP_HUC6280)
+    if (!single_pokey && chip != CHIP_HUC6280)
         pokeyL[8] = pokeyR[8] = 0x78;
 
     outleft = fopen("left.sapr", "wb");
@@ -908,16 +978,20 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
         return -1;
     }
 
-    outright = fopen("right.sapr", "wb");
-    if (!outright) {
-        fprintf(stderr, "ERROR: unable to open right.sapr for writing\n");
-        return -1;
+    if (!single_pokey) {
+        outright = fopen("right.sapr", "wb");
+        if (!outright) {
+            fprintf(stderr, "ERROR: unable to open right.sapr for writing\n");
+            return -1;
+        }
+
+        fprintf(stdout, "writing SAP-R file to left.sapr and right.sapr\n");
+    } else {
+        fprintf(stdout, "writing SAP-R file to left.sapr \n");
     }
 
-    fprintf(stdout, "writing SAP-R file to left.sapr and right.sapr\n");
-
     if (!write_sapr_header(outleft)) return -1;
-    if (!write_sapr_header(outright)) return -1;
+    if (!single_pokey && !write_sapr_header(outright)) return -1;
 
     uint32_t scnt = 0, nframes = 0;
     double fcnt = 0;
@@ -1263,10 +1337,17 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
                 if (newwave)
                     fprintf(stdout, "new wave written to wavetable\n");
 
-                dmg_to_pokey(&dmg, &pokeyL[0], 0, v);
-                dmg_to_pokey(&dmg, &pokeyL[4], 1, v);
-                dmg_to_pokey(&dmg, &pokeyR[0], 2, v);
-                dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
+                if (single_pokey) {
+                    dmg_to_single_pokey(&dmg, &pokeyL[0], 0, v);
+                    dmg_to_single_pokey(&dmg, &pokeyL[2], 1, v);
+                    dmg_to_single_pokey(&dmg, &pokeyL[4], 2, v);
+                    dmg_to_single_pokey(&dmg, &pokeyL[6], 3, v);
+                } else {
+                    dmg_to_pokey(&dmg, &pokeyL[0], 0, v);
+                    dmg_to_pokey(&dmg, &pokeyL[4], 1, v);
+                    dmg_to_pokey(&dmg, &pokeyR[0], 2, v);
+                    dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
+                }
 
                 dmg_run_frame_sequencer(&dmg);
             } else if (chip == CHIP_HUC6280) {
@@ -1279,7 +1360,8 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             }
 
             fwrite(pokeyL, 1, 9, outleft);
-            fwrite(pokeyR, 1, 9, outright);
+            if (!single_pokey)
+                fwrite(pokeyR, 1, 9, outright);
 
             fcnt -= framelen;
             for (int i = 0; i<16; i++) {
@@ -1312,10 +1394,12 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
     }
 
     fwrite(pokeyL, 1, 9, outleft);
-    fwrite(pokeyR, 1, 9, outright);
+    if (!single_pokey)
+        fwrite(pokeyR, 1, 9, outright);
 
     fclose(outleft);
-    fclose(outright);
+    if (!single_pokey)
+        fclose(outright);
 
     return 0;
 }
@@ -1359,6 +1443,7 @@ static void usage(void) {
 "   -f          force new frame on double write\n"
 "   -p volume   pokey maximum per channel volume [default: 15]\n"
 "   -m div      mute high up to pokey divisor div [default: 0]\n"
+"   -s          single Pokey output (DMG only) [default: off]\n"
 );
 
 }
@@ -1370,7 +1455,7 @@ int main(int argc, char **argv) {
 
     framerate = 0;
 
-    while ((option = getopt(argc, argv, "dfhr:p:m:")) != -1) {
+    while ((option = getopt(argc, argv, "dfhr:p:m:s")) != -1) {
         switch (option) {
         case 'r':
             framerate = strtod(optarg, NULL);
@@ -1394,6 +1479,9 @@ int main(int argc, char **argv) {
                 mute_high = 0;
             if (mute_high > 255)
                 mute_high = 255;
+            break;
+        case 's':
+            single_pokey = true;
             break;
         case 'h':
         default:
@@ -1459,18 +1547,21 @@ int main(int argc, char **argv) {
         if (v->version < 0x0110)
             v->sn76489_shift_width = 16;
         fprintf(stdout, "shift register width: %d bits\n", v->sn76489_shift_width);
+        if (single_pokey) goto unsupported;
         write_sapr(file, v, CHIP_SN76489);
     } else if (v->version >= 0x0161 && v->gameboy_dmg_clock) {
         init_voltab_dmg(maxpokvol);
 
         fprintf(stdout, "detected GameBoy DMG\n");
         fprintf(stdout, "clock: %d Hz\n", v->gameboy_dmg_clock);
+        if (single_pokey) fprintf(stdout, "single pokey output enabled\n");
         write_sapr(file, v, CHIP_GAMEBOY_DMG);
     } else if (v->version >= 0x0161 && v->huc6280_clock) {
         init_voltab_huc(maxpokvol);
 
         fprintf(stdout, "detected HuC6280\n");
         fprintf(stdout, "clock: %d Hz\n", v->huc6280_clock);
+        if (single_pokey) goto unsupported;
         write_sapr(file, v, CHIP_HUC6280);
     } else {
         fprintf(stderr, "no supported chip detected\n");
@@ -1480,4 +1571,8 @@ int main(int argc, char **argv) {
     fprintf(stdout, "finished!\n");
 
     return 0;
+
+unsupported:
+    fprintf(stdout, "single pokey not supported for selected soundchip\n");
+    return 1;
 }

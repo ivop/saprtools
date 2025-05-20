@@ -14,9 +14,18 @@ $(ZLIB):
 vgm2sapr: main.c $(ZLIB)
 	$(CC) $(STATIC) $(CFLAGS) -o vgm2sapr main.c -lm $(ZLIB)
 
+compress-mono: $(LZSS)
+	@$(LZSS) -6 left.sapr left.lz16   >>convertall.log  2>&1
+
 compress-stereo: $(LZSS)
 	@$(LZSS) -6 left.sapr left.lz16   >>convertall.log  2>&1
 	@$(LZSS) -6 right.sapr right.lz16 >>convertall.log  2>&1
+
+player50-mono:
+	mads -d:VGM2SAPR -o:player.xex ../player/asm/playlzs16-mono.asm
+
+player60-mono:
+	mads -d:VGM2SAPR -d:HZ60 -o:player.xex ../player/asm/playlzs16-mono.asm
 
 player50-stereo:
 	mads -d:VGM2SAPR -o:player.xex ../player/asm/playlzs16-stereo.asm
