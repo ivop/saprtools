@@ -1380,10 +1380,17 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
         sn_to_pokey(&sn, &pokeyL[4], 1, v);
         sn_to_pokey(&sn, &pokeyR[0], 2, v);
     } else if (chip == CHIP_GAMEBOY_DMG) {
-        dmg_to_pokey(&dmg, &pokeyL[0], 0, v);
-        dmg_to_pokey(&dmg, &pokeyL[4], 1, v);
-        dmg_to_pokey(&dmg, &pokeyR[0], 2, v);
-        dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
+        if (single_pokey) {
+            dmg_to_single_pokey(&dmg, &pokeyL[0], 0, v);
+            dmg_to_single_pokey(&dmg, &pokeyL[2], 1, v);
+            dmg_to_single_pokey(&dmg, &pokeyL[4], 2, v);
+            dmg_to_single_pokey(&dmg, &pokeyL[6], 3, v);
+        } else {
+            dmg_to_pokey(&dmg, &pokeyL[0], 0, v);
+            dmg_to_pokey(&dmg, &pokeyL[4], 1, v);
+            dmg_to_pokey(&dmg, &pokeyR[0], 2, v);
+            dmg_to_pokey(&dmg, &pokeyR[4], 3, v);
+        }
     } else if (chip == CHIP_HUC6280) {
         huc_to_pokey(&huc, &pokeyL[0], 0, v);
         huc_to_pokey(&huc, &pokeyL[2], 1, v);
