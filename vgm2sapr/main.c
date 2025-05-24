@@ -457,6 +457,83 @@ static void read_header(gzFile file) {
 
 /* ------------------------------------------------------------------------ */
 
+static void sn_to_single_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
+                                                    struct vgm_header *v) {
+    uint16_t snf = sn->r[channel<<1];
+    uint16_t snv = sn->r[(channel<<1)+1];
+    uint16_t ctrl = sn->v.ctrl;
+    uint16_t attn = sn->v.attn;
+    uint8_t dist = 0xa0;
+
+    if (snf == 0) snf++;            // avoid div by 0
+
+    double f = v->sn76489_clock / (2.0 * snf * 16);
+
+    int POK = round((ATARI_CLOCK / 28.0 / 2.0 / f) - 1);
+
+    if (POK > 255) {
+        POK = find_closest_distc(buzzy, f);
+        dist = 0xc0;
+    }
+
+    pokey[0] = POK;
+
+    int volume = voltab[snv];
+
+    if (POK < mute_high)
+        volume = 0;
+
+    pokey[1] = dist + volume;
+
+    if (channel == 2) {
+        double noisef;
+        double extradiv = 1.0;
+        dist = 0xa0;
+
+        switch (ctrl & 3) {
+        case SHIFT_512:   noisef =  512; break;
+        case SHIFT_1024:  noisef = 1024; break;
+        case SHIFT_2048:  noisef = 2048; break;
+        case SHIFT_TONE3:
+            noisef = snf;
+            break;
+        }
+
+        // note: periodic noise is played with generator A because we
+        // do not really have a generator to play that any way else.
+        // it should have a tone, so it has a tone.
+
+        if (ctrl & 4) {
+            dist = 0x80;
+        } else {
+            extradiv = v->sn76489_shift_width;
+            if ((ctrl & 3) == SHIFT_TONE3)
+                extradiv *= 8;
+        }
+
+        f = v->sn76489_clock / (2 * noisef) / extradiv;
+
+        POK = round((ATARI_CLOCK / 28.0 / 2.0 / f) - 1);
+
+        volume = voltab[sn->v.attn];
+
+        if (dist == 0xa0 && POK < mute_high)
+            volume = 0;
+
+        if (dist == 0x80 && POK > 255) POK = 255;
+
+        if (dist == 0xa0 && POK > 255) {
+            POK = find_closest_distc(buzzy, f);
+            dist = 0xc0;
+        }
+
+        pokey[2] = POK;
+        pokey[3] = dist + volume;
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
 static void sn_to_pokey(union sn76489 *sn, uint8_t *pokey, int channel,
                                                     struct vgm_header *v) {
     uint16_t snf = sn->r[channel<<1];
@@ -1327,9 +1404,15 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
             nframes++;
 
             if (chip == CHIP_SN76489) {
-                sn_to_pokey(&sn, &pokeyL[0], 0, v);
-                sn_to_pokey(&sn, &pokeyL[4], 1, v);
-                sn_to_pokey(&sn, &pokeyR[0], 2, v);
+                if (single_pokey) {
+                    sn_to_single_pokey(&sn, &pokeyL[0], 0, v);
+                    sn_to_single_pokey(&sn, &pokeyL[2], 1, v);
+                    sn_to_single_pokey(&sn, &pokeyL[4], 2, v);
+                } else {
+                    sn_to_pokey(&sn, &pokeyL[0], 0, v);
+                    sn_to_pokey(&sn, &pokeyL[4], 1, v);
+                    sn_to_pokey(&sn, &pokeyR[0], 2, v);
+                }
             } else if (chip == CHIP_GAMEBOY_DMG) {
                 int newwave = 0;
                 for (int x=0; x<16; x++)
@@ -1376,9 +1459,15 @@ static int write_sapr(gzFile file, struct vgm_header *v, enum chiptype chip) {
     nframes++;
 
     if (chip == CHIP_SN76489) {
-        sn_to_pokey(&sn, &pokeyL[0], 0, v);
-        sn_to_pokey(&sn, &pokeyL[4], 1, v);
-        sn_to_pokey(&sn, &pokeyR[0], 2, v);
+        if (single_pokey) {
+            sn_to_single_pokey(&sn, &pokeyL[0], 0, v);
+            sn_to_single_pokey(&sn, &pokeyL[2], 1, v);
+            sn_to_single_pokey(&sn, &pokeyL[4], 2, v);
+        } else {
+            sn_to_pokey(&sn, &pokeyL[0], 0, v);
+            sn_to_pokey(&sn, &pokeyL[4], 1, v);
+            sn_to_pokey(&sn, &pokeyR[0], 2, v);
+        }
     } else if (chip == CHIP_GAMEBOY_DMG) {
         if (single_pokey) {
             dmg_to_single_pokey(&dmg, &pokeyL[0], 0, v);
@@ -1450,7 +1539,7 @@ static void usage(void) {
 "   -f          force new frame on double write\n"
 "   -p volume   pokey maximum per channel volume [default: 15]\n"
 "   -m div      mute high up to pokey divisor div [default: 0]\n"
-"   -s          single Pokey output (DMG only) [default: off]\n"
+"   -s          single Pokey output (SN76489 and DMG only) [default: off]\n"
 );
 
 }
@@ -1554,7 +1643,7 @@ int main(int argc, char **argv) {
         if (v->version < 0x0110)
             v->sn76489_shift_width = 16;
         fprintf(stdout, "shift register width: %d bits\n", v->sn76489_shift_width);
-        if (single_pokey) goto unsupported;
+        if (single_pokey) fprintf(stdout, "single pokey output enabled\n");
         write_sapr(file, v, CHIP_SN76489);
     } else if (v->version >= 0x0161 && v->gameboy_dmg_clock) {
         init_voltab_dmg(maxpokvol);
