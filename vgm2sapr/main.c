@@ -320,6 +320,7 @@ static unsigned int maxpokvol = DEFAULT_MAXPOKVOL;
 
 static int mute_high = 0;
 static bool single_pokey;
+static float huc_master_volume = 1.0;
 
 /* ------------------------------------------------------------------------ */
 
@@ -777,6 +778,9 @@ static void huc_to_pokey(struct huc6280 *huc, uint8_t *pokey, int channel,
 
     if (dist == 0xa0 && POK < mute_high)
         volume = 0;
+
+    volume *= huc_master_volume;
+    if (volume > 15) volume = 15;
 
     pokey[0] = POK;
     pokey[1] = dist + volume;
@@ -1540,6 +1544,7 @@ static void usage(void) {
 "   -p volume   pokey maximum per channel volume [default: 15]\n"
 "   -m div      mute high up to pokey divisor div [default: 0]\n"
 "   -s          single Pokey output (SN76489 and DMG only) [default: off]\n"
+"   -h vol      HuC6280 master volume (0.0-4.0) [default: 1.0]\n"
 );
 
 }
@@ -1551,7 +1556,7 @@ int main(int argc, char **argv) {
 
     framerate = 0;
 
-    while ((option = getopt(argc, argv, "dfhr:p:m:s")) != -1) {
+    while ((option = getopt(argc, argv, "dfr:p:m:sh:")) != -1) {
         switch (option) {
         case 'r':
             framerate = strtod(optarg, NULL);
@@ -1580,6 +1585,10 @@ int main(int argc, char **argv) {
             single_pokey = true;
             break;
         case 'h':
+            huc_master_volume = strtod(optarg, NULL);
+            if (huc_master_volume < 0.0) huc_master_volume = 0.0;
+            if (huc_master_volume > 4.0) huc_master_volume = 4.0;
+            break;
         default:
             usage();
             return 1;
@@ -1657,6 +1666,7 @@ int main(int argc, char **argv) {
 
         fprintf(stdout, "detected HuC6280\n");
         fprintf(stdout, "clock: %d Hz\n", v->huc6280_clock);
+        fprintf(stdout, "huc6280 master volume: %f\n", huc_master_volume);
         if (single_pokey) goto unsupported;
         write_sapr(file, v, CHIP_HUC6280);
     } else {
