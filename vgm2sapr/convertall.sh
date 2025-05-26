@@ -211,7 +211,7 @@ create_title "Super Mario BD - Running About" "gbc-smbd-running-about" "60"
 file_source="TurboGrafx-16 / PC Engine"
 
 file_author="Jun Chikuma, Hajime Kowara"
-create_sapr -m 16 -r 60 "pcengine/Bomberman 94 - Jammin Jungle.vgz"
+create_sapr -h 1.5 -m 16 -r 60 "pcengine/Bomberman 94 - Jammin Jungle.vgz"
 create_title "Bomberman '94 - Jammin Jungle" "pce-bomberman94" "60"
 
 file_author="Shinichi Sakamoto"
@@ -219,15 +219,15 @@ create_sapr -r 60 "pcengine/Dragon's Cruse - Take It Easy (Sunken Ship).vgz"
 create_title "Dragon's Curse - Take It Easy" "pce-dragons-curse" "60"
 
 file_author="Hitoshi Sakimoto"
-create_sapr -r 60 "pcengine/Magical Chase - Ending.vgz"
+create_sapr -h 2.0 -r 60 "pcengine/Magical Chase - Ending.vgz"
 create_title "Magical Chase - Ending" "pce-magical-chase-ending" "60"
 
 file_author="Masaharu Iwata"
-create_sapr -r 60 pcengine/"Magical Chase - You're Restless.vgz"
+create_sapr -h 2.0 -r 60 pcengine/"Magical Chase - You're Restless.vgz"
 create_title "Magical Chase - You're Restless" "pce-magical-chase-restless" "60"
 
 file_author="Keita Hoshi, Makiko Tanifuji"
-create_sapr -r 60 "pcengine/Soldier Blade - Opening.vgz"
+create_sapr -h 1.3 -r 60 "pcengine/Soldier Blade - Opening.vgz"
 create_title "Soldier Blade - Opening" "pce-soldier-blade-opening" "60"
 
 file_author="Falcom Sound Team J.D.K."
@@ -248,12 +248,12 @@ create_title "Terra Cresta II - Ending" "pce-terra-cresta2-ending" "60"
 
 file_source="TurboGrafx-16 PC Engine CD-ROM"
 file_author="Konami Kukeiha Club"
-create_sapr -r 60 "pcengine/Snatcher - Cold Sleep.vgz"
+create_sapr -h 1.4 -r 60 "pcengine/Snatcher - Cold Sleep.vgz"
 create_title "Snatcher - Cold Sleep" "pce-snatcher-cold-sleep" "60"
 
 file_source="NEC PC Engine CD"
 file_author="Atsushi Shirakawa, et al."
-create_sapr -r 60 "pcengine/The Legend Of Xanadu II - Underground Water Course.vgz"
+create_sapr -h 2.0 -r 60 "pcengine/The Legend Of Xanadu II - Underground Water Course.vgz"
 create_title "Xanadu II - Underground Water C" "pce-xanadu2-water-course" "60"
 
 file_source="PC Engine Super CD-ROM2"
