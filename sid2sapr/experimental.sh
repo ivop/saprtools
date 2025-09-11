@@ -35,7 +35,6 @@ mv player.xex experimental/exp-robocop-saw.xex
 
 #fi
 
-if false; then
 #if false; then
 
 # Two channel "high-pass" filter, detune starts to sound out-of-tune when
@@ -177,8 +176,6 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "R-Type (HPF Mix)" "Chris Huelsbeck & Ramiro Vaca" > songname.txt
 make compress-stereo && make player50-stereo
 mv player.xex experimental/exp-rtype-stereo-mono-mix-hpf.xex
-
-fi
 
 # clear for further tests
 rm -f songname.txt
