@@ -15,13 +15,13 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-softbass && make player50-softbass-sawtooth
 mv player.xex experimental/exp-syncopated-saw.xex
 
-./sid2sapr -p 15 -x 2 -e 2 -E 0.6 -b softbass sid/Metal_Warrior_4.sid
+./sid2sapr -p 15 -x 2 -e 1 -E 0.6 -b softbass sid/Metal_Warrior_4.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Metal Warrior 4" "Cadaver" > songname.txt
 make compress-softbass && make player50-softbass-sawtooth
 mv player.xex experimental/exp-mw4-saw.xex
 
-./sid2sapr -m both -p 10 -x 2 -e 2 -E 0.8 -b softbass sid/Zamzara.sid
+./sid2sapr -m both -p 10 -x 2 -e 1 -E 0.8 -b softbass sid/Zamzara.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Zamzara" "Charles Deenen" > songname.txt
 make compress-softbass && make player50-softbass-sawtooth
@@ -33,20 +33,21 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-softbass && make player50-softbass-sawtooth
 mv player.xex experimental/exp-robocop-saw.xex
 
-./sid2sapr -x 1 -p12 -E0.9 -F 1 -D -b softbass sid/R-Type.sid
-printf "Source: %-32sTitle : %-32sAuthor: %s" \
-    "Commodore 64" "R-Type" "Chris Huelsbeck & Ramiro Vaca" > songname.txt
-make compress-softbass && make player50-softbass
-mv player.xex experimental/exp-rtype-hpf.xex
-
 #fi
 
+if false; then
 #if false; then
 
 # Two channel "high-pass" filter, detune starts to sound out-of-tune when
 # note frequency rises. Some parts sound really nice, other parts not so
 # much... If only we could switch configurations at several places during
 # the song ;-)
+
+./sid2sapr -x 1 -p12 -E0.9 -F 1 -D -b softbass sid/R-Type.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "R-Type" "Chris Huelsbeck & Ramiro Vaca" > songname.txt
+make compress-softbass && make player50-softbass
+mv player.xex experimental/exp-rtype-hpf.xex
 
 ./sid2sapr -p10 -E0.9 -x 1 -F 3 -b softbass sid/Metal_Warrior_4.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
@@ -176,6 +177,8 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "R-Type (HPF Mix)" "Chris Huelsbeck & Ramiro Vaca" > songname.txt
 make compress-stereo && make player50-stereo
 mv player.xex experimental/exp-rtype-stereo-mono-mix-hpf.xex
+
+fi
 
 # clear for further tests
 rm -f songname.txt
