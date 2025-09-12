@@ -9,6 +9,12 @@ make -C ../sapr2sapr
 # fast changing of frequency. Some parts sound pretty good, others not so
 # much...
 
+./sid2sapr -x 1 -m both -e 1 -b softbass sid/Cybernoid_II.sid
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Cybernoid II" "Jeroen Tel" > songname.txt
+make compress-softbass && make player50-softbass-sawtooth
+mv player.xex experimental/exp-cybernoid2-saw.xex
+
 ./sid2sapr -p 12 -x 1 -e 1 -E 1.0 -b softbass sid/Syncopated.sid
 printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "Syncopated" "Thomas E. Petersen (Laxity)" > songname.txt
