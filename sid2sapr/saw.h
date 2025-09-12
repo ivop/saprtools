@@ -2315,96 +2315,8 @@ int main(int argc, char **argv) {
 
 int main(int argc, char **argv) {
 
-#if 0       // OLD VERSION
-
     // channels 1+3 filter, both @ 1.77MHz
     // sawtooth of f1-f3 Hz, carrier of f1+f3
-    //
-    // dividers(t) = (x(t), x(t)+q)
-    // x(t) = x(0) + t*p
-    //
-    // stable:
-    //                  x(0)=0,  p=1,  q=1
-    //                  x(0)=0,  p=2,  q=2
-    //                  x(0)=2,  p=3,  q=3
-    //                  x(0)=0,  p=4,  q=4
-    //                  x(0)=1,  p=5,  q=5
-    //                  x(0)=2,  p=6,  q=5
-    //                  x(0)=3,  p=7,  q=7
-    //                  x(0)=4,  p=8,  q=8
-    //                  x(0)=5,  p=9,  q=9
-    //                  x(0)=6,  p=10, q=10
-    //                  x(0)=7,  p=11, q=11
-    //                  x(0)=8,  p=12, q=12
-    //                  x(0)=9,  p=13, q=13
-    //                  x(0)=10, p=14, q=14
-    //                  x(0)=11, p=15, q=15
-    //
-    // except for:
-    //                  x(0)=0, p=1,  q=2       slightly unstabel, noticable?
-    // p == q
-    //
-    // Fsaw = G(x(t)) - G(x(t)+q)
-    // Fcar = G(x(t)) + G(x(t)+q)
-    //
-    // G(y) = 1773447 / (y + 4)
-
-    struct tabitem {
-        int x0, p, q;
-    } table[] = {
-#if 1
-        {  0, 1,   1 },
-        {  0, 1,   2 },     // slightly unstable
-        {  0, 2,   2 },
-        {  2, 3,   3 },
-        {  0, 4,   4 },
-        {  1, 5,   5 },
-        {  2, 6,   6 },
-        {  3, 7,   7 },
-        {  4, 8,   8 },
-        {  5, 9,   9 },
-        {  6, 10, 10 },
-        {  7, 11, 11 },
-        {  8, 12, 12 },
-        {  9, 13, 13 },
-        { 10, 14, 14 },
-        { 11, 15, 15 }
-#endif
-    };
-
-    for (int i=0; i<sizeof(table)/sizeof(struct tabitem); i++) {
-        int x0 = table[i].x0;
-        int p  = table[i].p;
-        int q  = table[i].q;
-
-        for (int t=0; t<256; t++) {
-            int xt = x0 + t*p;
-            int div1 = xt;
-            int div3 = xt+q;
-
-            if (div1 > 255 || div3 > 255)
-                break;
-
-            double G1 = ATARI_CLOCK / (div1 + 4.0);
-            double G3 = ATARI_CLOCK / (div3 + 4.0);
-            double Fsaw = G1-G3;
-            double Fcar = G1+G3;
-
-            if (G1 < 20000.0)
-                continue;
-            if (G3 < 20000.0)
-                continue;
-            if (Fcar < 20000.0)
-                break;
-            if (Fsaw > 20000.0)
-                continue;
-            if (div3 > 0xaf)
-                continue;
-
-            printf("%9.2lf, 0x%02x, 0x%02x\n", Fsaw, div1, div3);
-        }
-    }
-#else // NEW VERSION
 
     double human_threshold = 17000;     // 17kHz
     int maxdiv = ATARI_CLOCK / human_threshold - 4.0;
@@ -2422,8 +2334,6 @@ int main(int argc, char **argv) {
             printf("%9.2lf, 0x%02x, 0x%02x\n", Fsaw, div1, div3);
         }
     }
-
-#endif
 }
     #endif
 
