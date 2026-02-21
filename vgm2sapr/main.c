@@ -1620,7 +1620,7 @@ int main(int argc, char **argv) {
     fprintf(stdout, "vgm version: %1x.%2x\n", v->version>>8, v->version &0xff);
 
     uint32_t data_offset = 0x40;
-    if (v->version >= 0x150)
+    if (v->version >= 0x150 && v->vgm_data_offset)
         data_offset = 0x34 + v->vgm_data_offset;
 
     fprintf(stdout, "data offset: 0x%02x\n", data_offset);
