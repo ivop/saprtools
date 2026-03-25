@@ -204,13 +204,13 @@ mv player.xex experimental/exp-terra-stereo-2x-mono-mix-2x-hpf.xex
 # (sapr2sapr should grow a feature to do this, instead of relying on
 # sapredit and dd and manual intervention ;))
 
-./sid2sapr -p 12 -b gritty -x 1 -F 1 -D  sid/Terra_Cresta.sid
+./sid2sapr -p 11 -b gritty -x 1 -F 2 -D -a sid/Terra_Cresta.sid
 dd if=output.sapr of=part1.dat bs=1 count=$((3264*9+0x2c))
 
-./sid2sapr -p 12 -b gritty -x 0 -F 1 -D  sid/Terra_Cresta.sid
+./sid2sapr -p 11 -b gritty -x 0 -F 1 -D  sid/Terra_Cresta.sid
 dd if=output.sapr of=part2.dat bs=1 skip=$((3264*9+0x2c)) count=$(((5888-3264)*9))
 
-./sid2sapr -p 12 -b gritty -x 2 -F 1 -D  sid/Terra_Cresta.sid
+./sid2sapr -p 11 -b gritty -x 2 -F 1 -D  sid/Terra_Cresta.sid
 dd if=output.sapr of=part3.dat bs=1 skip=$((5888*9+0x2c))
 
 cat part1.dat part2.dat part3.dat > output.sapr
@@ -221,7 +221,7 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-mono && make player50-mono
 mv player.xex experimental/exp-terra-3x-mono-3x-hpf.xex
 
-#fi
+fi
 
 # clear for further tests
 rm -f songname.txt
