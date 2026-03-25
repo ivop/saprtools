@@ -173,8 +173,6 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-stereo && make player50-stereo
 mv player.xex experimental/exp-cybernoid2-stereo-mono-mix-hpf.xex
 
-#fi
-
 ./sid2sapr -x 2 -p12 -E0.8 -F 1 -D -b buzzy sid/R-Type.sid
 ./sid2sapr -x 1 -p12 -s -F 3 -g 10 -D -b softbass sid/R-Type.sid
 ../sapr2sapr/sapr2sapr -s 6=0,7=0 output.sapr left.sapr
@@ -182,6 +180,48 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
     "Commodore 64" "R-Type (HPF Mix)" "Chris Huelsbeck & Ramiro Vaca" > songname.txt
 make compress-stereo && make player50-stereo
 mv player.xex experimental/exp-rtype-stereo-mono-mix-hpf.xex
+
+# Another one combining 2 mono and 1 stereo conversion
+
+./sid2sapr -p 14 -b gritty -x 1 -F 3 -D sid/Terra_Cresta.sid
+../sapr2sapr/sapr2sapr -s 2=0,3=0 output.sapr temp.sapr
+dd if=temp.sapr of=part1.dat bs=1 count=53036
+
+./sid2sapr -p 14 -b gritty -x 2 -F 3 -D sid/Terra_Cresta.sid
+../sapr2sapr/sapr2sapr -s 2=0,3=0 output.sapr temp.sapr
+dd if=temp.sapr of=part2.dat bs=1 skip=53036
+
+./sid2sapr -p 14 -s -b gritty -x 0 -F 1 -D -g 10 sid/Terra_Cresta.sid
+cat part1.dat part2.dat > left.sapr
+rm -f part1.dat part2.dat temp.sapr
+
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Terra Cresta" "Martin Galway" > songname.txt
+make compress-stereo && make player50-stereo
+mv player.xex experimental/exp-terra-stereo-2x-mono-mix-2x-hpf.xex
+
+# And a mono conversion combining parts of 3 separate mono conversions
+# (sapr2sapr should grow a feature to do this, instead of relying on
+# sapredit and dd and manual intervention ;))
+
+./sid2sapr -p 12 -b gritty -x 1 -F 1 -D  sid/Terra_Cresta.sid
+dd if=output.sapr of=part1.dat bs=1 count=$((3264*9+0x2c))
+
+./sid2sapr -p 12 -b gritty -x 0 -F 1 -D  sid/Terra_Cresta.sid
+dd if=output.sapr of=part2.dat bs=1 skip=$((3264*9+0x2c)) count=$(((5888-3264)*9))
+
+./sid2sapr -p 12 -b gritty -x 2 -F 1 -D  sid/Terra_Cresta.sid
+dd if=output.sapr of=part3.dat bs=1 skip=$((5888*9+0x2c))
+
+cat part1.dat part2.dat part3.dat > output.sapr
+rm -f part1.dat part2.dat part3.dat
+
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Terra Cresta" "Martin Galway" > songname.txt
+make compress-mono && make player50-mono
+mv player.xex experimental/exp-terra-3x-mono-3x-hpf.xex
+
+#fi
 
 # clear for further tests
 rm -f songname.txt
