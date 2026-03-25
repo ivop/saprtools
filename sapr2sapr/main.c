@@ -16,6 +16,8 @@ static void usage(void) {
 "                           register = [0..8]\n"
 "                           value    = [0..255] (decimal, octal, or hexadecimal)\n"
 "   -S                  skip every other output frame (100Hz to 50Hz, etc..)\n"
+"   -t num              trim first num frames\n"
+"   -b float            scale dist C bass volume [0..2.0]\n"
 );
 }
 
@@ -49,10 +51,12 @@ int main(int argc, char **argv) {
     int setvalue[9];
     bool do_setvalue = false;
     bool skip_every_other = false;
+    int trim = 0;
+    double bass = 1.0;
 
     memset(setvalue, 0xff, sizeof(setvalue));
 
-    while ((option = getopt(argc, argv, "hs:S")) != -1) {
+    while ((option = getopt(argc, argv, "hs:St:b:")) != -1) {
         switch (option) {
         case 's':
             if (!parse_setvalue_args(optarg, setvalue)) {
@@ -62,6 +66,14 @@ int main(int argc, char **argv) {
             break;
         case 'S':
             skip_every_other = true;
+            break;
+        case 't':
+            trim = atoi(optarg);
+            break;
+        case 'b':
+            bass = strtod(optarg, NULL);
+            if (bass < 0) bass = 0.0;
+            if (bass > 2.0) bass = 2.0;
             break;
         case 'h':
         default:
@@ -144,6 +156,8 @@ int main(int argc, char **argv) {
     bool write_frame = true;
 
     for (int i=0; i<nframes; i++) {
+        if (i<trim) continue;
+
         uint8_t frame[9];
         memcpy(frame, in + header_size + i*9, 9);
 
@@ -151,6 +165,17 @@ int main(int argc, char **argv) {
             for (int i=0; i<9; i++) {
                 if (setvalue[i] < 0) continue;
                 frame[i] = setvalue[i];
+            }
+        }
+
+        if (bass != 1.0) {
+            for (int i=1; i<=7; i+=2) {
+                if ((frame[i] & 0xf0) != 0xc0) continue;
+                double v = frame[i] & 0xf;
+                v *= bass;
+                if (v > 15.0) v = 15;
+                frame[i] &= 0xf0;
+                frame[i] |= (int) v;
             }
         }
 
