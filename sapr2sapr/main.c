@@ -15,6 +15,7 @@ static void usage(void) {
 "   -s reg=val[,..]     set channel to fixed value, comma separeted list\n"
 "                           register = [0..8]\n"
 "                           value    = [0..255] (decimal, octal, or hexadecimal)\n"
+"   -S                  skip every other output frame (100Hz to 50Hz, etc..)\n"
 );
 }
 
@@ -47,16 +48,20 @@ int main(int argc, char **argv) {
     int option;
     int setvalue[9];
     bool do_setvalue = false;
+    bool skip_every_other = false;
 
     memset(setvalue, 0xff, sizeof(setvalue));
 
-    while ((option = getopt(argc, argv, "hs:")) != -1) {
+    while ((option = getopt(argc, argv, "hs:S")) != -1) {
         switch (option) {
         case 's':
             if (!parse_setvalue_args(optarg, setvalue)) {
                 return 1;
             }
             do_setvalue = true;
+            break;
+        case 'S':
+            skip_every_other = true;
             break;
         case 'h':
         default:
@@ -136,6 +141,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    bool write_frame = true;
+
     for (int i=0; i<nframes; i++) {
         uint8_t frame[9];
         memcpy(frame, in + header_size + i*9, 9);
@@ -147,10 +154,14 @@ int main(int argc, char **argv) {
             }
         }
 
-        if (write(outfd, frame, 9) < 0) {
-            perror(outfile);
-            return 1;
+        if (write_frame) {
+            if (write(outfd, frame, 9) < 0) {
+                perror(outfile);
+                return 1;
+            }
         }
+
+        if (skip_every_other) write_frame = !write_frame;
     }
 
     munmap(in, file_size);
