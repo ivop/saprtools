@@ -221,7 +221,7 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-mono && make player50-mono
 mv player.xex experimental/exp-terra-3x-mono-3x-hpf.xex
 
-fi
+#fi
 
 # clear for further tests
 rm -f songname.txt
