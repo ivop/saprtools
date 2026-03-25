@@ -208,6 +208,8 @@ mv player.xex experimental/exp-terra-stereo-2x-mono-mix-2x-hpf.xex
 dd if=output.sapr of=part1.dat bs=1 count=$((3264*9+0x2c))
 
 ./sid2sapr -p 11 -b gritty -x 0 -F 1 -D  sid/Terra_Cresta.sid
+../sapr2sapr/sapr2sapr -b 0.65 output.sapr temp.sapr
+mv -f temp.sapr output.sapr
 dd if=output.sapr of=part2.dat bs=1 skip=$((3264*9+0x2c)) count=$(((5888-3264)*9))
 
 ./sid2sapr -p 11 -b gritty -x 2 -F 1 -D  sid/Terra_Cresta.sid
