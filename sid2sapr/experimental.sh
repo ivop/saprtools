@@ -221,6 +221,20 @@ printf "Source: %-32sTitle : %-32sAuthor: %s" \
 make compress-mono && make player50-mono
 mv player.xex experimental/exp-terra-3x-mono-3x-hpf.xex
 
+# Test sapr2sapr option -S to downsample from 400Hz to 50Hz
+# Number of frames adjusted from HVSC database to loop exact
+
+./sid2sapr -x0 -F 3 -D -p14 -t1 -n 150322 -b buzzy sid/Barbarian.sid
+../sapr2sapr/sapr2sapr -S output.sapr out200Hz.sapr
+../sapr2sapr/sapr2sapr -S out200Hz.sapr out100Hz.sapr
+../sapr2sapr/sapr2sapr -S out100Hz.sapr output.sapr
+rm -f out100Hz.sapr out200Hz.sapr
+
+printf "Source: %-32sTitle : %-32sAuthor: %s" \
+    "Commodore 64" "Barbarian" "Richard Joseph" > songname.txt
+make compress-mono && make player50-mono
+mv player.xex experimental/exp-barbarian-downsampled.xex
+
 #fi
 
 # clear for further tests
